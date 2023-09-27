@@ -62,9 +62,13 @@ def init():
   );
 ''')
   # TODO: Add more contraints (such as NOT NULL) to above tables.
+  # TODO: Should add flag to USERS table to specify admin user.
   con.commit()
 
 
+# #
+# # Products
+# #
 def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
   cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight) VALUES (?, ?, ?, ?, ?, ?)",
               (name, description, image, quantity, price, weight))
@@ -91,6 +95,39 @@ def select_product(product_id: int) -> dict:
 def select_products() -> list[dict]:
   cur.execute("SELECT * FROM PRODUCTS")
   return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6]} for row in cur.fetchall()]
+
+
+# #
+# # Users
+# #
+def select_user(user_id) -> dict:
+  cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
+  row = cur.fetchone()
+  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3]}
+
+
+def validate_user(username, password) -> dict:
+  cur.execute("SELECT * FROM USERS WHERE Username=? AND Password=?", (username, password))
+  row = cur.fetchone()
+  if row == None:
+    return None
+  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3]}
+
+
+def insert_user(username: str, password: str, address: str) -> dict:
+  cur.execute("INSERT INTO USERS (Username, Password, Address) VALUES (?, ?, ?)",
+              (username, password, address))
+  con.commit()
+
+  user_id = cur.lastrowid
+  return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
+
+
+def update_user(user_id: int, username: str, password: str, address: str) -> None:
+  cur.execute("UPDATE USERS SET Username=?, Password=?, Address=? WHERE UserID=?",
+              (username, password, address, user_id))
+  con.commit()
+  return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
 
 
 init()
