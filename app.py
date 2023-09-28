@@ -113,29 +113,21 @@ def create_product():
   p = request.get_json()
   return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
 
-# Akshit 
 @app.route('/cart', methods=['GET'])
 def get_cart():
   pass
 
-# Akshit 
 @app.route('/cart', methods=['POST'])
 def post_cart():
   pass
 
-# Akshit 
 @app.route('/orders', methods=['GET'])
 def get_orders():
   pass
 
-# Akshit 
 @app.route('/orderItems', methods=['GET'])
 def get_order_items():
   pass
-
-
-# poly line you can put on map robot 
-# @app.route('/')
 
 if __name__ == '__main__':
   app.run()
