@@ -113,21 +113,26 @@ def create_product():
   p = request.get_json()
   return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
 
+
 @app.route('/cart', methods=['GET'])
 def get_cart():
   pass
+
 
 @app.route('/cart', methods=['POST'])
 def post_cart():
   pass
 
+
 @app.route('/orders', methods=['GET'])
 def get_orders():
   pass
 
+
 @app.route('/orderItems', methods=['GET'])
 def get_order_items():
   pass
+
 
 if __name__ == '__main__':
   app.run()
