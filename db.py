@@ -130,4 +130,66 @@ def update_user(user_id: int, username: str, password: str, address: str) -> Non
   return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
 
 
+# #
+# # Carts
+# #
+def get_cart_id(user_id: int) -> int:
+  cur.execute("SELECT CartID FROM CARTS WHERE UserID=?", (user_id,))
+  cart_row = cur.fetchone()
+
+  # If the cart does not exist yet. Create it and then return the cart_id.
+  if cart_row == None:
+    return insert_cart(user_id)['cart_id']
+
+  return cart_row[0]
+
+
+def select_cart(user_id: int) -> dict:
+  cart_id = get_cart_id(user_id)
+
+  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity "
+              "FROM CART_ITEMS AS CI "
+              "JOIN PRODUCTS AS P ON CI.ProductID = P.ProductID "
+              "WHERE CI.CartID=?", (cart_id,))
+
+  return {
+    "cart_id": cart_id,
+    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5]} for ci in cur.fetchall()]
+  }
+
+
+def insert_cart(user_id: int) -> dict:
+  cur.execute("INSERT INTO CARTS (UserID) VALUES (?)", (user_id,))
+  con.commit()
+  cart_id = cur.lastrowid
+  return {"cart_id": cart_id, "user_id": user_id}
+
+
+def insert_cart_item(user_id: int, product_id: int, quantity: int) -> dict:
+  cart_id = get_cart_id(user_id)
+
+  cur.execute("INSERT INTO CART_ITEMS (CartID, ProductID, Quantity) VALUES (?, ?, ?)",
+              (cart_id, product_id, quantity))
+  con.commit()
+
+  cart_item_id = cur.lastrowid
+  return {"cart_item_id": cart_item_id, "product_id": product_id, "quantity": quantity}
+
+
+def update_cart_item(user_id: int, cart_item_id: int, product_id: int, quantity: int) -> dict:
+  cart_id = get_cart_id(user_id)
+
+  cur.execute("UPDATE CART_ITEMS SET Quantity=?, ProductID=? WHERE CartItemID=? AND CartID=?", (quantity, product_id, cart_item_id, cart_id))
+  con.commit()
+
+  return {"cart_item_id": cart_item_id, "product_id": product_id, "quantity": quantity}
+
+
+def delete_cart_item(user_id: int, cart_item_id: int) -> None:
+  cart_id = get_cart_id(user_id)
+
+  cur.execute("DELETE FROM CART_ITEMS WHERE CartItemID=? AND CartID=?", (cart_item_id, cart_id))
+  con.commit()
+
+
 init()
