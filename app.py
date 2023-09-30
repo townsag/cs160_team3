@@ -1,6 +1,6 @@
 import db
 import json
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 login_manager = LoginManager()
@@ -44,6 +44,22 @@ def load_user(user_id):
   return User.get(user_id)
 
 
+# #
+# # Serve Static Files
+# #
+@app.route('/')
+def root():
+  return send_from_directory('ogo/dist', 'index.html')
+
+
+@app.route('/<path:path>')
+def assets(path):
+  return send_from_directory('ogo/dist', path)
+
+
+# #
+# # User Authentication Routes
+# #
 @app.route('/signup', methods=['POST'])
 def signup():
   u = request.get_json()
@@ -90,6 +106,9 @@ def get_user():
   return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address}
 
 
+# #
+# # Product Routes
+# #
 @app.route('/getProducts', methods=['GET'])
 def get_products():
   return json.dumps(db.select_products())
@@ -114,24 +133,35 @@ def create_product():
   return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
 
 
-@app.route('/cart', methods=['GET'])
+# #
+# # Cart Routes
+# #
+@app.route('/getCart', methods=['GET'])
+@login_required
 def get_cart():
-  pass
+  return db.select_cart(current_user.user_id)
 
 
-@app.route('/cart', methods=['POST'])
-def post_cart():
-  pass
+@app.route('/addCartItem', methods=['POST'])
+@login_required
+def add_cart_item():
+  ci = request.get_json()
+  return db.insert_cart_item(current_user.user_id, ci['product_id'], ci['quantity'])
 
 
-@app.route('/orders', methods=['GET'])
-def get_orders():
-  pass
+@app.route('/updateCartItem', methods=['POST'])
+@login_required
+def update_cart_item():
+  ci = request.get_json()
+  return db.update_cart_item(current_user.user_id, ci['cart_item_id'], ci['product_id'], ci['quantity'])
 
 
-@app.route('/orderItems', methods=['GET'])
-def get_order_items():
-  pass
+@app.route('/removeCartItem', methods=['POST'])
+@login_required
+def remove_cart_item():
+  ci = request.get_json()
+  db.delete_cart_item(current_user.user_id, ci['cart_item_id'])
+  return 'Success'
 
 
 if __name__ == '__main__':
