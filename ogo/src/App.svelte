@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Router, Link, Route } from "svelte-routing";
-  import Root from "./routes/root.svelte";
-  import Login from "./routes/login.svelte";
-  import Signup from "./routes/signup.svelte";
-  import Home from "./routes/home.svelte";
+  import Root from "./routes/Root.svelte";
+  import Login from "./routes/Login.svelte";
+  import Signup from "./routes/Signup.svelte";
+  import Home from "./routes/Home.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import './app.css';
@@ -26,7 +26,7 @@
         <Route path="/" component={Root} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
-        <Route path="/home" component={Signup} />
+        <Route path="/home" component={Home} />
       </div>
       <Footer />
     </Router>
