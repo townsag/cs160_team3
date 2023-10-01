@@ -198,7 +198,7 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # #
 # # Orders
 # #
-def select_orders(user_id: int) -> dict:
+def select_orders(user_id: int) -> list[dict]:
   cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
 
   return [{
@@ -211,7 +211,7 @@ def select_orders(user_id: int) -> dict:
   } for o in cur.fetchall()]
 
 
-def select_order_items(user_id: int, order_id: int) -> dict:
+def select_order_items(user_id: int, order_id: int) -> list[dict]:
   # TODO: ensure that the user owns the order
 
   cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, OI.OrderItemID, OI.Quantity "

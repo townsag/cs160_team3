@@ -164,5 +164,28 @@ def remove_cart_item():
   return 'Success'
 
 
+# #
+# # Order Routes
+# #
+@app.route('/getOrders', methods=['GET'])
+@login_required
+def get_orders():
+  return db.select_orders(current_user.user_id)
+
+
+@app.route('/getOrderItems', methods=['GET'])  # ?orderID=<orderID>
+@login_required
+def get_order_items():
+  order_id = request.args['orderID']
+  return db.select_order_items(current_user.user_id, order_id)
+
+
+@app.route('/placeOrder', methods=['POST'])
+@login_required
+def place_order():
+  order_items = request.get_json()
+  return db.insert_order(current_user.user_id, order_items)
+
+
 if __name__ == '__main__':
   app.run()
