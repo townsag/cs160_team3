@@ -1,4 +1,6 @@
 import sqlite3
+import time
+
 con = sqlite3.connect("db.db", check_same_thread=False)
 cur = con.cursor()
 
@@ -63,6 +65,7 @@ def init():
 ''')
   # TODO: Add more contraints (such as NOT NULL) to above tables.
   # TODO: Should add flag to USERS table to specify admin user.
+  # TODO: Should add the epoch of when the order was placed in the orders tabel (as well as the epoch that says when the order did/will arrive)
   con.commit()
 
 
@@ -189,6 +192,80 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
   cart_id = get_cart_id(user_id)
 
   cur.execute("DELETE FROM CART_ITEMS WHERE CartItemID=? AND CartID=?", (cart_item_id, cart_id))
+  con.commit()
+
+
+# #
+# # Orders
+# #
+def select_orders(user_id: int) -> list[dict]:
+  cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
+
+  return [{
+    'order_id': o[0],
+    'user_id': o[1],
+    'total_price': o[2],
+    'total_weight': o[3],
+    'status': o[4],
+    'epoch': o[5]
+  } for o in cur.fetchall()]
+
+
+def select_order_items(user_id: int, order_id: int) -> list[dict]:
+  # TODO: ensure that the user owns the order
+
+  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, OI.OrderItemID, OI.Quantity "
+              "FROM ORDER_ITEMS AS OI "
+              "JOIN PRODUCTS AS P ON OI.ProductID = P.ProductID "
+              "WHERE OI.OrderID=?", (order_id,))
+
+  return [{
+    'product_id': o[0],
+    'name': o[1],
+    'description': o[2],
+    'image': o[3],
+    'price': o[4],
+    'weight': o[5],
+    'order_item_id': o[6],
+    'quantity': o[7]
+  } for o in cur.fetchall()]
+
+
+def calc_total_price_weight(order_items):
+  total_price = 0
+  total_weight = 0
+
+  for o in order_items:
+    p = select_product(o['product_id'])
+    total_price += p['price'] * o['quantity']
+    total_weight += p['weight'] * o['quantity']
+
+  return total_price, total_weight
+
+
+# order_items = [
+#   {
+#     'product_id': 1,
+#     'quantity': 2
+#   },
+#   {
+#     'product_id': 1,
+#     'quantity': 2
+#    }
+# ]
+def insert_order(user_id: int, order_items: list[dict]) -> dict:
+  total_price, total_weight = calc_total_price_weight(order_items)
+  status = 0
+  epoch = int(time.time())
+
+  cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, Epoch) VALUES (?, ?, ?, ?, ?)",
+              (user_id, total_price, total_weight, status, epoch))
+
+  order_id = cur.lastrowid
+  for o in order_items:
+    cur.execute("INSERT INTO ORDER_ITEMS (OrderID, ProductID, Quantity) VALUES (?, ?, ?)",
+                (order_id, o['product_id'], o['quantity']))
+
   con.commit()
 
 
