@@ -4,7 +4,7 @@ WORKDIR /ogo
 
 EXPOSE 5000
 
-RUN pip3 install flask flask_login
+RUN pip3 install requests flask flask_login
 
 COPY . . 
 

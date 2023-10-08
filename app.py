@@ -1,11 +1,21 @@
 import db
 import json
-from flask import Flask, request, send_from_directory
+import configparser
+import os
+
+import requests
+from flask import Flask, request, send_from_directory, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 login_manager = LoginManager()
 app = Flask(__name__)
-app.secret_key = b'replace_this_later'  # TODO: use enviroment variable instead
+app.secret_key = b'replace_this_later' 
+config = configparser.ConfigParser()
+config.read('.env')
+api_key = config['KEYS']['GOOGLE_ROUTES_API_KEY']
+origin = "1 Washington Sq, San Jose, CA 95192"
+base_url = "https://maps.googleapis.com/maps/api/directions/json"
+
 
 login_manager.init_app(app)
 
@@ -186,6 +196,84 @@ def place_order():
   order_items = request.get_json()
   return db.insert_order(current_user.user_id, order_items)
 
+@app.route('/getDistance', methods=['GET'])
+def get_distance():
+  destination = request.args.get('destination') 
+  response = google_api_request(destination)
+  print(response.text)
+  if response.status_code == 200:
+    data = response.json()
+    if "routes" in data and len(data["routes"]) > 0:
+        travel_distance = data["routes"][0]["distanceMeters"]
+        return jsonify({'travelDistance' : travel_distance})
+    else:
+        print( len(data["routes"]))
+        return jsonify({"error": "No route found."})
+  else:
+    print(response.status_code)
+    return jsonify({"error": "Error in the API request."})
+
+
+@app.route('/getTime', methods=['GET'])
+def get_time():
+  destination = request.args.get('destination') 
+  response = google_api_request(destination)
+  print(response.text)
+  if response.status_code == 200:
+    data = response.json()
+    if "routes" in data and len(data["routes"]) > 0:
+        travel_time = data["routes"][0]["duration"]
+        return jsonify({'travelTime' : travel_time})
+    else:
+        print( len(data["routes"]))
+        return jsonify({"error": "No route found."})
+  else:
+    print(response.status_code)
+    return jsonify({"error": "Error in the API request."})
+
+@app.route('/getPolyLine', methods=['GET'])
+def get_poly_line():
+  destination = request.args.get('destination') 
+  response = google_api_request(destination)
+  print(response.text)
+  if response.status_code == 200:
+    data = response.json()
+    if "routes" in data and len(data["routes"]) > 0:
+        poly_line = data["routes"][0]["polyline"]['encodedPolyline']
+        return jsonify({'polyLine' : poly_line})
+    else:
+        print( len(data["routes"]))
+        return jsonify({"error": "No route found."})
+  else:
+    print(response.status_code)
+    return jsonify({"error": "Error in the API request."})
+
+def google_api_request(destination):
+  headers = {
+    'Content-Type': 'application/json',
+    'X-Goog-Api-Key': api_key,
+    'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline',
+  }
+  json_data = {
+      'origin': {
+          'address': origin
+      },
+      'destination': {
+          'address': destination
+      },
+      'travelMode': 'DRIVE',
+      'routingPreference': 'TRAFFIC_AWARE',
+      'departureTime': '2023-10-15T15:01:23.045123456Z',
+      'computeAlternativeRoutes': False,
+      'routeModifiers': {
+          'avoidTolls': False,
+          'avoidHighways': False,
+          'avoidFerries': False,
+      },
+      'languageCode': 'en-US',
+      'units': 'IMPERIAL',
+  }
+  return requests.post('https://routes.googleapis.com/directions/v2:computeRoutes', headers=headers, json=json_data)
 
 if __name__ == '__main__':
   app.run()

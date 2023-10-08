@@ -1,0 +1,24 @@
+# Logs
+./ogo/logs
+./ogo/*.log
+./ogo/npm-debug.log*
+./ogo/yarn-debug.log*
+./ogo/yarn-error.log*
+./ogo/pnpm-debug.log*
+./ogo/lerna-debug.log*
+
+./ogo/node_modules
+./ogo/dist
+./ogo/dist-ssr
+./ogo/*.local
+
+# Editor directories and files
+./ogo/.vscode/*
+./ogo/!.vscode/extensions.json
+./ogo/.idea
+./ogo/.DS_Store
+./ogo/*.suo
+./ogo/*.ntvs*
+./ogo/*.njsproj
+./ogo/*.sln
+./ogo/*.sw?
