@@ -41,8 +41,9 @@ def init():
       UserID INTEGER REFERENCES USERS(UserID),
       TotalPrice REAL,
       TotalWeight REAL,
-      Status TEXT,
-      Epoch INTEGER
+      Status INTEGER,
+      PlacedEpoch INTEGER,
+      ETAEpoch INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS ORDER_ITEMS (
@@ -54,13 +55,17 @@ def init():
 
   CREATE TABLE IF NOT EXISTS ROUTES (
       RouteID INTEGER PRIMARY KEY,
-      RouteData TEXT
+      Polyline TEXT,
+      CreationEpoch INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS ROUTE_ORDERS (
       RouteOrderID INTEGER PRIMARY KEY,
       RouteID INTEGER REFERENCES ROUTES(RouteID),
-      OrderID INTEGER REFERENCES ORDERS(OrderID)
+      OrderID INTEGER REFERENCES ORDERS(OrderID),
+      Sequence INTEGER,
+      Lat REAL,
+      Lon REAL
   );
 ''')
   # TODO: Add more contraints (such as NOT NULL) to above tables.
@@ -72,6 +77,8 @@ def init():
 # #
 # # Products
 # #
+
+
 def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
   cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight) VALUES (?, ?, ?, ?, ?, ?)",
               (name, description, image, quantity, price, weight))
@@ -103,6 +110,8 @@ def select_products() -> list[dict]:
 # #
 # # Users
 # #
+
+
 def select_user(user_id) -> dict:
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
@@ -136,6 +145,8 @@ def update_user(user_id: int, username: str, password: str, address: str) -> Non
 # #
 # # Carts
 # #
+
+
 def get_cart_id(user_id: int) -> int:
   cur.execute("SELECT CartID FROM CARTS WHERE UserID=?", (user_id,))
   cart_row = cur.fetchone()
@@ -198,6 +209,8 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # #
 # # Orders
 # #
+
+
 def select_orders(user_id: int) -> list[dict]:
   cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
 
@@ -207,7 +220,8 @@ def select_orders(user_id: int) -> list[dict]:
     'total_price': o[2],
     'total_weight': o[3],
     'status': o[4],
-    'epoch': o[5]
+    'placed_epoch': o[5],
+    'eta_epoch': o[6]
   } for o in cur.fetchall()]
 
 
@@ -256,10 +270,10 @@ def calc_total_price_weight(order_items):
 def insert_order(user_id: int, order_items: list[dict]) -> dict:
   total_price, total_weight = calc_total_price_weight(order_items)
   status = 0
-  epoch = int(time.time())
+  placed_epoch = int(time.time())
 
-  cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, Epoch) VALUES (?, ?, ?, ?, ?)",
-              (user_id, total_price, total_weight, status, epoch))
+  cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, PlacedEpoch) VALUES (?, ?, ?, ?, ?)",
+              (user_id, total_price, total_weight, status, placed_epoch))
 
   order_id = cur.lastrowid
   for o in order_items:
@@ -267,6 +281,68 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
                 (order_id, o['product_id'], o['quantity']))
 
   con.commit()
+
+
+# #
+# # Routes
+# #
+
+
+# legs = [
+#   {
+#     'order_id': 1,
+#     'sequence': 0,
+#     'lat': -120.2343,
+#     'lon': 73.4554,
+#     'eta': 1696845362
+#   }
+# ]
+def insert_route(polyline: str, legs: list[dict]):
+  cur.execute("INSERT INTO ROUTES (Polyline, CreationEpoch) VALUES (?, ?)",
+              (polyline, int(time.time())))
+
+  route_id = cur.lastrowid
+
+  for l in legs:
+    cur.execute("INSERT INTO ROUTE_ORDERS (RouteID, OrderID, Sequence, Lat, Lon) VALUES (?, ?, ?, ?, ?)",
+                (route_id, l['order_id'], l['sequence'], l['lat'], l['lon']))
+
+    cur.execute("UPDATE ORDERS SET ETAEpoch=?, Status=? WHERE OrderID=?",
+                (l['eta'], 1, l['order_id']))
+
+  con.commit()
+
+
+def select_all_routeid() -> list[int]:
+  cur.execute("SELECT * FROM ROUTES")
+  return [{"route_id": r[0], "creation_epoch": r[2]} for r in cur.fetchall()]
+
+
+def select_route_from_routeid(route_id: int):
+  cur.execute("SELECT * FROM ROUTES WHERE RouteID=?", (route_id,))
+  r = cur.fetchone()
+  polyline = r[1]
+  creation_epcoh = r[2]
+
+  cur.execute("SELECT * FROM ROUTE_ORDERS WHERE RouteID=?", (route_id,))
+  legs = [{
+    'order_id': l[2],
+    'sequence': l[3],
+    'lat': l[4],
+    'lon': l[5]
+  } for l in cur.fetchall()]
+
+  return {
+    'route_id': route_id,
+    'polyline': polyline,
+    'creation_epcoh': creation_epcoh,
+    'legs': legs
+  }
+
+
+def select_route_from_orderid(order_id: int):
+  cur.execute("SELECT RouteID FROM ROUTE_ORDERS WHERE OrderID=?", (order_id,))
+  return select_route_from_routeid(cur.fetchone()[0])
 
 
 init()
