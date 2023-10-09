@@ -187,5 +187,26 @@ def place_order():
   return db.insert_order(current_user.user_id, order_items)
 
 
+# #
+# # Path Planning Routes
+# #
+@app.route('/getRoutesList', methods=['GET'])
+@login_required  # TODO: Eventually make this admin user only
+def get_routes_list():
+  return db.select_all_routeid()
+
+
+@app.route('/getRoute', methods=['GET'])  # ?order_id=<order_id> | ?route_id=<route_id>
+@login_required  # TODO: Eventually make this admin user only
+def get_route():
+  if 'route_id' in request.args:
+    return db.select_route_from_routeid(request.args['route_id'])
+
+  if 'order_id' in request.args:
+    return db.select_route_from_orderid(request.args['order_id'])
+
+  return "Bad Query String", 400
+
+
 if __name__ == '__main__':
   app.run()
