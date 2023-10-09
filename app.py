@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.secret_key = b'replace_this_later'  # TODO: use enviroment variable instead
 
 login_manager.init_app(app)
+login_manager.login_view = "login"
 
 
 class User:
@@ -65,13 +66,14 @@ def signup():
   u = request.get_json()
 
   # If the user already exists log them in.
-  if db.validate_user(u['username'], u['password']):
+  j = db.validate_user(u['username'], u['password'])
+  if j:
     login_user(load_user(j['user_id']))
-    return 'Success'
+    return 'Login Success'
 
   u = db.insert_user(u['username'], u['password'], u['address'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
-  return 'Success'
+  return 'Signup Success'
   # TODO: handle errors such as no key.
 
 
