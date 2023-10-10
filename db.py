@@ -345,4 +345,30 @@ def select_route_from_orderid(order_id: int):
   return select_route_from_routeid(cur.fetchone()[0])
 
 
+def get_path_planning_batch():
+  cur.execute("SELECT O.OrderID, O.TotalWeight, U.Address "
+              "FROM ORDERS AS O "
+              "JOIN USERS AS U ON U.UserID = O.UserID "
+              "WHERE O.Status=?", (0,))
+
+  batch = []
+  total_weight = 0.0
+    
+  for row in cur.fetchall():
+    order_id, weight, address = row
+
+    if total_weight + weight <= 200.0 and len(batch) < 10:
+      batch.append({"order_id": order_id, "address": address})
+      total_weight += weight
+    else:
+      total_weight += weight
+      return batch
+
+  if len(batch) == 10 or total_weight >= 200.0:
+    return batch
+  else:
+    return None
+
+
+
 init()
