@@ -2,7 +2,6 @@ import db
 import json
 from flask import Flask, request, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
 login_manager = LoginManager()
 app = Flask(__name__)
 app.secret_key = b'replace_this_later'  # TODO: use enviroment variable instead
@@ -99,7 +98,11 @@ def logout():
 @login_required
 def update_user():
   u = request.get_json()
-  return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
+  user_entry = db.validate_user(u['username'], u['password'])
+  if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
+    return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
+  else:
+    return "Invalid Entry - User Already Exists"
 
 
 @app.route('/getUser', methods=['GET'])
