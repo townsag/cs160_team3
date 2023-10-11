@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { navigate } from 'svelte-routing';
+
     let usernameState = "";
     let passwordState = "";
     let toggleIsCheckedState = false;
@@ -27,6 +29,7 @@
         if (loginResponse.ok) {
             const message = await loginResponse.text();
             console.log(message);
+            navigate("/home");
         } else {
             console.error("Failed to login.");
         }
