@@ -1,4 +1,6 @@
 <script lang="ts">
+    // TODO: Signup page should not show/work for already logged-in users
+
     import { navigate } from 'svelte-routing';
 
     let usernameState = "";
@@ -7,6 +9,23 @@
 
     let storedUsername = "";
     let storedPassword = "";
+
+    let signupErrorState = false;
+    let signupErrorTextState = "";
+    let signupErrorModal: HTMLDialogElement;
+
+    $: if (signupErrorState) {
+        showSignupErrorModal();
+    }
+
+    function showSignupErrorModal() {
+        signupErrorModal.showModal();
+    }
+
+    function closeSignupErrorModal() {
+        signupErrorModal.close();
+        signupErrorState = false;
+    }
     
     async function handleSubmit() {
         storedUsername = usernameState;
@@ -15,32 +34,44 @@
         console.log(storedUsername);
         console.log(storedPassword);
 
-        const signupResponse = await fetch("/signup", {
-            method: "POST",
-            headers: {
-            'Content-Type': "application/json"
-            },
-            body: JSON.stringify({
-                "username": storedUsername,
-                "password": storedPassword,
-                "address": ""
+        if (storedUsername.length == 0 && storedPassword.length == 0) {
+            signupErrorTextState = "Cannot have a blank username or password.";
+            signupErrorState = true;
+        } else if (storedUsername.length <= 20 && storedPassword.length <= 20) {
+            const signupResponse = await fetch("/signup", {
+                method: "POST",
+                headers: {
+                'Content-Type': "application/json"
+                },
+                body: JSON.stringify({
+                    "username": storedUsername,
+                    "password": storedPassword,
+                    "address": ""
+                })
             })
-        })
 
-        if (signupResponse.ok) {
-            const message = await signupResponse.text();
-            console.log(message);
+            // signup success or fail
+            if (signupResponse.ok) {
+                const message = await signupResponse.text();
+                console.log(message);
+                navigate("/home");
+            } else {
+                console.error("Error signing up:", await signupResponse.text());
+            }
+            
+            // test getUser
+            const currentUser = await fetch("/getUser", {
+                method: "GET"
+            })
+            const currentUserJson = await currentUser.json();
+            const currentUserResult = JSON.stringify(currentUserJson);
+
+            console.log(currentUserResult);
+
         } else {
-            console.error("Error signing up:", await signupResponse.text());
+            signupErrorTextState = "Username and password must be less than 20 characters.";
+            signupErrorState = true;
         }
-        
-        const currentUser = await fetch("/getUser", {
-            method: "GET"
-        })
-        const currentUserJson = await currentUser.json();
-        const currentUserResult = JSON.stringify(currentUserJson);
-
-        console.log(currentUserResult);
     }
 
     async function handleToggle() {
@@ -52,6 +83,15 @@
 <html lang="en" data-theme="lemonade">
     <div class="min-w-screen flex flex-col items-center justify-center bg-gray-200">
         <div class="card w-96 bg-base-100 border-2 border-black-500 mt-8">
+            <dialog bind:this={signupErrorModal} class="modal">
+                <div class="modal-box bg-red-300">
+                    <h3 class="font-bold text-lg">Error!</h3>
+                    <p class="py-4">{signupErrorTextState}</p>
+                </div>
+                <form method="dialog" class="modal-backdrop">
+                    <button on:click={closeSignupErrorModal}>close</button>
+                </form>
+            </dialog>
             <div class="card-body">
                 <div class="flex justify-between items-center">
                     <h1 class="card-title">SIGN UP</h1>
