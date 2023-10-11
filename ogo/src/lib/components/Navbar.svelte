@@ -1,5 +1,6 @@
 <script lang="ts">
 	// import logo from "../../assets/logo_icon.png";
+	import { navigate } from 'svelte-routing';
 
 	async function handleLogout() {
         const logoutResult = await fetch("/logout", {
@@ -9,6 +10,7 @@
         if (logoutResult.ok) {
             const message = await logoutResult.text();
             console.log(message);
+			navigate("/login");
         } else {
             console.error("Failed to logout.");
         }
