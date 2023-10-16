@@ -1,5 +1,7 @@
 import db
+from groute import grouteInputOrder, grouteResponse, plan_path
 import json
+import threading
 from flask import Flask, request, send_from_directory
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
@@ -42,6 +44,20 @@ class User:
 @login_manager.user_loader
 def load_user(user_id):
   return User.get(user_id)
+
+
+def route_if_ready():
+  print("started route if ready thread")
+  batch = db.get_path_planning_batch()
+  if batch == None:
+    print("no path yet")
+    return
+  
+  gresp: grouteResponse = plan_path([grouteInputOrder(o['order_id'], o['address']) for o in batch])
+
+  legs = [{"order_id": l.order_id, "sequence": l.index, "eta": l.eta, "lat": l.lat, "lon": l.lon} for l in gresp.legs]
+  db.insert_route(gresp.polyline, legs)
+  print("inserted route!")
 
 
 # #
@@ -184,7 +200,12 @@ def get_order_items():
 @login_required
 def place_order():
   order_items = request.get_json()
-  return db.insert_order(current_user.user_id, order_items)
+  order = db.insert_order(current_user.user_id, order_items)
+
+  # Start thread to create route if the requirements are met.
+  threading.Thread(target=route_if_ready).start()
+
+  return order
 
 
 # #

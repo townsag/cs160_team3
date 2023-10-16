@@ -282,6 +282,8 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
 
   con.commit()
 
+  return {'order_id': order_id, 'total_price': total_price, 'total_weight': total_weight, 'status': status, 'placed_epoch': placed_epoch}
+
 
 # #
 # # Routes
@@ -308,7 +310,7 @@ def insert_route(polyline: str, legs: list[dict]):
                 (route_id, l['order_id'], l['sequence'], l['lat'], l['lon']))
 
     cur.execute("UPDATE ORDERS SET ETAEpoch=?, Status=? WHERE OrderID=?",
-                (l['eta'], 1, l['order_id']))
+                (l['eta'] + int(time.time()), 1, l['order_id']))
 
   con.commit()
 
