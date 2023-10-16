@@ -7,6 +7,7 @@
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import './app.css';
+  import EmployeeProduct from "./routes/EmployeeProduct.svelte";
 
   export let url = "";
 </script>
@@ -21,12 +22,15 @@
         <Link to="/login">Login</Link>
         <Link to="/signup">Signup</Link>
         <Link to="/home">Home</Link>
+        <Link to="/employee-product">EmployeeProduct</Link>
       </nav>
       <div>
         <Route path="/" component={Root} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/home" component={Home} />
+        <!-- TODO: might have to feed a product id -->
+        <Route path="/employee-product" component={EmployeeProduct} />
       </div>
       <Footer />
     </Router>
