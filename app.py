@@ -69,7 +69,14 @@ def signup():
   if j:
     login_user(load_user(j['user_id']))
     return 'Login Success'
-
+  
+  user_char_ct = len(u['username'])
+  pass_char_ct = len(u['password'])
+  if user_char_ct > 20 or user_char_ct < 1:
+    return 'Invalid username character count', 400
+  if pass_char_ct > 20 or pass_char_ct < 1:
+    return 'Invalid password character count'
+  
   u = db.insert_user(u['username'], u['password'], u['address'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
@@ -88,6 +95,7 @@ def login():
 
 @app.route('/logout')
 @login_required
+
 def logout():
   msg = f"Logging out {current_user.username}"
   logout_user()
@@ -98,6 +106,14 @@ def logout():
 @login_required
 def update_user():
   u = request.get_json()
+  user_char_ct = len(u['username'])
+  pass_char_ct = len(u['password'])
+  
+  if user_char_ct > 20 or user_char_ct < 1:
+    return 'Invalid username character count'
+  if pass_char_ct > 20 or pass_char_ct < 1:
+    return 'Invalid password character count'
+  
   user_entry = db.validate_user(u['username'], u['password'])
   if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
     return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
