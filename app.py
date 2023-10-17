@@ -91,7 +91,7 @@ def signup():
   if user_char_ct > 20 or user_char_ct < 1:
     return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
-    return 'Invalid password character count'
+    return 'Invalid password character count', 400
   
   u = db.insert_user(u['username'], u['password'], u['address'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
@@ -126,9 +126,9 @@ def update_user():
   pass_char_ct = len(u['password'])
   
   if user_char_ct > 20 or user_char_ct < 1:
-    return 'Invalid username character count'
+    return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
-    return 'Invalid password character count'
+    return 'Invalid password character count', 400
   
   user_entry = db.validate_user(u['username'], u['password'])
   if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
@@ -227,8 +227,7 @@ def place_order():
     threading.Thread(target=route_if_ready).start()
     return order
   else: 
-    print("Not enough items in inventory")
-    return 409
+    return "Not enough items in inventory", 400
   
 def update_inventory(order):
   if not bool(order):
