@@ -14,11 +14,12 @@ login_manager.login_view = "login"
 
 
 class User:
-  def __init__(self, user_id, username, password, address):
+  def __init__(self, user_id, username, password, address, is_admin):
     self.user_id = user_id
     self.username = username
     self.password = password
     self.address = address
+    self.is_admin = is_admin
     self.is_active = True
 
   def get_id(self):
@@ -37,7 +38,7 @@ class User:
   def get(user_id):
     try:
       u = db.select_user(user_id)
-      return User(user_id, u['username'], u['password'], u['address'])
+      return User(user_id, u['username'], u['password'], u['address'], u['is_admin'])
     except:
       return None
 
@@ -87,7 +88,7 @@ def signup():
     login_user(load_user(j['user_id']))
     return 'Login Success'
 
-  u = db.insert_user(u['username'], u['password'], u['address'])
+  u = db.insert_user(u['username'], u['password'], u['address'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
@@ -115,13 +116,13 @@ def logout():
 @login_required
 def update_user():
   u = request.get_json()
-  return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
+  return db.update_user(current_user.user_id, u['username'], u['password'], u['address'], current_user.is_admin)
 
 
 @app.route('/getUser', methods=['GET'])
 @login_required
 def get_user():
-  return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address}
+  return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address, 'is_admin': current_user.is_admin}
 
 
 # #
