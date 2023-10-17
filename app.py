@@ -221,14 +221,33 @@ def get_order_items():
 @login_required
 def place_order():
   order_items = request.get_json()
-  order = db.insert_order(current_user.user_id, order_items)
-
-  # Start thread to create route if the requirements are met.
-  threading.Thread(target=route_if_ready).start()
-
-  return order
-
-
+  if update_inventory(order_items):
+    order = db.insert_order(current_user.user_id, order_items)
+    # Start thread to create route if the requirements are met.
+    threading.Thread(target=route_if_ready).start()
+    return order
+  else: 
+    print("Not enough items in inventory")
+    return 409
+  
+def update_inventory(order):
+  if not bool(order):
+    return True
+  head_item_num = order.keys()[0]
+  head_item_ct = order[head_item_num]
+  item_dict = db.select_product(head_item_num)
+  old_quantity = item_dict['quantity']
+  new_quantity = old_quantity - head_item_ct
+  if new_quantity < 0:
+    return False
+  else:
+    db.update_product(head_item_num, item_dict['name'], item_dict['description'], item_dict['image'], new_quantity, item_dict['price'], item_dict['weight'])
+    if not update_inventory(order.pop(head_item_ct)):
+      db.update_product(head_item_num, item_dict['name'], item_dict['description'], item_dict['image'], old_quantity, item_dict['price'], item_dict['weight'])
+      return False
+    else:
+      return True
+    
 # #
 # # Path Planning Routes
 # #
