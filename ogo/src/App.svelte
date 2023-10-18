@@ -6,6 +6,7 @@
   import Home from "./routes/Home.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
+  import EmBrowse from "./routes/EmBrowse.svelte";
   import './app.css';
 
   export let url = "";
@@ -21,12 +22,14 @@
         <Link to="/login">Login</Link>
         <Link to="/signup">Signup</Link>
         <Link to="/home">Home</Link>
+        <Link to="/employeesbrowser">EmployLanding</Link>
       </nav>
       <div>
         <Route path="/" component={Root} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/home" component={Home} />
+        <Route path="/employeesbrowser" component={EmBrowse} />
       </div>
       <Footer />
     </Router>
@@ -34,5 +37,7 @@
 </html>
 
 <style>
-
+  @import 'tailwindcss/base';
+  @import 'tailwindcss/components';
+  @import 'tailwindcss/utilities';
 </style>
