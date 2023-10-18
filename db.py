@@ -11,7 +11,8 @@ def init():
       UserID INTEGER PRIMARY KEY,
       Username TEXT,
       Password TEXT,
-      Address TEXT
+      Address TEXT,
+      IsAdmin INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS PRODUCTS (
@@ -41,8 +42,9 @@ def init():
       UserID INTEGER REFERENCES USERS(UserID),
       TotalPrice REAL,
       TotalWeight REAL,
-      Status TEXT,
-      Epoch INTEGER
+      Status INTEGER,
+      PlacedEpoch INTEGER,
+      ETAEpoch INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS ORDER_ITEMS (
@@ -54,24 +56,28 @@ def init():
 
   CREATE TABLE IF NOT EXISTS ROUTES (
       RouteID INTEGER PRIMARY KEY,
-      RouteData TEXT
+      Polyline TEXT,
+      CreationEpoch INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS ROUTE_ORDERS (
       RouteOrderID INTEGER PRIMARY KEY,
       RouteID INTEGER REFERENCES ROUTES(RouteID),
-      OrderID INTEGER REFERENCES ORDERS(OrderID)
+      OrderID INTEGER REFERENCES ORDERS(OrderID),
+      Sequence INTEGER,
+      Lat REAL,
+      Lon REAL
   );
 ''')
   # TODO: Add more contraints (such as NOT NULL) to above tables.
-  # TODO: Should add flag to USERS table to specify admin user.
-  # TODO: Should add the epoch of when the order was placed in the orders tabel (as well as the epoch that says when the order did/will arrive)
   con.commit()
 
 
 # #
 # # Products
 # #
+
+
 def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
   cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight) VALUES (?, ?, ?, ?, ?, ?)",
               (name, description, image, quantity, price, weight))
@@ -103,10 +109,11 @@ def select_products() -> list[dict]:
 # #
 # # Users
 # #
+
 def select_user(user_id) -> dict:
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
-  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3]}
+  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3], 'is_admin': bool(row[4])}
 
 
 def validate_user(username, password) -> dict:
@@ -114,28 +121,30 @@ def validate_user(username, password) -> dict:
   row = cur.fetchone()
   if row == None:
     return None
-  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3]}
+  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3], 'is_admin': bool(row[4])}
 
 
-def insert_user(username: str, password: str, address: str) -> dict:
-  cur.execute("INSERT INTO USERS (Username, Password, Address) VALUES (?, ?, ?)",
-              (username, password, address))
+def insert_user(username: str, password: str, address: str, is_admin: bool) -> dict:
+  cur.execute("INSERT INTO USERS (Username, Password, Address, IsAdmin) VALUES (?, ?, ?, ?)",
+              (username, password, address, int(is_admin)))
   con.commit()
 
   user_id = cur.lastrowid
-  return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
+  return {'user_id': user_id, 'username': username, 'password': password, 'address': address, 'is_admin': is_admin}
 
 
-def update_user(user_id: int, username: str, password: str, address: str) -> None:
-  cur.execute("UPDATE USERS SET Username=?, Password=?, Address=? WHERE UserID=?",
-              (username, password, address, user_id))
+def update_user(user_id: int, username: str, password: str, address: str, is_admin: bool) -> None:
+  cur.execute("UPDATE USERS SET Username=?, Password=?, Address=?, IsAdmin=? WHERE UserID=?",
+              (username, password, address, int(is_admin), user_id))
   con.commit()
-  return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
+  return {'user_id': user_id, 'username': username, 'password': password, 'address': address, 'is_admin': is_admin}
 
 
 # #
 # # Carts
 # #
+
+
 def get_cart_id(user_id: int) -> int:
   cur.execute("SELECT CartID FROM CARTS WHERE UserID=?", (user_id,))
   cart_row = cur.fetchone()
@@ -198,6 +207,8 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # #
 # # Orders
 # #
+
+
 def select_orders(user_id: int) -> list[dict]:
   cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
 
@@ -207,7 +218,8 @@ def select_orders(user_id: int) -> list[dict]:
     'total_price': o[2],
     'total_weight': o[3],
     'status': o[4],
-    'epoch': o[5]
+    'placed_epoch': o[5],
+    'eta_epoch': o[6]
   } for o in cur.fetchall()]
 
 
@@ -256,10 +268,10 @@ def calc_total_price_weight(order_items):
 def insert_order(user_id: int, order_items: list[dict]) -> dict:
   total_price, total_weight = calc_total_price_weight(order_items)
   status = 0
-  epoch = int(time.time())
+  placed_epoch = int(time.time())
 
-  cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, Epoch) VALUES (?, ?, ?, ?, ?)",
-              (user_id, total_price, total_weight, status, epoch))
+  cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, PlacedEpoch) VALUES (?, ?, ?, ?, ?)",
+              (user_id, total_price, total_weight, status, placed_epoch))
 
   order_id = cur.lastrowid
   for o in order_items:
@@ -267,6 +279,96 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
                 (order_id, o['product_id'], o['quantity']))
 
   con.commit()
+
+  return {'order_id': order_id, 'total_price': total_price, 'total_weight': total_weight, 'status': status, 'placed_epoch': placed_epoch}
+
+
+# #
+# # Routes
+# #
+
+
+# legs = [
+#   {
+#     'order_id': 1,
+#     'sequence': 0,
+#     'lat': -120.2343,
+#     'lon': 73.4554,
+#     'eta': 1696845362
+#   }
+# ]
+def insert_route(polyline: str, legs: list[dict]):
+  cur.execute("INSERT INTO ROUTES (Polyline, CreationEpoch) VALUES (?, ?)",
+              (polyline, int(time.time())))
+
+  route_id = cur.lastrowid
+
+  for l in legs:
+    cur.execute("INSERT INTO ROUTE_ORDERS (RouteID, OrderID, Sequence, Lat, Lon) VALUES (?, ?, ?, ?, ?)",
+                (route_id, l['order_id'], l['sequence'], l['lat'], l['lon']))
+
+    cur.execute("UPDATE ORDERS SET ETAEpoch=?, Status=? WHERE OrderID=?",
+                (l['eta'] + int(time.time()), 1, l['order_id']))
+
+  con.commit()
+
+
+def select_all_routeid() -> list[int]:
+  cur.execute("SELECT * FROM ROUTES")
+  return [{"route_id": r[0], "creation_epoch": r[2]} for r in cur.fetchall()]
+
+
+def select_route_from_routeid(route_id: int):
+  cur.execute("SELECT * FROM ROUTES WHERE RouteID=?", (route_id,))
+  r = cur.fetchone()
+  polyline = r[1]
+  creation_epcoh = r[2]
+
+  cur.execute("SELECT * FROM ROUTE_ORDERS WHERE RouteID=?", (route_id,))
+  legs = [{
+    'order_id': l[2],
+    'sequence': l[3],
+    'lat': l[4],
+    'lon': l[5]
+  } for l in cur.fetchall()]
+
+  return {
+    'route_id': route_id,
+    'polyline': polyline,
+    'creation_epcoh': creation_epcoh,
+    'legs': legs
+  }
+
+
+def select_route_from_orderid(order_id: int):
+  cur.execute("SELECT RouteID FROM ROUTE_ORDERS WHERE OrderID=?", (order_id,))
+  return select_route_from_routeid(cur.fetchone()[0])
+
+
+def get_path_planning_batch():
+  cur.execute("SELECT O.OrderID, O.TotalWeight, U.Address "
+              "FROM ORDERS AS O "
+              "JOIN USERS AS U ON U.UserID = O.UserID "
+              "WHERE O.Status=?", (0,))
+
+  batch = []
+  total_weight = 0.0
+    
+  for row in cur.fetchall():
+    order_id, weight, address = row
+
+    if total_weight + weight <= 200.0 and len(batch) < 10:
+      batch.append({"order_id": order_id, "address": address})
+      total_weight += weight
+    else:
+      total_weight += weight
+      return batch
+
+  if len(batch) == 10 or total_weight >= 200.0:
+    return batch
+  else:
+    return None
+
 
 
 init()
