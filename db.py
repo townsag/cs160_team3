@@ -11,7 +11,8 @@ def init():
       UserID INTEGER PRIMARY KEY,
       Username TEXT,
       Password TEXT,
-      Address TEXT
+      Address TEXT,
+      IsAdmin INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS PRODUCTS (
@@ -69,8 +70,6 @@ def init():
   );
 ''')
   # TODO: Add more contraints (such as NOT NULL) to above tables.
-  # TODO: Should add flag to USERS table to specify admin user.
-  # TODO: Should add the epoch of when the order was placed in the orders tabel (as well as the epoch that says when the order did/will arrive)
   con.commit()
 
 
@@ -111,11 +110,10 @@ def select_products() -> list[dict]:
 # # Users
 # #
 
-
 def select_user(user_id) -> dict:
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
-  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3]}
+  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3], 'is_admin': bool(row[4])}
 
 
 def validate_user(username, password) -> dict:
@@ -123,23 +121,23 @@ def validate_user(username, password) -> dict:
   row = cur.fetchone()
   if row == None:
     return None
-  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3]}
+  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3], 'is_admin': bool(row[4])}
 
 
-def insert_user(username: str, password: str, address: str) -> dict:
-  cur.execute("INSERT INTO USERS (Username, Password, Address) VALUES (?, ?, ?)",
-              (username, password, address))
+def insert_user(username: str, password: str, address: str, is_admin: bool) -> dict:
+  cur.execute("INSERT INTO USERS (Username, Password, Address, IsAdmin) VALUES (?, ?, ?, ?)",
+              (username, password, address, int(is_admin)))
   con.commit()
 
   user_id = cur.lastrowid
-  return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
+  return {'user_id': user_id, 'username': username, 'password': password, 'address': address, 'is_admin': is_admin}
 
 
-def update_user(user_id: int, username: str, password: str, address: str) -> None:
-  cur.execute("UPDATE USERS SET Username=?, Password=?, Address=? WHERE UserID=?",
-              (username, password, address, user_id))
+def update_user(user_id: int, username: str, password: str, address: str, is_admin: bool) -> None:
+  cur.execute("UPDATE USERS SET Username=?, Password=?, Address=?, IsAdmin=? WHERE UserID=?",
+              (username, password, address, int(is_admin), user_id))
   con.commit()
-  return {'user_id': user_id, 'username': username, 'password': password, 'address': address}
+  return {'user_id': user_id, 'username': username, 'password': password, 'address': address, 'is_admin': is_admin}
 
 
 # #

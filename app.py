@@ -1,9 +1,10 @@
 import db
 from groute import grouteInputOrder, grouteResponse, plan_path
 import json
+from functools import wraps
 import threading
 from flask import Flask, request, send_from_directory
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user
 
 login_manager = LoginManager()
 app = Flask(__name__)
@@ -14,11 +15,12 @@ login_manager.login_view = "login"
 
 
 class User:
-  def __init__(self, user_id, username, password, address):
+  def __init__(self, user_id, username, password, address, is_admin):
     self.user_id = user_id
     self.username = username
     self.password = password
     self.address = address
+    self.is_admin = is_admin
     self.is_active = True
 
   def get_id(self):
@@ -37,7 +39,7 @@ class User:
   def get(user_id):
     try:
       u = db.select_user(user_id)
-      return User(user_id, u['username'], u['password'], u['address'])
+      return User(user_id, u['username'], u['password'], u['address'], u['is_admin'])
     except:
       return None
 
@@ -45,6 +47,28 @@ class User:
 @login_manager.user_loader
 def load_user(user_id):
   return User.get(user_id)
+
+
+# Flask route decorator to require the request to be made by a logged in user.
+def login_required(f):
+    @wraps(f)
+    def check_login(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return "Unauthorized: You must be logged in to use this route.", 401
+        return f(*args, **kwargs)
+    return check_login
+
+
+# Flask route decorator to require the request to be made by a logged in admin user.
+def admin_required(f):
+    @wraps(f)
+    def check_admin(*args, **kwargs):
+        if not current_user.is_authenticated:
+          return "Unauthorized: You must be logged in to use this route.", 401
+        if not current_user.is_admin:
+            return "Unauthorized: You must be logged in as admin to use this route.", 401
+        return f(*args, **kwargs)
+    return check_admin
 
 
 def route_if_ready():
@@ -87,7 +111,8 @@ def signup():
     login_user(load_user(j['user_id']))
     return 'Login Success'
 
-  u = db.insert_user(u['username'], u['password'], u['address'])
+  if 'is_admin' not in u: u['is_admin'] = False 
+  u = db.insert_user(u['username'], u['password'], u['address'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
@@ -115,24 +140,26 @@ def logout():
 @login_required
 def update_user():
   u = request.get_json()
-  return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
+  return db.update_user(current_user.user_id, u['username'], u['password'], u['address'], current_user.is_admin)
 
 
 @app.route('/getUser', methods=['GET'])
 @login_required
 def get_user():
-  return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address}
+  return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address, 'is_admin': current_user.is_admin}
 
 
 # #
 # # Product Routes
 # #
 @app.route('/getProducts', methods=['GET'])
+@login_required
 def get_products():
   return json.dumps(db.select_products())
 
 
 @app.route('/getProduct', methods=['GET'])  # ?productID=<product_id>
+@login_required
 def get_product():
   product_id = request.args['productID']
   # TODO: handle if productID is not present in query string
@@ -140,12 +167,14 @@ def get_product():
 
 
 @app.route('/updateProduct', methods=['POST'])
+@admin_required
 def update_product():
   p = request.get_json()
   return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
 
 
 @app.route('/createProduct', methods=['POST'])
+@admin_required
 def create_product():
   p = request.get_json()
   return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
@@ -214,13 +243,13 @@ def place_order():
 # # Path Planning Routes
 # #
 @app.route('/getRoutesList', methods=['GET'])
-@login_required  # TODO: Eventually make this admin user only
+@admin_required
 def get_routes_list():
   return db.select_all_routeid()
 
 
 @app.route('/getRoute', methods=['GET'])  # ?order_id=<order_id> | ?route_id=<route_id>
-@login_required  # TODO: Eventually make this admin user only
+@admin_required
 def get_route():
   if 'route_id' in request.args:
     return db.select_route_from_routeid(request.args['route_id'])
