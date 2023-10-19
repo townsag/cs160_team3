@@ -41,6 +41,34 @@ class User:
       return None
 
 
+def is_valid_product_params(p : json):
+    # name, description, image need to be string
+  # Link must be a valid link
+  # quantity, price, weight need to be type Integer
+  # quantity, price, weight cannot be < 0 
+  if not isinstance(p['name'], str):
+    return False, ("Invalid name type", 400)
+  if not isinstance(p['description'], str):
+    return False, ("Invalid description type", 400)
+  if not isinstance(p['image'], str):
+    return False, ("Invalid image link type", 400)
+  if not isinstance(p['quantity'], int):
+    return False, ("Invalid quantity type", 400)
+  if not isinstance(p['price'], float):
+    return False, ("Invalid price type", 400)
+  if not isinstance(p['weight'], float):
+    return False, ("Invalid weight type", 400)
+  if not isinstance(p['quantity'], int):
+    return False, ("Invalid name type", 400)
+  if p['quantity'] < 0 or p['weight'] < 0 or p['price'] < 0:
+    return False, ("Cannot have negative weight, price, or quantity", 400)
+  else:
+    return True
+
+
+
+
+
 @login_manager.user_loader
 def load_user(user_id):
   return User.get(user_id)
@@ -161,14 +189,21 @@ def get_product():
 @app.route('/updateProduct', methods=['POST'])
 def update_product():
   p = request.get_json()
+  result = is_valid_product_params(p)
+  if not isinstance(result, bool) or not result:
+    return result[1]
+  if not isinstance(p['product_id'], int):
+    return "Invalid product_id type", 400
   return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
 
 
 @app.route('/createProduct', methods=['POST'])
 def create_product():
   p = request.get_json()
+  result = is_valid_product_params(p)
+  if not isinstance(result, bool) or not result:
+    return result[1]
   return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
-
 
 # #
 # # Cart Routes
