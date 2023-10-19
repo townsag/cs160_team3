@@ -21,7 +21,9 @@ def init():
       Image TEXT,
       Quantity INTEGER,
       Price REAL,
-      Weight REAL
+      Weight REAL,
+      CONSTRAINT check_quantity_nonnegative CHECK (Quantity >= 0)
+      
   );
 
   CREATE TABLE IF NOT EXISTS CARTS (
@@ -88,7 +90,30 @@ def insert_product(name: str, description: str, image: str, quantity: int, price
   return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight}
 
 
+'''
+Tries to make a purchase with requested order into DB
+  Input:
+  * Dictionary that maps product ID's to order quantities
+  Output:
+  * If there is enough inventory/quantity for all products in order, executes order and returns True
+  * If there is not enough inventory/quantity for all products in order, rolls back all orders and returns False
+'''
+def purchase_product_order(requested_product_quantities: dict):
+  product_ids = requested_product_quantities.keys()
+  try:
+    cur.execute("BEGIN TRANSACTION")
+    for product_id in product_ids:
+      cur.execute("UPDATE PRODUCTS SET Quantity=Quanitity-? WHERE ProductID=?",
+                  (requested_product_quantities[product_ids], product_id))
+    con.commit()
+    return True
+  except sqlite3.Error:
+    con.rollback()
+    return False
+ 
+
 def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
+ 
   cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=? WHERE ProductID=?",
               (name, description, image, quantity, price, weight, product_id))
   con.commit()

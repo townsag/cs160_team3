@@ -134,7 +134,7 @@ def login():
   if j:
     login_user(load_user(j['user_id']))
     return 'Success'
-  return 'Failure'
+  return 'Failure', 400
 
 
 @app.route('/logout')
@@ -162,7 +162,7 @@ def update_user():
   if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
     return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
   else:
-    return "Invalid Entry - User Already Exists"
+    return "Invalid Entry - User Already Exists", 400
 
 
 @app.route('/getUser', methods=['GET'])
@@ -252,11 +252,20 @@ def get_order_items():
   return db.select_order_items(current_user.user_id, order_id)
 
 
+
+'''
+Place user's order by updating DB product quantities and user order history, then generate new route if there is enough inventory.
+  Input:
+  * JSON that maps product ID's to order quantities
+  Output:
+  * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
+  * If there is not enough inventory/quantity for all products in order, returns 400 error
+'''
 @app.route('/placeOrder', methods=['POST'])
 @login_required
 def place_order():
   order_items = request.get_json()
-  if update_inventory(order_items):
+  if db.purchase_product_order(order_items):
     order = db.insert_order(current_user.user_id, order_items)
     # Start thread to create route if the requirements are met.
     threading.Thread(target=route_if_ready).start()
