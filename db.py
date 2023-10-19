@@ -107,6 +107,11 @@ def select_products() -> list[dict]:
   return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6]} for row in cur.fetchall()]
 
 
+def search_products(query: str) -> list[dict]:
+  cur.execute("SELECT * FROM Products WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6]} for row in cur.fetchall()]
+
+
 # #
 # # Users
 # #

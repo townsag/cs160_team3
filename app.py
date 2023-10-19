@@ -15,10 +15,9 @@ login_manager.login_view = "login"
 
 
 class User:
-  def __init__(self, user_id, username, password, address, is_admin):
+  def __init__(self, user_id, username, address, is_admin):
     self.user_id = user_id
     self.username = username
-    self.password = password
     self.address = address
     self.is_admin = is_admin
     self.is_active = True
@@ -39,7 +38,7 @@ class User:
   def get(user_id):
     try:
       u = db.select_user(user_id)
-      return User(user_id, u['username'], u['password'], u['address'], u['is_admin'])
+      return User(user_id, u['username'], u['address'], u['is_admin'])
     except:
       return None
 
@@ -108,7 +107,8 @@ def signup():
   # If the user already exists log them in.
   j = db.validate_user(u['username'], u['password'])
   if j:
-    login_user(load_user(j['user_id']))
+    l = load_user(j['user_id'])
+    login_user(l)
     return 'Login Success'
 
   if 'is_admin' not in u: u['is_admin'] = False 
@@ -169,6 +169,13 @@ def get_product():
   product_id = request.args['productID']
   # TODO: handle if productID is not present in query string
   return json.dumps(db.select_product(product_id))
+
+
+@app.route('/searchProducts', methods=['GET']) #?query=<query>
+@login_required
+def search_products():
+  query = request.args['query']
+  return json.dumps(db.search_products(query))
 
 
 @app.route('/updateProduct', methods=['POST'])
