@@ -1,5 +1,6 @@
 import sqlite3
 import time
+import bcrypt
 
 con = sqlite3.connect("db.db", check_same_thread=False)
 cur = con.cursor()
@@ -10,7 +11,7 @@ def init():
   CREATE TABLE IF NOT EXISTS USERS (
       UserID INTEGER PRIMARY KEY,
       Username TEXT,
-      Password TEXT,
+      Password BLOB,
       Address TEXT,
       IsAdmin INTEGER
   );
@@ -110,35 +111,56 @@ def select_products() -> list[dict]:
 # # Users
 # #
 
-def select_user(user_id) -> dict:
+def select_user(user_id: int) -> dict:
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
-  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3], 'is_admin': bool(row[4])}
+  return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
 
-def validate_user(username, password) -> dict:
-  cur.execute("SELECT * FROM USERS WHERE Username=? AND Password=?", (username, password))
+def validate_user(username: str, password: str) -> dict:
+  cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
   row = cur.fetchone()
-  if row == None:
-    return None
-  return {'user_id': row[0], 'username': row[1], 'password': row[2], 'address': row[3], 'is_admin': bool(row[4])}
+  
+  if row != None and bcrypt.checkpw(password.encode('utf-8'), row[2]):
+    return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
+  
+  return None
 
 
 def insert_user(username: str, password: str, address: str, is_admin: bool) -> dict:
+  hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
   cur.execute("INSERT INTO USERS (Username, Password, Address, IsAdmin) VALUES (?, ?, ?, ?)",
-              (username, password, address, int(is_admin)))
+              (username, hashedpw, address, int(is_admin)))
   con.commit()
 
   user_id = cur.lastrowid
-  return {'user_id': user_id, 'username': username, 'password': password, 'address': address, 'is_admin': is_admin}
+  return {'user_id': user_id, 'username': username, 'address': address, 'is_admin': is_admin}
 
 
-def update_user(user_id: int, username: str, password: str, address: str, is_admin: bool) -> None:
-  cur.execute("UPDATE USERS SET Username=?, Password=?, Address=?, IsAdmin=? WHERE UserID=?",
-              (username, password, address, int(is_admin), user_id))
+def update_user_username(user_id: int, username: str):
+  cur.execute("UPDATE USERS SET Username=? WHERE UserID=?",
+              (username, user_id))
   con.commit()
-  return {'user_id': user_id, 'username': username, 'password': password, 'address': address, 'is_admin': is_admin}
 
+
+def update_user_password(user_id: int, password: str) -> None:
+  hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+  cur.execute("UPDATE USERS SET Password=? WHERE UserID=?",
+              (hashedpw, user_id))
+  con.commit()
+
+
+def update_user_address(user_id: int, address: str) -> None:
+  cur.execute("UPDATE USERS SET Address=? WHERE UserID=?",
+              (address, user_id))
+  con.commit()
+
+
+def update_user_admin(user_id: int, is_admin: bool) -> None:
+  cur.execute("UPDATE USERS SET IsAdmin=? WHERE UserID=?",
+              (int(is_admin), user_id))
+  con.commit()
 
 # #
 # # Carts

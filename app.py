@@ -140,7 +140,12 @@ def logout():
 @login_required
 def update_user():
   u = request.get_json()
-  return db.update_user(current_user.user_id, u['username'], u['password'], u['address'], current_user.is_admin)
+  if 'username' in u: db.update_user_username(current_user.user_id, u['username'])
+  if 'password' in u: db.update_user_password(current_user.user_id, u['password'])
+  if 'address' in u: db.update_user_address(current_user.user_id, u['address'])
+  if 'is_admin' in u: db.update_user_admin(current_user.user_id, u['is_admin'])
+
+  return "Success", 200
 
 
 @app.route('/getUser', methods=['GET'])
