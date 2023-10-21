@@ -182,14 +182,34 @@ def search_products():
 @admin_required
 def update_product():
   p = request.get_json()
-  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['tags'])
+  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
 
 
 @app.route('/createProduct', methods=['POST'])
 @admin_required
 def create_product():
   p = request.get_json()
-  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['tags'])
+  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
+
+
+@app.route('/getCategories', methods=['GET'])
+@login_required
+def get_categories():
+  return json.dumps(db.select_all_categories())
+
+
+@app.route('/createCategory', methods=['POST'])
+@admin_required
+def create_category():
+  p = request.get_json()
+  return db.insert_category(p['name'])
+
+
+@app.route('/updateCategory', methods=['POST'])
+@admin_required
+def update_category():
+  p = request.get_json()
+  return db.update_category(p['category_id'], p['name']) 
 
 
 @app.route('/getTags', methods=['GET'])

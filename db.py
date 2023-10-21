@@ -16,6 +16,11 @@ def init():
       IsAdmin INTEGER
   );
 
+  CREATE TABLE IF NOT EXISTS CATEGORIES (
+      CategoryID INTEGER PRIMARY KEY,
+      Name TEXT
+  );             
+
   CREATE TABLE IF NOT EXISTS PRODUCTS (
       ProductID INTEGER PRIMARY KEY,
       Name TEXT,
@@ -23,7 +28,8 @@ def init():
       Image TEXT,
       Quantity INTEGER,
       Price REAL,
-      Weight REAL
+      Weight REAL,
+      CategoryID INTEGER REFERENCES CATEGORIES(CategoryID)
   );
 
   CREATE TABLE IF NOT EXISTS TAGS (
@@ -90,9 +96,9 @@ def init():
 # #
 
 
-def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float, tags: list[int]) -> dict:
-  cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight) VALUES (?, ?, ?, ?, ?, ?)",
-              (name, description, image, quantity, price, weight))
+def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
+  cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight, CategoryID) VALUES (?, ?, ?, ?, ?, ?, ?)",
+              (name, description, image, quantity, price, weight, category_id))
   product_id = cur.lastrowid
 
   for tag_id in tags:
@@ -104,9 +110,9 @@ def insert_product(name: str, description: str, image: str, quantity: int, price
   return select_product(product_id)
 
 
-def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, tags: list[int]) -> dict:
-  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=? WHERE ProductID=?",
-              (name, description, image, quantity, price, weight, product_id))
+def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
+  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=?, CategoryID=? WHERE ProductID=?",
+              (name, description, image, quantity, price, weight, category_id, product_id))
 
   cur.execute("DELETE FROM PRODUCT_TAGS WHERE ProductID=?", (product_id,))
 
@@ -117,7 +123,7 @@ def update_product(product_id: int, name: str, description: str, image: str, qua
   con.commit()
 
   tags = select_product_tags(product_id)
-  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'tags': tags}
+  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'category_id': category_id, 'tags': tags}
   # TODO: possibly return false or throw error if there is not a product in the db with the given productid
 
 
@@ -127,17 +133,17 @@ def select_product(product_id: int) -> dict:
 
   tags = select_product_tags(product_id)
 
-  return {'product_id': prod[0], 'name': prod[1], 'description': prod[2], 'image': prod[3], 'quantity': prod[4], 'price': prod[5], 'weight': prod[6], 'tags': tags}
+  return {'product_id': prod[0], 'name': prod[1], 'description': prod[2], 'image': prod[3], 'quantity': prod[4], 'price': prod[5], 'weight': prod[6], 'category_id': prod[7], 'tags': tags}
 
 
 def select_products() -> list[dict]:
   cur.execute("SELECT * FROM PRODUCTS")
-  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category_id': row[7], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def search_products(query: str) -> list[dict]:
-  cur.execute("SELECT * FROM Products WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
-  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
+  cur.execute("SELECT * FROM PRODUCTS WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category_id': row[7], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def insert_tag(name: str) -> dict:
@@ -168,6 +174,28 @@ def update_tag(tag_id: int, name: str) -> dict:
   con.commit()
 
   return {'tag_id': tag_id, 'name': name}
+
+
+def select_all_categories() -> list[dict]:
+  cur.execute("SELECT * FROM CATEGORIES")
+  return [{'category_id': c[0], 'name': c[1]} for c in cur.fetchall()]
+
+
+def insert_category(name: str) -> dict:
+  cur.execute("INSERT INTO CATEGORIES (Name) VALUES (?)",
+              (name,))
+  con.commit()
+
+  category_id = cur.lastrowid
+  return {'category_id': category_id, 'name': name}
+
+
+def update_category(category_id: int, name: str) -> dict:
+  cur.execute("UPDATE CATEGORIES SET Name=? WHERE CategoryID=?",
+              (name, category_id))
+  con.commit()
+
+  return {'category_id': category_id, 'name': name}
 
 
 
