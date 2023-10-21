@@ -123,7 +123,7 @@ def update_product(product_id: int, name: str, description: str, image: str, qua
   con.commit()
 
   tags = select_product_tags(product_id)
-  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'category_id': category_id, 'tags': tags}
+  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'category': select_category(category_id), 'tags': tags}
   # TODO: possibly return false or throw error if there is not a product in the db with the given productid
 
 
@@ -133,17 +133,17 @@ def select_product(product_id: int) -> dict:
 
   tags = select_product_tags(product_id)
 
-  return {'product_id': prod[0], 'name': prod[1], 'description': prod[2], 'image': prod[3], 'quantity': prod[4], 'price': prod[5], 'weight': prod[6], 'category_id': prod[7], 'tags': tags}
+  return {'product_id': prod[0], 'name': prod[1], 'description': prod[2], 'image': prod[3], 'quantity': prod[4], 'price': prod[5], 'weight': prod[6], 'category': select_category(prod[7]), 'tags': tags}
 
 
 def select_products() -> list[dict]:
   cur.execute("SELECT * FROM PRODUCTS")
-  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category_id': row[7], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category': select_category(row[7]), 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def search_products(query: str) -> list[dict]:
   cur.execute("SELECT * FROM PRODUCTS WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
-  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category_id': row[7], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category': select_category(row[7]), 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def insert_tag(name: str) -> dict:
@@ -179,6 +179,13 @@ def update_tag(tag_id: int, name: str) -> dict:
 def select_all_categories() -> list[dict]:
   cur.execute("SELECT * FROM CATEGORIES")
   return [{'category_id': c[0], 'name': c[1]} for c in cur.fetchall()]
+
+
+def select_category(category_id) -> list[dict]:
+  cur.execute("SELECT * FROM CATEGORIES WHERE CategoryID=?",
+              (category_id,))
+  c = cur.fetchone()
+  return {'category_id': c[0], 'name': c[1]}
 
 
 def insert_category(name: str) -> dict:
