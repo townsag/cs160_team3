@@ -182,14 +182,34 @@ def search_products():
 @admin_required
 def update_product():
   p = request.get_json()
-  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
+  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['tags'])
 
 
 @app.route('/createProduct', methods=['POST'])
 @admin_required
 def create_product():
   p = request.get_json()
-  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
+  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['tags'])
+
+
+@app.route('/getTags', methods=['GET'])
+@login_required
+def get_tags():
+  return json.dumps(db.select_all_tags())
+
+
+@app.route('/createTag', methods=['POST'])
+@admin_required
+def create_tag():
+  p = request.get_json()
+  return db.insert_tag(p['name'])
+
+
+@app.route('/updateTag', methods=['POST'])
+@admin_required
+def update_tag():
+  p = request.get_json()
+  return db.update_tag(p['tag_id'], p['name']) 
 
 
 # #

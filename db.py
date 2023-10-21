@@ -26,6 +26,17 @@ def init():
       Weight REAL
   );
 
+  CREATE TABLE IF NOT EXISTS TAGS (
+      TagID INTEGER PRIMARY KEY,
+      Name TEXT
+  );
+                    
+  CREATE TABLE IF NOT EXISTS PRODUCT_TAGS (
+      ProductTagID INTEGER PRIMARY KEY,
+      TagID INTEGER REFERENCES TAGS(TagID),
+      ProductID INTEGER REFERENCES PRODUCTS(ProductID)              
+  );                  
+
   CREATE TABLE IF NOT EXISTS CARTS (
       CartID INTEGER PRIMARY KEY,
       UserID INTEGER REFERENCES USERS(UserID)
@@ -79,37 +90,85 @@ def init():
 # #
 
 
-def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
+def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float, tags: list[int]) -> dict:
   cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight) VALUES (?, ?, ?, ?, ?, ?)",
               (name, description, image, quantity, price, weight))
+  product_id = cur.lastrowid
+
+  for tag_id in tags:
+    cur.execute("INSERT INTO PRODUCT_TAGS (TagID, ProductID) VALUES (?, ?)",
+                (tag_id, product_id))
+
   con.commit()
 
-  product_id = cur.lastrowid
-  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight}
+  return select_product(product_id)
 
 
-def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
+def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, tags: list[int]) -> dict:
   cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=? WHERE ProductID=?",
               (name, description, image, quantity, price, weight, product_id))
+
+  cur.execute("DELETE FROM PRODUCT_TAGS WHERE ProductID=?", (product_id,))
+
+  for tag_id in tags:
+    cur.execute("INSERT INTO PRODUCT_TAGS (TagID, ProductID) VALUES (?, ?)",
+                (tag_id, product_id))
+
   con.commit()
-  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight}
+
+  tags = select_product_tags(product_id)
+  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'tags': tags}
   # TODO: possibly return false or throw error if there is not a product in the db with the given productid
 
 
 def select_product(product_id: int) -> dict:
   cur.execute("SELECT * FROM PRODUCTS WHERE ProductID=?", (product_id,))
-  row = cur.fetchone()
-  return {'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6]}
+  prod = cur.fetchone()
+
+  tags = select_product_tags(product_id)
+
+  return {'product_id': prod[0], 'name': prod[1], 'description': prod[2], 'image': prod[3], 'quantity': prod[4], 'price': prod[5], 'weight': prod[6], 'tags': tags}
 
 
 def select_products() -> list[dict]:
   cur.execute("SELECT * FROM PRODUCTS")
-  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6]} for row in cur.fetchall()]
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def search_products(query: str) -> list[dict]:
   cur.execute("SELECT * FROM Products WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
-  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6]} for row in cur.fetchall()]
+  return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
+
+
+def insert_tag(name: str) -> dict:
+  cur.execute("INSERT INTO TAGS (Name) VALUES (?)",
+              (name,))
+  con.commit()
+
+  tag_id = cur.lastrowid
+  return {'tag_id': tag_id, 'name': name}
+
+
+def select_all_tags() -> list[dict]:
+  cur.execute("SELECT * FROM TAGS")
+  return [{'tag_id': t[0], 'name': t[1]} for t in cur.fetchall()]
+
+
+def select_product_tags(product_id:int) -> list[dict]:
+  cur.execute("SELECT T.TagID, T.Name "
+              "FROM PRODUCT_TAGS AS PT "
+              "JOIN Tags AS T ON T.TagID = PT.TagID "
+              "WHERE PT.ProductID=?", (product_id,))
+  return [{'tag_id': t[0], 'name': t[1]} for t in cur.fetchall()]
+
+
+def update_tag(tag_id: int, name: str) -> dict:
+  cur.execute("UPDATE TAGS SET Name=? WHERE TagID=?",
+              (name, tag_id))
+  con.commit()
+
+  return {'tag_id': tag_id, 'name': name}
+
 
 
 # #
