@@ -15,10 +15,9 @@ login_manager.login_view = "login"
 
 
 class User:
-  def __init__(self, user_id, username, password, address, is_admin):
+  def __init__(self, user_id, username, address, is_admin):
     self.user_id = user_id
     self.username = username
-    self.password = password
     self.address = address
     self.is_admin = is_admin
     self.is_active = True
@@ -39,7 +38,7 @@ class User:
   def get(user_id):
     try:
       u = db.select_user(user_id)
-      return User(user_id, u['username'], u['password'], u['address'], u['is_admin'])
+      return User(user_id, u['username'], u['address'], u['is_admin'])
     except:
       return None
 
@@ -108,7 +107,8 @@ def signup():
   # If the user already exists log them in.
   j = db.validate_user(u['username'], u['password'])
   if j:
-    login_user(load_user(j['user_id']))
+    l = load_user(j['user_id'])
+    login_user(l)
     return 'Login Success'
 
   if 'is_admin' not in u: u['is_admin'] = False 
@@ -171,18 +171,65 @@ def get_product():
   return json.dumps(db.select_product(product_id))
 
 
+@app.route('/searchProducts', methods=['GET']) #?query=<query>
+@login_required
+def search_products():
+  query = request.args['query']
+  return json.dumps(db.search_products(query))
+
+
 @app.route('/updateProduct', methods=['POST'])
 @admin_required
 def update_product():
   p = request.get_json()
-  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
+  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
 
 
 @app.route('/createProduct', methods=['POST'])
 @admin_required
 def create_product():
   p = request.get_json()
-  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
+  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
+
+
+@app.route('/getCategories', methods=['GET'])
+@login_required
+def get_categories():
+  return json.dumps(db.select_all_categories())
+
+
+@app.route('/createCategory', methods=['POST'])
+@admin_required
+def create_category():
+  p = request.get_json()
+  return db.insert_category(p['name'])
+
+
+@app.route('/updateCategory', methods=['POST'])
+@admin_required
+def update_category():
+  p = request.get_json()
+  return db.update_category(p['category_id'], p['name']) 
+
+
+@app.route('/getTags', methods=['GET'])
+@login_required
+def get_tags():
+  return json.dumps(db.select_all_tags())
+
+
+@app.route('/createTag', methods=['POST'])
+@admin_required
+def create_tag():
+  p = request.get_json()
+  return db.insert_tag(p['name'])
+
+
+@app.route('/updateTag', methods=['POST'])
+@admin_required
+def update_tag():
+  p = request.get_json()
+  return db.update_tag(p['tag_id'], p['name']) 
 
 
 # #
