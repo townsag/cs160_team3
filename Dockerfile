@@ -1,11 +1,21 @@
-FROM python:3.10.1
+FROM python:3.11-alpine
 
-WORKDIR /ogo
+WORKDIR /app
+
+RUN apk update && apk add nodejs npm
+
+COPY . /app
+
+WORKDIR /app/ogo
+
+RUN npm install
+
+RUN npm run build
+
+WORKDIR /app
+
+RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-RUN pip3 install flask flask_login
-
-COPY . . 
-
-CMD ["flask",  "--app",  "app.py",  "run"]
+CMD ["python", "app.py"]
