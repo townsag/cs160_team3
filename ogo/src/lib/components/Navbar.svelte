@@ -15,6 +15,14 @@
             console.error("Failed to logout.");
         }
 	}
+
+	function handleSettings() {
+		navigate("/settings");
+	}
+
+	function handleShoppingCart() {
+		navigate("/cart");
+	}
 </script>
 
 <div class="navbar bg-base-100">
@@ -35,7 +43,9 @@
 			<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 			<ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
 			  <!-- svelte-ignore a11y-missing-attribute -->
-			  <li><a>Settings</a></li>
+			  <!-- svelte-ignore a11y-click-events-have-key-events -->
+			  <!-- svelte-ignore a11y-no-static-element-interactions -->
+			  <li><a on:click={handleSettings}>Settings</a></li>
 			  <!-- svelte-ignore a11y-missing-attribute -->
 			  <!-- svelte-ignore a11y-click-events-have-key-events -->
 			  <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -57,7 +67,7 @@
 			<span class="font-bold text-lg">8 Items</span>
 			<span class="text-info">Subtotal: $999</span>
 			<div class="card-actions">
-			  <button class="btn btn-primary btn-block">View cart</button>
+			  <button on:click={handleShoppingCart} class="btn btn-primary btn-block">View cart</button>
 			</div>
 		  </div>
 		</div>

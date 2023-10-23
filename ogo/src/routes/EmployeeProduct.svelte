@@ -95,7 +95,7 @@
 			<div class="card w-96 max-w-xs bg-base-100 shadow-xl mt-6 mb-12">
 				<!-- svelte-ignore a11y-missing-attribute -->
 				<figure><img src={productImage}/></figure>
-			  </div>
+			</div>
 		</div>
 		
 		<div class="grid h-max flex-grow card bg-gray-200 rounded-box place-items-center">
