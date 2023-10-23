@@ -1,12 +1,21 @@
+
+
 <script lang="ts">
 	//import logo from "../assets/logo.png";
   import SearchBar from '../lib/components/SearchBar.svelte';
   import FilterBar from '../lib/components/FilterBar.svelte';
   import ItemDisplay from '../lib/components/ItemDisplay.svelte';
+  //mport Data from '../../../app.py';
+
+  let openFilter = true;
 
   let isGlutenFree = false;
   let isVegetarian = false;
   let isVegan = false; 
+
+  function toggleFilterOpen() {
+    openFilter = !openFilter;
+  }
 
   function toggleGlutenFree() {
     isGlutenFree = !isGlutenFree;
@@ -19,7 +28,7 @@
   function toggleVegan() {
     isVegan = !isVegan;
   }
-
+  /*
   let items = [
     {
       id: 1,
@@ -95,7 +104,31 @@
       tags: []
     }
     // Add more items with tags
-  ];
+  ]; */
+
+  import { onMount } from 'svelte';
+
+  let items = {}; // Initialize items as an empty array
+
+  async function getItemsList() {
+    const response = await fetch('/getProducts');
+    const data = await response.json();
+    // return {
+    //   props: {
+    //     items: data, // Assuming the response contains the items array
+    //   },
+    // };
+    return JSON.stringify(data);
+  }
+
+  items = getItemsList();
+  console.log(items);
+
+  // onMount(() => {
+  //   console.log("mounted");
+  //   items = getItemsList();
+  //   console.log(items);
+  // });
 
   let filteredItems = [];
 
@@ -118,10 +151,17 @@
   }
 </script>
 
+<style>
+  .blur {
+    filter: blur(5px); /* You can adjust the blur intensity as needed */
+  }
+</style>
+
 <div class="container mx-auto p-4">
   <div class="flex">
     <div class="w-4/4 pr-4">
       <FilterBar
+        {openFilter}
         {isGlutenFree}
         {isVegetarian}
         {isVegan}
@@ -132,8 +172,11 @@
     </div>
   </div>
 
-  <div class="search-bar-container flex items-center border rounded p-2 mb-4">
-    <SearchBar />
+  <div class="search-bar-container flex items-center border rounded p-2 mb-4" >
+    <SearchBar 
+      {openFilter}
+      {toggleFilterOpen}
+    />
   </div>
 
   <div>

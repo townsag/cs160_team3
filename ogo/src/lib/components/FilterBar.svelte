@@ -1,33 +1,28 @@
 <script>
-  let isCollapsed = true;
+  export let openFilter;
   export let isGlutenFree;
   export let isVegetarian;
   export let isVegan;
   export let toggleGlutenFree;
   export let toggleVegetarian;
   export let toggleVegan;
-
-  function toggleCollapse() {
-    isCollapsed = !isCollapsed;
-  }
-  
 </script>
 
 <style>
   .filter-bar-container {
-    position: fixed;
-    top: 0;
+    position: absolute;
+    top: 150px;
     left: 0;
+    bottom: 0; /* Set bottom to 0 to make it touch the bottom */
     width: 300px;
-    height: 100%;
     background-color: #f5f5f5;
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
     transition: width 0.3s ease-out;
-    overflow-y: auto;
+    overflow-y: scroll;
   }
 
   .filter-bar-container.collapsed {
-    width: 50px;
+    width: 0px;
   }
 
   .filter-content {
@@ -37,7 +32,7 @@
   .filter-item {
     margin-bottom: 15px;
   }
-
+  
   .collapse-button {
     position: absolute;
     top: 0;
@@ -51,7 +46,7 @@
   }
 </style>
 
-<div class="filter-bar-container" class:collapsed={isCollapsed}>
+<div class="filter-bar-container" class:collapsed={openFilter}>
   <div class="filter-content">
     <div class="filter-item">
       <label>Toggle Filter:</label>
@@ -86,7 +81,9 @@
       <input type="checkbox" on:change={toggleVegan} />
     </div>
   </div>
-  <button class="collapse-button" on:click={toggleCollapse}>
-    {isCollapsed ? 'Show Filters' : 'Hide Filters'}
-  </button>
+  <!--
+    <button class="collapse-button" on:click={toggleCollapse}>
+    {openFilter ? 'Show Filters' : 'Hide Filters'}
+    </button>
+  -->
 </div>
