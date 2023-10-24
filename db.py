@@ -22,7 +22,10 @@ def init():
       Quantity INTEGER,
       Price REAL,
       Weight REAL,
-      CONSTRAINT check_quantity_nonnegative CHECK (Quantity >= 0)
+      CHECK (Quantity >= 0),
+      CHECK (Price >= 0.0),
+      CHECK (Weight >= 0.0)
+      
       
   );
 
