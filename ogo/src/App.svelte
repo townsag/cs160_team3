@@ -9,6 +9,7 @@
   import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
+  import EmBrowse from "./routes/EmBrowse.svelte";
   import './app.css';
 
   export let url = "";
@@ -26,6 +27,7 @@
         <Link to="/home">Home</Link>
         <Link to="/cart">Cart</Link>
         <Link to="/employee-product">EmployeeProduct</Link>
+        <Link to="/employeesbrowser">EmployLanding</Link>
       </nav>
       <div>
         <Route path="/" component={Root} />
@@ -36,6 +38,7 @@
         <Route path="/cart" component={ShoppingCart} />
         <!-- TODO: might have to feed a product id -->
         <Route path="/employee-product" component={EmployeeProduct} />
+        <Route path="/employeesbrowser" component={EmBrowse} />
       </div>
       <Footer />
     </Router>
@@ -43,5 +46,7 @@
 </html>
 
 <style>
-
+  @import 'tailwindcss/base';
+  @import 'tailwindcss/components';
+  @import 'tailwindcss/utilities';
 </style>
