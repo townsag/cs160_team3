@@ -4,6 +4,9 @@
   import Login from "./routes/Login.svelte";
   import Signup from "./routes/Signup.svelte";
   import Home from "./routes/Home.svelte";
+  import UserSettings from "./routes/UserSettings.svelte";
+  import EmployeeProduct from "./routes/EmployeeProduct.svelte";
+  import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import EmBrowse from "./routes/EmBrowse.svelte";
@@ -22,6 +25,8 @@
         <Link to="/login">Login</Link>
         <Link to="/signup">Signup</Link>
         <Link to="/home">Home</Link>
+        <Link to="/cart">Cart</Link>
+        <Link to="/employee-product">EmployeeProduct</Link>
         <Link to="/employeesbrowser">EmployLanding</Link>
       </nav>
       <div>
@@ -29,6 +34,10 @@
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/home" component={Home} />
+        <Route path="/settings" component={UserSettings} />
+        <Route path="/cart" component={ShoppingCart} />
+        <!-- TODO: might have to feed a product id -->
+        <Route path="/employee-product" component={EmployeeProduct} />
         <Route path="/employeesbrowser" component={EmBrowse} />
       </div>
       <Footer />
