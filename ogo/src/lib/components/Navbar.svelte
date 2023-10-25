@@ -1,19 +1,17 @@
 <script lang="ts">
 	// import logo from "../../assets/logo_icon.png";
+	import { logout } from "../util/RequestController"
 	import { navigate } from 'svelte-routing';
 
 	async function handleLogout() {
-        const logoutResult = await fetch("/logout", {
-            method: "GET"
-        });
+		const result = await logout();
 
-        if (logoutResult.ok) {
-            const message = await logoutResult.text();
-            console.log(message);
+		if (result.success) {
+			console.log("Logged out successfully!");
 			navigate("/login");
-        } else {
-            console.error("Failed to logout.");
-        }
+		} else {
+			console.error("Logout failed:", result.message);
+		}
 	}
 
 	function handleSettings() {

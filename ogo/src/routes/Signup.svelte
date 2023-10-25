@@ -1,6 +1,7 @@
 <script lang="ts">
     // TODO: Signup page should not show/work for already logged-in users
 
+    import { signup } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
     let usernameState = "";
@@ -34,45 +35,57 @@
         console.log(storedUsername);
         console.log(storedPassword);
 
-        if (storedUsername.length == 0 && storedPassword.length == 0) {
-            signupErrorTextState = "Cannot have a blank username or password.";
-            signupErrorState = true;
-        } else if (storedUsername.length <= 20 && storedPassword.length <= 20) {
-            const signupResponse = await fetch("/signup", {
-                method: "POST",
-                headers: {
-                'Content-Type': "application/json"
-                },
-                body: JSON.stringify({
-                    "username": storedUsername,
-                    "password": storedPassword,
-                    "address": ""
-                })
-            })
+        const result = await signup(storedUsername, storedPassword, ""); // TODO: address?
 
-            // signup success or fail
-            if (signupResponse.ok) {
-                const message = await signupResponse.text();
-                console.log(message);
-                navigate("/home");
-            } else {
-                console.error("Error signing up:", await signupResponse.text());
-            }
-            
-            // test getUser
-            const currentUser = await fetch("/getUser", {
-                method: "GET"
-            })
-            const currentUserJson = await currentUser.json();
-            const currentUserResult = JSON.stringify(currentUserJson);
-
-            console.log(currentUserResult);
-
+        if (result.success) {
+            console.log("Signed up successfully!", JSON.stringify(result.user));
+            navigate("/home");
         } else {
-            signupErrorTextState = "Username and password must be less than 20 characters.";
+            console.error("Signup failed:", result.message);
+            signupErrorTextState = result.message;
             signupErrorState = true;
         }
     }
+
+    //     if (storedUsername.length == 0 && storedPassword.length == 0) {
+    //         signupErrorTextState = "Cannot have a blank username or password.";
+    //         signupErrorState = true;
+    //     } else if (storedUsername.length <= 20 && storedPassword.length <= 20) {
+    //         const signupResponse = await fetch("/signup", {
+    //             method: "POST",
+    //             headers: {
+    //             'Content-Type': "application/json"
+    //             },
+    //             body: JSON.stringify({
+    //                 "username": storedUsername,
+    //                 "password": storedPassword,
+    //                 "address": ""
+    //             })
+    //         })
+
+    //         // signup success or fail
+    //         if (signupResponse.ok) {
+    //             const message = await signupResponse.text();
+    //             console.log(message);
+    //             navigate("/home");
+    //         } else {
+    //             console.error("Error signing up:", await signupResponse.text());
+    //         }
+            
+    //         // test getUser
+    //         const currentUser = await fetch("/getUser", {
+    //             method: "GET"
+    //         })
+    //         const currentUserJson = await currentUser.json();
+    //         const currentUserResult = JSON.stringify(currentUserJson);
+
+    //         console.log(currentUserResult);
+
+    //     } else {
+    //         signupErrorTextState = "Username and password must be less than 20 characters.";
+    //         signupErrorState = true;
+    //     }
+    // }
 
     async function handleToggle() {
         toggleIsCheckedState = !toggleIsCheckedState;

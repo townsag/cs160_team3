@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { login } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
     let usernameState = "";
@@ -15,24 +16,34 @@
         console.log(storedUsername);
         console.log(storedPassword);
 
-        const loginResponse = await fetch("/login", {
-            method: "POST",
-            headers: {
-            'Content-Type': "application/json"
-            },
-            body: JSON.stringify({
-                "username": storedUsername,
-                "password": storedPassword,
-            })
-        })
-        
-        if (loginResponse.ok) {
-            const message = await loginResponse.text();
-            console.log(message);
+        const result = await login(storedUsername, storedPassword);
+
+        if (result.success) {
+            console.log("Logged in successfully!");
             navigate("/home");
         } else {
-            console.error("Failed to login.");
+            console.error("Login failed:", result.message);
         }
+    }
+
+        // const loginResponse = await fetch("/login", {
+        //     method: "POST",
+        //     headers: {
+        //     'Content-Type': "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //         "username": storedUsername,
+        //         "password": storedPassword,
+        //     })
+        // })
+        
+        // if (loginResponse.ok) {
+        //     const message = await loginResponse.text();
+        //     console.log(message);
+        //     navigate("/home");
+        // } else {
+        //     console.error("Failed to login.");
+        // }
 
         // Test
         // const products = await fetch("/getProducts", {
@@ -42,7 +53,6 @@
         // const result = JSON.stringify(json);
 
         // console.log(result);
-    }
 
     async function handleToggle() {
         toggleIsCheckedState = !toggleIsCheckedState;
