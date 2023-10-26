@@ -1,8 +1,5 @@
 <script>
   export let openFilter;
-  export let isGlutenFree;
-  export let isVegetarian;
-  export let isVegan;
   export let toggleGlutenFree;
   export let toggleVegetarian;
   export let toggleVegan;
@@ -49,21 +46,11 @@
 <div class="filter-bar-container" class:collapsed={openFilter}>
   <div class="filter-content">
     <div class="filter-item">
-      <label>Toggle Filter:</label>
-      <input type="checkbox" />
-    </div>
-
-    <div class="filter-item">
       <label>Dropdown Filter:</label>
       <select>
         <option value="">Option 1</option>
         <option value="">Option 2</option>
       </select>
-    </div>
-
-    <div class="filter-item">
-      <label>Input Filter:</label>
-      <input type="text" placeholder="Enter value" />
     </div>
 
     <div class="filter-item">

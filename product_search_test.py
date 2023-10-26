@@ -15,6 +15,12 @@ print(response1.text)
 response1 = session.get("http://127.0.0.1:5000/getProducts")
 print(response1.text)
 
+response1 = session.get("http://127.0.0.1:5000/getTags")
+print(response1.text)
+
+response1 = session.get("http://127.0.0.1:5000/getCategories")
+print(response1.text)
+
 response1 = session.get("http://127.0.0.1:5000/searchProducts?query=almond")
 print(response1.text)
 
