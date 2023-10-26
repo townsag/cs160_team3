@@ -94,8 +94,8 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
-    <div class="min-w-screen flex flex-col items-center justify-center bg-gray-200">
-        <div class="card w-96 bg-base-100 border-2 border-black-500 mt-8">
+    <div class="min-w-screen h-screen flex-grow flex flex-col items-center justify-center bg-gray-200 px-4 sm:px-0">
+        <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
             <dialog bind:this={signupErrorModal} class="modal">
                 <div class="modal-box bg-red-300">
                     <h3 class="font-bold text-lg">Error!</h3>

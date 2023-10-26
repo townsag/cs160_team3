@@ -12,6 +12,16 @@
   import EmBrowse from "./routes/EmBrowse.svelte";
   import './app.css';
 
+  const routes = [
+    { path: "/", component: Root },
+    { path: "/login", component: Login },
+    { path: "/signup", component: Signup },
+    { path: "/home", component: Home },
+    { path: "/settings", component: UserSettings },
+    { path: "/cart", component: ShoppingCart },
+    { path: "/employee-product", component: EmployeeProduct }
+  ];
+
   export let url = "";
 </script>
 
@@ -19,26 +29,15 @@
   <main>
     <Router {url}>
       <Navbar />
-      <nav>
-        <p>quick nav for testing:</p>
-        <Link to="/">Root</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/signup">Signup</Link>
-        <Link to="/home">Home</Link>
-        <Link to="/cart">Cart</Link>
-        <Link to="/employee-product">EmployeeProduct</Link>
-        <Link to="/employeesbrowser">EmployLanding</Link>
+      <nav class='bg-gray-300'>
+        {#each routes as route}
+          <Link to={route.path}>{route.path} </Link>
+        {/each}
       </nav>
       <div>
-        <Route path="/" component={Root} />
-        <Route path="/login" component={Login} />
-        <Route path="/signup" component={Signup} />
-        <Route path="/home" component={Home} />
-        <Route path="/settings" component={UserSettings} />
-        <Route path="/cart" component={ShoppingCart} />
-        <!-- TODO: might have to feed a product id -->
-        <Route path="/employee-product" component={EmployeeProduct} />
-        <Route path="/employeesbrowser" component={EmBrowse} />
+        {#each routes as route}
+          <Route path={route.path} component={route.component} />
+        {/each}
       </div>
       <Footer />
     </Router>
