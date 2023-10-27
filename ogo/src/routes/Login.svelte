@@ -1,4 +1,7 @@
 <script lang="ts">
+    // TODO: Login page should not show/work for already logged-in users
+
+    import bg from "../assets/bg1.jpeg";
     import { login } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
@@ -79,7 +82,9 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
-    <div class="min-w-screen h-screen flex-grow flex flex-col items-center justify-center bg-gray-200 px-4 sm:px-0">
+    <div class="relative min-w-screen h-screen flex-grow flex flex-col items-center justify-center px-4 sm:px-0"
+     style="background-image: url({bg}); background-size: cover; background-repeat: no-repeat;">
+        <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
         <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
             <div class="card-body">
                 <div class="flex justify-between items-center">
@@ -111,7 +116,5 @@
 </html>
 
 <style>
-* {
-  font-family: 'Satoshi', sans-serif;
-}
+
 </style>
