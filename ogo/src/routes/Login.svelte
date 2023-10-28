@@ -2,7 +2,7 @@
     // TODO: Login page should not show/work for already logged-in users
 
     import bg from "../assets/bg1.jpeg";
-    import { login } from "../lib/util/RequestController"
+    import { login, getCurrentUser } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
     let usernameState = "";
@@ -26,6 +26,14 @@
             navigate("/home");
         } else {
             console.error("Login failed:", result.message);
+        }
+
+        const userResult = await getCurrentUser();
+
+        if (userResult.success) {
+            console.log('User data:', userResult.user.user_id, userResult.user.username);
+        } else {
+            console.error('Error fetching user:', result.message);
         }
     }
 

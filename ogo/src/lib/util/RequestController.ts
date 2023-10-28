@@ -20,9 +20,7 @@ export async function signup(username: string, password: string, address: string
 
         const signupResponse = await fetch("/signup", {
             method: "POST",
-            headers: {
-                'Content-Type': "application/json"
-            },
+            headers: { 'Content-Type': "application/json" },
             body: JSON.stringify({
                 "username": username,
                 "password": password,
@@ -52,9 +50,7 @@ export async function login(username: string, password: string) {
     try {
         const loginResponse = await fetch("/login", {
             method: "POST",
-            headers: {
-                'Content-Type': "application/json"
-            },
+            headers: { 'Content-Type': "application/json" },
             body: JSON.stringify({
                 "username": username,
                 "password": password,
@@ -82,9 +78,7 @@ export async function login(username: string, password: string) {
 // Logout
 export async function logout() {
     try {
-        const logoutResponse = await fetch("/logout", {
-            method: "GET"
-        });
+        const logoutResponse = await fetch("/logout", { method: "GET" });
 
         const responseText = await logoutResponse.text();
 
@@ -106,9 +100,7 @@ export async function updateUser(username: string, password: string, address: st
     try {
         const updateUserResponse = await fetch("/updateUser", {
             method: "POST",
-            headers: {
-                'Content-Type': "application/json"
-            },
+            headers: { 'Content-Type': "application/json" },
             body: JSON.stringify({
                 "username": username,
                 "password": password,
@@ -138,9 +130,7 @@ export async function updateUser(username: string, password: string, address: st
 // Get User
 export async function getCurrentUser() {
     try {
-        const getUserResponse = await fetch("/getUser", {
-            method: "GET"
-        });
+        const getUserResponse = await fetch("/getUser", { method: "GET" });
 
         if (!getUserResponse.ok) {
             const errorMessage = await getUserResponse.text();
@@ -151,12 +141,98 @@ export async function getCurrentUser() {
         const user = await getUserResponse.json();
 
         if (user && user.user_id) {
-            return { success: true, message: "Current user retrieved", user };
+            return { success: true, message: "Current user retrieved", user: user };
         } else {
             return { success: false, message: "Current user data is incomplete." };
         }
     } catch (error) {
         console.error("An error occurred fetching current user:", error);
         return { success: false, message: "An error occurred fetching current user." };
+    }
+}
+
+//
+// Shopping Cart
+//
+
+// Get Cart
+export async function getCart() {
+    try {
+        const getCartResponse = await fetch("/getCart", { method: "GET" })
+
+        if (!getCartResponse.ok) {
+            const errorMessage = await getCartResponse.text();
+            console.error("Failed to get cart:", errorMessage);
+            return { success: false, message: errorMessage };
+        }
+
+        const cart = await getCartResponse.json();
+        
+        // Check items in the cart
+        if (cart && Object.keys(cart).length > 0) {
+            return { success: true, message: "Cart retrieved successfully", cart: cart };
+        } else {
+            return { success: false, message: "There are no items in the cart." };
+        }
+    } catch (error) {
+        console.error("An error occurred fetching the cart:", error);
+        return { success: false, message: "An error occurred fetching the cart." };
+    }
+}
+
+// Update Cart Item
+export async function updateCartItem(cartItemId: number, productId: number, quantity: number) {
+    try {
+        const updateCartItemResponse = await fetch("/updateCartItem", {
+            method: "POST",
+            headers: { 'Content-Type': "application/json" },
+            body: JSON.stringify({
+                "cart_item_id": cartItemId,
+                "product_id": productId,
+                "quantity": quantity
+            })
+        });
+
+        if (!updateCartItemResponse.ok) {
+            const errorMessage = await updateCartItemResponse.text();
+            console.error("Failed to update cart item:", errorMessage);
+            return { success: false, message: errorMessage };
+        }
+
+        const updateResult = await updateCartItemResponse.json();
+
+        if (updateResult && updateResult.success) {
+            return { success: true, message: "Cart item updated successfully." };
+        } else {
+            return { success: false, message: "Failed to update cart item." };
+        }
+    } catch (error) {
+        console.error("An error occurred updating the cart item:", error);
+        return { success: false, message: "An error occurred updating the cart item." };
+    }
+}
+
+// Remove Cart Item
+export async function removeCartItem(cartItemId: number) {
+    try {
+        const removeCartItemResponse = await fetch("/removeCartItem", {
+            method: "POST",
+            headers: { 'Content-Type': "application/json" },
+            body: JSON.stringify({
+                "cart_item_id": cartItemId
+            })
+        });
+
+        const responseText = await removeCartItemResponse.text();
+
+        if (removeCartItemResponse.ok && responseText === "Success") {
+            return { success: true, message: "Cart item removed successfully." };
+        } else {
+            console.error("Failed to remove cart item:", responseText);
+            return { success: false, message: responseText };
+        }
+    } catch (error) {
+        console.error("An error occurred removing the cart item:", error);
+        return { success: false, message: "An error occurred removing the cart item." };
     }
 }

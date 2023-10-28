@@ -19,3 +19,9 @@ db.insert_product("Beef", "This is a healthy protein", "https://images.inc.com/u
 db.insert_product("Cheese", "This is a healthy protein", "https://cdn.britannica.com/60/217660-050-DBCC409A/cheddar-cheese-wedge.jpg", 50, 23.99, 6.17, 2, [1])
 db.insert_product("Chicken", "This is a healthy protein", "https://images.eatthismuch.com/img/395_ldementhon_471464da-daad-4a92-8b5d-7e9a6de898a8.png", 50, 23.99, 6.17, 2, [1])
 db.insert_product("Walnuts", "This is a healthy nut", "https://cdn.britannica.com/69/124169-050-54860BD1/fruit-walnut-tree-husk.jpg", 50, 23.99, 6.17, 3, [1])
+
+# test shopping cart
+db.insert_cart_item(1, 1, 1)
+db.insert_cart_item(1, 2, 2)
+db.insert_cart_item(1, 3, 3)
+db.insert_cart_item(1, 4, 4)
