@@ -31,8 +31,7 @@
         const userResult = await getCurrentUser();
 
         if (userResult.success) {
-            console.log('User ID:', userResult.user.user_id);
-            // Handle the successful retrieval of the user. Maybe update the UI, etc.
+            console.log('User data:', userResult.user.user_id, userResult.user.username);
         } else {
             console.error('Error fetching user:', result.message);
         }
