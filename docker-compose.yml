@@ -6,10 +6,15 @@ services:
       dockerfile: ./frontend/Dockerfile
     ports:
       - '8000:8000'
+    volumes:
+      - ./package.json:/user/src/app/package.json
+      - ./frontend:/usr/src/app/src
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - '3000:3000'
+    volumes:
+      - ./backend:/usr/src/app/backend
     

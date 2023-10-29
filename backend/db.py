@@ -5,7 +5,6 @@ import bcrypt
 con = sqlite3.connect("db.db", check_same_thread=False)
 cur = con.cursor()
 
-
 def init():
   cur.executescript('''
   CREATE TABLE IF NOT EXISTS USERS (
