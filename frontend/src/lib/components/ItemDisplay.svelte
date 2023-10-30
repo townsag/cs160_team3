@@ -13,13 +13,13 @@
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Use minmax for flexible column sizing */
     gap: 20px; /* Adjust the gap between items */
     justify-content: center; /* Center items within the grid */
+    grid-auto-rows: minmax(150px, auto); /* Set a minimum and maximum row height */
     min-height: 80vh;
   }
 
   .border {
     min-width: 150px;
     min-height: 150px;
-    max-height: 500px;
     padding: 10px;
   }
 </style>
