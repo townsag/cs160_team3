@@ -10,7 +10,6 @@
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import EmBrowse from "./routes/EmBrowse.svelte";
-  import './app.css';
 
   const routes = [
     { path: "/", component: Root },
@@ -24,21 +23,34 @@
   ];
 
   export let url = "";
+  let currentUrl = window.location.pathname;
 </script>
 
 <html lang="en" data-theme="lemonade">
   <main>
-    <Router {url}>
+    <Router {url} >
       <Navbar />
-      <nav class='bg-gray-300'>
-        {#each routes as route}
-          <Link to={route.path}>{route.path} </Link>
-        {/each}
-      </nav>
-      <div>
-        {#each routes as route}
-          <Route path={route.path} component={route.component} />
-        {/each}
+      <div class="wrapper">
+        {#if currentUrl == "/"}
+          <div class="flex justify-center mt-6"> 
+            <h1> Welcome to OGO!</h1>
+          </div>
+          <div class="flex justify-center mt-6"> 
+            <nav>
+              <a href="/login">Login</a>
+              <a href="/signup">Signup</a>
+            </nav>
+          </div>
+        {/if}
+        <div class="content nav-container">
+          <Route path="/login" component={Login} />
+          <Route path="/signup" component={Signup} />
+          <Route path="/home" component={Home} />
+          <Route path="/settings" component={UserSettings} />
+          <Route path="/cart" component={ShoppingCart} />
+          <Route path="/employee-product" component={EmployeeProduct} />
+          <Route path="/employeesbrowser" component={EmBrowse} />
+        </div>
       </div>
       <Footer />
     </Router>
@@ -49,4 +61,18 @@
   @import 'tailwindcss/base';
   @import 'tailwindcss/components';
   @import 'tailwindcss/utilities';
+
+  /* Additional CSS to make the footer sticky */
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 50vh;
+  }
+  .content {
+    flex: 1;
+  }
+  .nav-container {
+    position: relative; /* Ensure it's a positioned element */
+    z-index: 1; /* Set a higher z-index to appear above the content */
+  }
 </style>
