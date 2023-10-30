@@ -4,11 +4,7 @@ WORKDIR /usr/src/app
 
 RUN yarn global add nodemon
 
-COPY ../package-lock.json .
-
-COPY ../package.json .
-
-COPY ./frontend/ . 
+COPY ./frontend .
 
 RUN npm install
 
