@@ -19,7 +19,8 @@
     { path: "/home", component: Home },
     { path: "/settings", component: UserSettings },
     { path: "/cart", component: ShoppingCart },
-    { path: "/employee-product", component: EmployeeProduct }
+    { path: "/employee-product", component: EmployeeProduct },
+    { path: "/employee-browse", component: EmBrowse }
   ];
 
   export let url = "";
