@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ogo from "../../assets/ogo.png";
-	import logo from "../../assets/logo_icon.png";
+	let ogo = "https://user-images.githubusercontent.com/63530023/278915394-930403e9-8773-4e3b-8764-8ac3e167988d.png"
+	let logo = "https://user-images.githubusercontent.com/63530023/278784132-a72500a1-1341-4e67-b8ed-368a98c380e6.png"
 	import { logout } from "../util/RequestController"
 	import { navigate } from 'svelte-routing';
 
@@ -27,8 +27,6 @@
 <div class="navbar">
 	<div class="flex-1">
 		<a class="btn btn-ghost normal-case text-xl" href="/">
-			<!-- svelte-ignore a11y-missing-attribute -->
-			<img src={logo} class="w-10">
 			<!-- svelte-ignore a11y-missing-attribute -->
 			<img src={ogo} class="w-20">
 		</a>

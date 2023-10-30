@@ -1,11 +1,10 @@
 <script lang="ts">
     // TODO: Signup page should not show/work for already logged-in users
 
-    import bg from "../assets/bg1.jpeg";
     import { signup } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
-    let bg = "https://user-images.githubusercontent.com/63530023/278784128-57519896-2ad6-42ed-815d-ad2b88ed4853.png"
+    let bg = "https://user-images.githubusercontent.com/63530023/278915388-7232c29c-49d0-49b6-bd28-e26c65f36783.jpeg"
 
     let usernameState = "";
     let passwordState = "";
