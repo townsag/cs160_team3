@@ -97,14 +97,6 @@
         {/each}
       </select>
     </div>
-    <label>Include</label>
-    {#each allTagsList as tag}
-      <div class="filter-item">
-        <label>{tag.name}:</label>
-        <input type="checkbox" on:change={() => toggleTag(tag.name)} />
-      </div>
-    {/each}
-    <label>Exclude</label>
     {#each allTagsList as tag}
       <div class="filter-item">
         <label>{tag.name}:</label>
