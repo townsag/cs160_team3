@@ -1,23 +1,23 @@
 import db
 from groute import grouteInputOrder, grouteResponse, plan_path
 import json
+from functools import wraps
 import threading
 from flask import Flask, request, send_from_directory
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user
 login_manager = LoginManager()
 app = Flask(__name__)
 app.secret_key = b'replace_this_later'  # TODO: use enviroment variable instead
-
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
 
 class User:
-  def __init__(self, user_id, username, password, address):
+  def __init__(self, user_id, username, address, is_admin):
     self.user_id = user_id
     self.username = username
-    self.password = password
     self.address = address
+    self.is_admin = is_admin
     self.is_active = True
 
   def get_id(self):
@@ -36,7 +36,7 @@ class User:
   def get(user_id):
     try:
       u = db.select_user(user_id)
-      return User(user_id, u['username'], u['password'], u['address'])
+      return User(user_id, u['username'], u['address'], u['is_admin'])
     except:
       return None
 
@@ -72,6 +72,28 @@ def is_valid_product_params(p : json):
 @login_manager.user_loader
 def load_user(user_id):
   return User.get(user_id)
+
+
+# Flask route decorator to require the request to be made by a logged in user.
+def login_required(f):
+    @wraps(f)
+    def check_login(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return "Unauthorized: You must be logged in to use this route.", 401
+        return f(*args, **kwargs)
+    return check_login
+
+
+# Flask route decorator to require the request to be made by a logged in admin user.
+def admin_required(f):
+    @wraps(f)
+    def check_admin(*args, **kwargs):
+        if not current_user.is_authenticated:
+          return "Unauthorized: You must be logged in to use this route.", 401
+        if not current_user.is_admin:
+            return "Unauthorized: You must be logged in as admin to use this route.", 401
+        return f(*args, **kwargs)
+    return check_admin
 
 
 def route_if_ready():
@@ -111,7 +133,8 @@ def signup():
   # If the user already exists log them in.
   j = db.validate_user(u['username'], u['password'])
   if j:
-    login_user(load_user(j['user_id']))
+    l = load_user(j['user_id'])
+    login_user(l)
     return 'Login Success'
   
   user_char_ct = len(u['username'])
@@ -120,8 +143,8 @@ def signup():
     return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
     return 'Invalid password character count', 400
-  
-  u = db.insert_user(u['username'], u['password'], u['address'])
+  if 'is_admin' not in u: u['is_admin'] = False 
+  u = db.insert_user(u['username'], u['password'], u['address'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
@@ -157,36 +180,46 @@ def update_user():
     return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
     return 'Invalid password character count', 400
-  
-  user_entry = db.validate_user(u['username'], u['password'])
-  if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
-    return db.update_user(current_user.user_id, u['username'], u['password'], u['address'])
-  else:
-    return "Invalid Entry - User Already Exists", 400
+  if 'username' in u: db.update_user_username(current_user.user_id, u['username'])
+  if 'password' in u: db.update_user_password(current_user.user_id, u['password'])
+  if 'address' in u: db.update_user_address(current_user.user_id, u['address'])
+  if 'is_admin' in u: db.update_user_admin(current_user.user_id, u['is_admin'])
+
+  return "Success", 200
 
 
 @app.route('/getUser', methods=['GET'])
 @login_required
 def get_user():
-  return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address}
+  return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address, 'is_admin': current_user.is_admin}
 
 
 # #
 # # Product Routes
 # #
 @app.route('/getProducts', methods=['GET'])
+@login_required
 def get_products():
   return json.dumps(db.select_products())
 
 
 @app.route('/getProduct', methods=['GET'])  # ?productID=<product_id>
+@login_required
 def get_product():
   product_id = request.args['productID']
   # TODO: handle if productID is not present in query string
   return json.dumps(db.select_product(product_id))
 
 
+@app.route('/searchProducts', methods=['GET']) #?query=<query>
+@login_required
+def search_products():
+  query = request.args['query']
+  return json.dumps(db.search_products(query))
+
+
 @app.route('/updateProduct', methods=['POST'])
+@admin_required
 def update_product():
   p = request.get_json()
   result = is_valid_product_params(p)
@@ -194,16 +227,57 @@ def update_product():
     return result[1]
   if not isinstance(p['product_id'], int):
     return "Invalid product_id type", 400
-  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
+  return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
 
 
 @app.route('/createProduct', methods=['POST'])
+@admin_required
 def create_product():
   p = request.get_json()
   result = is_valid_product_params(p)
   if not isinstance(result, bool) or not result:
     return result[1]
-  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'])
+  return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
+
+
+@app.route('/getCategories', methods=['GET'])
+@login_required
+def get_categories():
+  return json.dumps(db.select_all_categories())
+
+
+@app.route('/createCategory', methods=['POST'])
+@admin_required
+def create_category():
+  p = request.get_json()
+  return db.insert_category(p['name'])
+
+
+@app.route('/updateCategory', methods=['POST'])
+@admin_required
+def update_category():
+  p = request.get_json()
+  return db.update_category(p['category_id'], p['name']) 
+
+
+@app.route('/getTags', methods=['GET'])
+@login_required
+def get_tags():
+  return json.dumps(db.select_all_tags())
+
+
+@app.route('/createTag', methods=['POST'])
+@admin_required
+def create_tag():
+  p = request.get_json()
+  return db.insert_tag(p['name'])
+
+
+@app.route('/updateTag', methods=['POST'])
+@admin_required
+def update_tag():
+  p = request.get_json()
+  return db.update_tag(p['tag_id'], p['name']) 
 
 # #
 # # Cart Routes
@@ -295,13 +369,13 @@ def update_inventory(order):
 # # Path Planning Routes
 # #
 @app.route('/getRoutesList', methods=['GET'])
-@login_required  # TODO: Eventually make this admin user only
+@admin_required
 def get_routes_list():
   return db.select_all_routeid()
 
 
 @app.route('/getRoute', methods=['GET'])  # ?order_id=<order_id> | ?route_id=<route_id>
-@login_required  # TODO: Eventually make this admin user only
+@admin_required
 def get_route():
   if 'route_id' in request.args:
     return db.select_route_from_routeid(request.args['route_id'])
