@@ -490,6 +490,15 @@ def get_path_planning_batch():
   else:
     return None
 
+def delete_all_tables():
+  # List all tables in the database
+  cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+  tables = cur.fetchall()
 
+  for table in tables:
+    table_name = table[0]
+    cur.execute(f"DELETE FROM {table_name}")
+
+  con.commit()
 
 init()
