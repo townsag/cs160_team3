@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Router, Link, Route } from "svelte-routing";
-  import Root from "./routes/Root.svelte";
+  import Root from "./routes/Login.svelte";
   import Login from "./routes/Login.svelte";
   import Signup from "./routes/Signup.svelte";
   import Home from "./routes/Home.svelte";
@@ -9,18 +9,17 @@
   import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
-  import EmBrowse from "./routes/EmBrowse.svelte";
+  import Browse from "./routes/Browse.svelte";
   import './app.css';
 
   const routes = [
-    { path: "/", component: Root },
     { path: "/login", component: Login },
     { path: "/signup", component: Signup },
     { path: "/home", component: Home },
     { path: "/settings", component: UserSettings },
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
-    { path: "/browse", component: EmBrowse }
+    { path: "/browse", component: Browse }
   ];
 
   export let url = "";

@@ -10,6 +10,12 @@
   let isVegan = false; 
   let currentCategory = "";
   let filterTags = [];
+
+  let currentUser;
+  let isAdmin = false;
+
+  let API_KEY: string = "none";
+
   function toggleGlutenFree() {
     isGlutenFree = !isGlutenFree;
   }
@@ -21,7 +27,7 @@
   }
   function toggleCategory(currCategory) {
     currentCategory = currCategory;
-    console.log(currentCategory);
+    //console.log(currentCategory);
   }
   function toggleTags(toggleTagsList) {
     filterTags = [];
@@ -30,7 +36,7 @@
         filterTags.push(allTagsList[i].name);
       }
     }
-    console.log(toggleTagsList);
+    //console.log(toggleTagsList);
   }
 
   //search bar stuff
@@ -53,25 +59,70 @@
   let searchBarItems: any[] = [];
   let filteredItems = [];
 
-  // Use onMount to fetch data when the component is mounted
-  onMount(async () => {
-    const response = await fetch("/getProducts", { method: "GET" });
-    const data = await response.json();
-    items = data;
-    updateSearchBarFilter();
-    getAllTags();
-    getAllCategories();
-  });
+  let allTagsList = [];
+  let allCategoriesList = [];
+
+  async function sequential_api_calls(){
+    const route_id = 1;
+    try{                                  //getAllItems
+      const response = await fetch("/getProducts", { method: "GET" });
+      const data = await response.json();
+      items = data;
+    } catch (error) {
+        console.log("error: ", error);
+    }
+    try{                                  //updateSearchBarFilter
+      const response = await fetch("/searchProducts?" + new URLSearchParams({ query: searchQuery })) 
+      const data = await response.json();
+      searchBarItems = data;
+    } catch (error) {
+        console.log("error: ", error);
+    }
+    try{                                  //getAllTags
+      const response = await fetch("/getTags", { method: "GET" });
+      const data = await response.json();
+      allTagsList = data;
+    } catch (error) {
+        console.log("error: ", error);
+    }
+    try{                                  //getAllCategories
+      const response = await fetch("/getCategories", { method: "GET" });
+      const data = await response.json();
+      allCategoriesList = data;
+      //console.log(data);
+    } catch (error) {
+        console.log("error: ", error);
+    }
+    try{                                  //getUser
+      const response = await fetch("/getUser", { method: "GET" });
+      const data = await response.json();
+      currentUser = data;
+      isAdmin = currentUser.is_admin;
+      //console.log("get returns: " + currentUser);
+      //console.log("isAdmin: " + isAdmin);
+    } catch (error) {
+        console.log("error: ", error);
+    }
+  }
 
   async function updateSearchBarFilter() {
+    /*
     //const response = await fetch("/searchProducts", { method: "GET" });
     const response = await fetch("/searchProducts?" + new URLSearchParams({ query: searchQuery })) 
     //const response = await fetch("/searchProducts?query=" + searchQuery);
     const data = await response.json();
-    searchBarItems = data;
+    searchBarItems = data; */
+
+    try{                                  //updateSearchBarFilter
+      const response = await fetch("/searchProducts?" + new URLSearchParams({ query: searchQuery })) 
+      const data = await response.json();
+      searchBarItems = data;
+    } catch (error) {
+        console.log("error: ", error);
+    }
   }
 
-  let allTagsList = [];
+  /*
   async function getAllTags() {
     //const response1 = await fetch("/getUser", { method: "GET" });
     //const data1 = await response1.json();
@@ -82,13 +133,12 @@
     allTagsList = data;
     //console.log(data);
   }
-  let allCategoriesList = [];
   async function getAllCategories() {
     const response = await fetch("/getCategories", { method: "GET" });
     const data = await response.json();
     allCategoriesList = data;
     console.log(data);
-  }
+  } */
 
   function findMatch(item) {
     for (let i = 0; i < searchBarItems.length; i++) {
@@ -96,20 +146,25 @@
         return true;
     }
     return false;
-   }
+  }
 
-  // revert back to old but make it so that if query != '' then filter items will have toi b like if item is in searchbarItems befor checking tags?
+  // Use onMount to fetch data when the component is mounted
+  onMount(async () => {
+    //const response = await fetch("/getProducts", { method: "GET" });
+    //const data = await response.json();
+    //items = data;
+    sequential_api_calls();
+  });
+
   $: {
-    
     if (startSearch == true) {
       updateSearchBarFilter();
       startSearch = false;
-      console.log("query: " + searchQuery);
-      console.log("actual list: " + searchBarItems);
+      //console.log("query: " + searchQuery);
+      //console.log("actual list: " + searchBarItems);
     } 
 
     filteredItems = items.filter((item) => {
-      //if (searchQuery != '' && !searchBarItems.includes(item)) {
       if (!findMatch(item)) {
         return false;
       } 
@@ -132,15 +187,12 @@
       return true; 
     }); 
 
-    //filteredItems = searchBarItems;
-
-
     let tempNameList = []
     for (let i = 0; i < filteredItems.length; i ++) {
       tempNameList.push(filteredItems[i].name);
     }
-    console.log("displayed list: " + filteredItems);
-    console.log("displayed list (names): " + tempNameList);
+    //console.log("displayed list: " + filteredItems);
+    //console.log("displayed list (names): " + tempNameList);
   } 
 </script>
 
@@ -164,6 +216,7 @@
   <div class="{openFilter ? '' : 'blur'}">
     <ItemDisplay 
       {filteredItems}
+      {isAdmin}
     />
   </div>
 
