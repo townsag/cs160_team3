@@ -2,13 +2,13 @@ version: '3'
 services:
   frontend: 
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
+      context: ./ogo
+      dockerfile: Dockerfile
     ports:
       - '8000:8000'
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     ports:
       - '3000:3000'
