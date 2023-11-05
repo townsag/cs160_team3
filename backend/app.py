@@ -127,7 +127,7 @@ def login():
   if j:
     login_user(load_user(j['user_id']))
     return 'Success'
-  return 'Failure', 400
+  return 'Failure'
 
 
 @app.route('/logout')
