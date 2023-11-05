@@ -7,7 +7,8 @@ services:
     ports:
       - '8000:8000'
     volumes:
-      - ./frontend/:/usr/src/app/src/frontend
+      - ./package.json:/user/src/app/package.json
+      - ./frontend:/usr/src/app/src
   backend:
     build:
       context: ./backend
