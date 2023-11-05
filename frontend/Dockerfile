@@ -6,7 +6,7 @@ COPY ../package-lock.json .
 
 COPY ../package.json .
 
-COPY ./frontend .
+COPY . .
 
 RUN npm install
 
