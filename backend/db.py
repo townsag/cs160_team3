@@ -3,9 +3,9 @@ import time
 import bcrypt
 
 con = sqlite3.connect("db.db", check_same_thread=False)
-cur = con.cursor()
 
 def init():
+  cur = con.cursor()
   cur.executescript('''
   CREATE TABLE IF NOT EXISTS USERS (
       UserID INTEGER PRIMARY KEY,
@@ -96,6 +96,7 @@ def init():
 
 
 def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight, CategoryID) VALUES (?, ?, ?, ?, ?, ?, ?)",
               (name, description, image, quantity, price, weight, category_id))
   product_id = cur.lastrowid
@@ -110,6 +111,7 @@ def insert_product(name: str, description: str, image: str, quantity: int, price
 
 
 def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
+  cur = con.cursor()
   cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=?, CategoryID=? WHERE ProductID=?",
               (name, description, image, quantity, price, weight, category_id, product_id))
 
@@ -127,6 +129,7 @@ def update_product(product_id: int, name: str, description: str, image: str, qua
 
 
 def select_product(product_id: int) -> dict:
+  cur = con.cursor()
   cur.execute("SELECT * FROM PRODUCTS WHERE ProductID=?", (product_id,))
   prod = cur.fetchone()
 
@@ -136,16 +139,19 @@ def select_product(product_id: int) -> dict:
 
 
 def select_products() -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM PRODUCTS")
   return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category': select_category(row[7]), 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def search_products(query: str) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM PRODUCTS WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
   return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category': select_category(row[7]), 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def insert_tag(name: str) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO TAGS (Name) VALUES (?)",
               (name,))
   con.commit()
@@ -155,11 +161,13 @@ def insert_tag(name: str) -> dict:
 
 
 def select_all_tags() -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM TAGS")
   return [{'tag_id': t[0], 'name': t[1]} for t in cur.fetchall()]
 
 
 def select_product_tags(product_id:int) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT T.TagID, T.Name "
               "FROM PRODUCT_TAGS AS PT "
               "JOIN Tags AS T ON T.TagID = PT.TagID "
@@ -168,6 +176,7 @@ def select_product_tags(product_id:int) -> list[dict]:
 
 
 def update_tag(tag_id: int, name: str) -> dict:
+  cur = con.cursor()
   cur.execute("UPDATE TAGS SET Name=? WHERE TagID=?",
               (name, tag_id))
   con.commit()
@@ -176,11 +185,13 @@ def update_tag(tag_id: int, name: str) -> dict:
 
 
 def select_all_categories() -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM CATEGORIES")
   return [{'category_id': c[0], 'name': c[1]} for c in cur.fetchall()]
 
 
 def select_category(category_id) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM CATEGORIES WHERE CategoryID=?",
               (category_id,))
   c = cur.fetchone()
@@ -188,6 +199,7 @@ def select_category(category_id) -> list[dict]:
 
 
 def insert_category(name: str) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO CATEGORIES (Name) VALUES (?)",
               (name,))
   con.commit()
@@ -197,6 +209,7 @@ def insert_category(name: str) -> dict:
 
 
 def update_category(category_id: int, name: str) -> dict:
+  cur = con.cursor()
   cur.execute("UPDATE CATEGORIES SET Name=? WHERE CategoryID=?",
               (name, category_id))
   con.commit()
@@ -210,12 +223,14 @@ def update_category(category_id: int, name: str) -> dict:
 # #
 
 def select_user(user_id: int) -> dict:
+  cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
   return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
 
 def validate_user(username: str, password: str) -> dict:
+  cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
   row = cur.fetchone()
   
@@ -228,6 +243,7 @@ def validate_user(username: str, password: str) -> dict:
 def insert_user(username: str, password: str, address: str, is_admin: bool) -> dict:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
+  cur = con.cursor()
   cur.execute("INSERT INTO USERS (Username, Password, Address, IsAdmin) VALUES (?, ?, ?, ?)",
               (username, hashedpw, address, int(is_admin)))
   con.commit()
@@ -237,6 +253,7 @@ def insert_user(username: str, password: str, address: str, is_admin: bool) -> d
 
 
 def update_user_username(user_id: int, username: str):
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET Username=? WHERE UserID=?",
               (username, user_id))
   con.commit()
@@ -244,18 +261,22 @@ def update_user_username(user_id: int, username: str):
 
 def update_user_password(user_id: int, password: str) -> None:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET Password=? WHERE UserID=?",
               (hashedpw, user_id))
   con.commit()
 
 
 def update_user_address(user_id: int, address: str) -> None:
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET Address=? WHERE UserID=?",
               (address, user_id))
   con.commit()
 
 
 def update_user_admin(user_id: int, is_admin: bool) -> None:
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET IsAdmin=? WHERE UserID=?",
               (int(is_admin), user_id))
   con.commit()
@@ -266,6 +287,7 @@ def update_user_admin(user_id: int, is_admin: bool) -> None:
 
 
 def get_cart_id(user_id: int) -> int:
+  cur = con.cursor()
   cur.execute("SELECT CartID FROM CARTS WHERE UserID=?", (user_id,))
   cart_row = cur.fetchone()
 
@@ -277,6 +299,7 @@ def get_cart_id(user_id: int) -> int:
 
 
 def select_cart(user_id: int) -> dict:
+  cur = con.cursor()
   cart_id = get_cart_id(user_id)
 
   cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity "
@@ -291,6 +314,7 @@ def select_cart(user_id: int) -> dict:
 
 
 def insert_cart(user_id: int) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO CARTS (UserID) VALUES (?)", (user_id,))
   con.commit()
   cart_id = cur.lastrowid
@@ -298,6 +322,7 @@ def insert_cart(user_id: int) -> dict:
 
 
 def insert_cart_item(user_id: int, product_id: int, quantity: int) -> dict:
+  cur = con.cursor()
   cart_id = get_cart_id(user_id)
 
   cur.execute("INSERT INTO CART_ITEMS (CartID, ProductID, Quantity) VALUES (?, ?, ?)",
@@ -309,6 +334,7 @@ def insert_cart_item(user_id: int, product_id: int, quantity: int) -> dict:
 
 
 def update_cart_item(user_id: int, cart_item_id: int, product_id: int, quantity: int) -> dict:
+  cur = con.cursor()
   cart_id = get_cart_id(user_id)
 
   cur.execute("UPDATE CART_ITEMS SET Quantity=?, ProductID=? WHERE CartItemID=? AND CartID=?", (quantity, product_id, cart_item_id, cart_id))
@@ -318,6 +344,7 @@ def update_cart_item(user_id: int, cart_item_id: int, product_id: int, quantity:
 
 
 def delete_cart_item(user_id: int, cart_item_id: int) -> None:
+  cur = con.cursor()
   cart_id = get_cart_id(user_id)
 
   cur.execute("DELETE FROM CART_ITEMS WHERE CartItemID=? AND CartID=?", (cart_item_id, cart_id))
@@ -330,6 +357,7 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 
 
 def select_orders(user_id: int) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
 
   return [{
@@ -345,6 +373,7 @@ def select_orders(user_id: int) -> list[dict]:
 
 def select_order_items(user_id: int, order_id: int) -> list[dict]:
   # TODO: ensure that the user owns the order
+  cur = con.cursor()
 
   cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, OI.OrderItemID, OI.Quantity "
               "FROM ORDER_ITEMS AS OI "
@@ -390,6 +419,7 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
   status = 0
   placed_epoch = int(time.time())
 
+  cur = con.cursor()
   cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, PlacedEpoch) VALUES (?, ?, ?, ?, ?)",
               (user_id, total_price, total_weight, status, placed_epoch))
 
@@ -418,6 +448,7 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
 #   }
 # ]
 def insert_route(polyline: str, legs: list[dict]):
+  cur = con.cursor()
   cur.execute("INSERT INTO ROUTES (Polyline, CreationEpoch) VALUES (?, ?)",
               (polyline, int(time.time())))
 
@@ -434,11 +465,13 @@ def insert_route(polyline: str, legs: list[dict]):
 
 
 def select_all_routeid() -> list[int]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM ROUTES")
   return [{"route_id": r[0], "creation_epoch": r[2]} for r in cur.fetchall()]
 
 
 def select_route_from_routeid(route_id: int):
+  cur = con.cursor()
   cur.execute("SELECT * FROM ROUTES WHERE RouteID=?", (route_id,))
   r = cur.fetchone()
   polyline = r[1]
@@ -461,11 +494,13 @@ def select_route_from_routeid(route_id: int):
 
 
 def select_route_from_orderid(order_id: int):
+  cur = con.cursor()
   cur.execute("SELECT RouteID FROM ROUTE_ORDERS WHERE OrderID=?", (order_id,))
   return select_route_from_routeid(cur.fetchone()[0])
 
 
 def get_path_planning_batch():
+  cur = con.cursor()
   cur.execute("SELECT O.OrderID, O.TotalWeight, U.Address "
               "FROM ORDERS AS O "
               "JOIN USERS AS U ON U.UserID = O.UserID "
