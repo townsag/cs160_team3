@@ -1,7 +1,7 @@
 <script lang="ts">
     // TODO: Login page should not show/work for already logged-in users
 
-
+    import bg from "../assets/bg1.jpeg";
     import { login, getCurrentUser } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
@@ -11,8 +11,6 @@
 
     let storedUsername = "";
     let storedPassword = "";
-
-    let bg = "https://user-images.githubusercontent.com/63530023/278915388-7232c29c-49d0-49b6-bd28-e26c65f36783.jpeg";
     
     async function handleSubmit() {
         storedUsername = usernameState;
