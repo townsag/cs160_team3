@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch vite --exec vite -e ts -e svelte -e css",
+    "dev": "nodemon --watch vite --exec vite -e ts -e svelte -e css -e py",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json"
