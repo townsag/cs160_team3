@@ -20,17 +20,19 @@ class User:
     self.username = username
     self.address = address
     self.is_admin = is_admin
-    self.is_active = True
 
   def get_id(self):
     return str(self.user_id)
 
+  @property
   def is_authenticated(self):
     return True
 
+  @property
   def is_active(self):
-    return self.is_active
+    return True
 
+  @property
   def is_anonymous(self):
     return False
 
@@ -39,7 +41,8 @@ class User:
     try:
       u = db.select_user(user_id)
       return User(user_id, u['username'], u['address'], u['is_admin'])
-    except:
+    except Exception as e:
+      print('User.get() error:', e)
       return None
 
 
