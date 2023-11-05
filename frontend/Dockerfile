@@ -1,14 +1,12 @@
 FROM node:16
 
-WORKDIR /usr/src/app
-
-RUN yarn global add nodemon
+WORKDIR /ogoFrontEnd
 
 COPY ../package-lock.json .
 
 COPY ../package.json .
 
-COPY ./frontend/ . 
+COPY ./frontend .
 
 RUN npm install
 
