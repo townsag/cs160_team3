@@ -7,6 +7,7 @@
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import EmBrowse from "./routes/EmBrowse.svelte";
+  import EmMaps from "./routes/EmployeeMaps.svelte";
   import './app.css';
 
   export let url = "";
@@ -23,6 +24,7 @@
         <Link to="/signup">Signup</Link>
         <Link to="/home">Home</Link>
         <Link to="/employeesbrowser">EmployLanding</Link>
+        <Link to="/employeesmaps">EmployeeMaps</Link>
       </nav>
       <div>
         <Route path="/" component={Root} />
@@ -30,6 +32,7 @@
         <Route path="/signup" component={Signup} />
         <Route path="/home" component={Home} />
         <Route path="/employeesbrowser" component={EmBrowse} />
+        <Route path="/employeesmaps" component={EmMaps} />
       </div>
       <Footer />
     </Router>
