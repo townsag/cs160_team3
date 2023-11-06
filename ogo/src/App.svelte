@@ -9,6 +9,8 @@
   import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
+  import EmBrowse from "./routes/EmBrowse.svelte";
+  import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
   import './app.css';
 
@@ -19,7 +21,8 @@
     { path: "/settings", component: UserSettings },
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
-    { path: "/browse", component: Browse }
+    { path: "/browse", component: Browse },
+    { path: "/employeesmaps", component: EmMaps}
   ];
 
   export let url = "";
