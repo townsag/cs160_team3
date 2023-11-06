@@ -17,7 +17,7 @@ ORIGIN = "1 Washington Sq, San Jose, CA 95192"
 
 
 login_manager = LoginManager()
-app = Flask(__name__)
+app = Flask(__name__, static_folder='ogo/dist')
 app.secret_key = b'replace_this_later'  # TODO: use enviroment variable instead
 
 login_manager.init_app(app)
@@ -99,14 +99,18 @@ def route_if_ready():
 # #
 # # Serve Static Files
 # #
-@app.route('/')
+@app.route('/', methods=["GET"])
 def root():
-  return send_from_directory('ogo/dist', 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 
-@app.route('/<path:path>')
+@app.route('/<path:path>', methods=["GET"])
 def assets(path):
-  return send_from_directory('ogo/dist', path)
+    try:
+        response = send_from_directory(app.static_folder, path)
+        return response
+    except:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 # #

@@ -1,4 +1,8 @@
 <script lang="ts">
+    // TODO: Login page should not show/work for already logged-in users
+
+    import bg from "../assets/bg1.jpeg";
+    import { login, getCurrentUser } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
 
     let usernameState = "";
@@ -15,24 +19,42 @@
         console.log(storedUsername);
         console.log(storedPassword);
 
-        const loginResponse = await fetch("/login", {
-            method: "POST",
-            headers: {
-            'Content-Type': "application/json"
-            },
-            body: JSON.stringify({
-                "username": storedUsername,
-                "password": storedPassword,
-            })
-        })
-        
-        if (loginResponse.ok) {
-            const message = await loginResponse.text();
-            console.log(message);
-            navigate("/home");
+        const result = await login(storedUsername, storedPassword);
+
+        if (result.success) {
+            console.log("Logged in successfully!");
+            navigate("/browse");
         } else {
-            console.error("Failed to login.");
+            console.error("Login failed:", result.message);
         }
+
+        const userResult = await getCurrentUser();
+
+        if (userResult.success) {
+            console.log('User data:', userResult.user.user_id, userResult.user.username);
+        } else {
+            console.error('Error fetching user:', result.message);
+        }
+    }
+
+        // const loginResponse = await fetch("/login", {
+        //     method: "POST",
+        //     headers: {
+        //     'Content-Type': "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //         "username": storedUsername,
+        //         "password": storedPassword,
+        //     })
+        // })
+        
+        // if (loginResponse.ok) {
+        //     const message = await loginResponse.text();
+        //     console.log(message);
+        //     navigate("/home");
+        // } else {
+        //     console.error("Failed to login.");
+        // }
 
         // Test
         // const products = await fetch("/getProducts", {
@@ -42,7 +64,6 @@
         // const result = JSON.stringify(json);
 
         // console.log(result);
-    }
 
     async function handleToggle() {
         toggleIsCheckedState = !toggleIsCheckedState;
@@ -69,8 +90,10 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
-    <div class="min-w-screen flex flex-col items-center justify-center bg-gray-200">
-        <div class="card w-96 bg-base-100 border-2 border-black-500 mt-8">
+    <div class="relative min-w-screen h-screen flex-grow flex flex-col items-center justify-center px-4 sm:px-0"
+     style="background-image: url({bg}); background-size: cover; background-repeat: no-repeat;">
+        <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
+        <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
             <div class="card-body">
                 <div class="flex justify-between items-center">
                     <h1 class="card-title">LOGIN</h1>
