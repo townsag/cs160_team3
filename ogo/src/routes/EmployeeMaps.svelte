@@ -1,7 +1,7 @@
 
 <script lang="ts">
     import Map from "../lib/components/Map.svelte";
-    import RouteSummary from "../lib/components/RouteSummary.svelte";
+    import RouteSummary from "../lib/components/OrderSummary.svelte";
 
     let route_data: any = {};
     let orders_props: any = [];
@@ -31,6 +31,7 @@
     //         console.log("error: ", error)
     //     }
     // }
+    
     //hardcoded values rn:
     //  -API key
     //  -route id
