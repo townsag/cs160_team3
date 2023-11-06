@@ -116,7 +116,7 @@ export async function updateUser(username: string, password: string, address: st
 
         const updateResult = await updateUserResponse.json();
 
-        if (updateResult && updateResult.success) {
+        if (updateResult) {
             return { success: true, message: "User updated successfully." };
         } else {
             return { success: false, message: "Failed to update user." };
@@ -201,7 +201,7 @@ export async function updateCartItem(cartItemId: number, productId: number, quan
 
         const updateResult = await updateCartItemResponse.json();
 
-        if (updateResult && updateResult.success) {
+        if (updateResult) {
             return { success: true, message: "Cart item updated successfully." };
         } else {
             return { success: false, message: "Failed to update cart item." };
