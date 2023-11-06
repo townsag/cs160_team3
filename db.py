@@ -29,7 +29,13 @@ def init():
       Quantity INTEGER,
       Price REAL,
       Weight REAL,
-      CategoryID INTEGER REFERENCES CATEGORIES(CategoryID)
+      CategoryID INTEGER REFERENCES CATEGORIES(CategoryID),
+      CHECK (Quantity >= 0)
+      CHECK (Quantity <= 9999)
+      CHECK (Price >= 0.0)
+      CHECK (Weight >= 0.0)
+      CHECK (CategoryID >= 1)
+      
   );
 
   CREATE TABLE IF NOT EXISTS TAGS (
@@ -53,6 +59,8 @@ def init():
       CartID INTEGER REFERENCES CARTS(CartID),
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
       Quantity INTEGER
+      CHECK (Quantity >= 0)
+      CHECK (Quantity <= 20)
   );
 
   CREATE TABLE IF NOT EXISTS ORDERS (
@@ -63,6 +71,8 @@ def init():
       Status INTEGER,
       PlacedEpoch INTEGER,
       ETAEpoch INTEGER
+      CHECK (TotalPrice >= 0.0)
+      CHECK (TotalWeight >= 0.0)
   );
 
   CREATE TABLE IF NOT EXISTS ORDER_ITEMS (
@@ -70,6 +80,7 @@ def init():
       OrderID INTEGER REFERENCES ORDERS(OrderID),
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
       Quantity INTEGER
+      CHECK (Quantity >= 0)
   );
 
   CREATE TABLE IF NOT EXISTS ROUTES (
@@ -110,21 +121,45 @@ def insert_product(name: str, description: str, image: str, quantity: int, price
   return select_product(product_id)
 
 
-def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
-  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=?, CategoryID=? WHERE ProductID=?",
-              (name, description, image, quantity, price, weight, category_id, product_id))
-
-  cur.execute("DELETE FROM PRODUCT_TAGS WHERE ProductID=?", (product_id,))
-
-  for tag_id in tags:
-    cur.execute("INSERT INTO PRODUCT_TAGS (TagID, ProductID) VALUES (?, ?)",
-                (tag_id, product_id))
-
+'''
+Tries to make a purchase with requested order into DB
+  Input:
+  * Dictionary that maps product ID's to order quantities
+  Output:
+  * If there is enough inventory/quantity for all products in order, executes order and returns True
+  * If there is not enough inventory/quantity for all products in order, rolls back all orders and returns False
+'''
+def purchase_product_order(requested_product_quantities: dict):
+  product_ids = requested_product_quantities.keys()
+  try:
+    cur.execute("BEGIN TRANSACTION")
+    for product_id in product_ids:
+      cur.execute("UPDATE PRODUCTS SET Quantity=Quanitity-? WHERE ProductID=?",
+                  (requested_product_quantities[product_ids], product_id))
+    con.commit()
+    return True
+  except sqlite3.Error:
+    con.rollback()
+    return False
+ 
+# What if product ID not found?
+def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
+  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=? WHERE ProductID=?",
+              (name, description, image, quantity, price, weight, product_id))
   con.commit()
 
   tags = select_product_tags(product_id)
   return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'category': select_category(category_id), 'tags': tags}
   # TODO: possibly return false or throw error if there is not a product in the db with the given productid
+
+
+# Checks to see if given product ID is in database.
+# If in database, returns True. Else, returns False.
+def is_product_in_db(product_id: int):
+  if select_product(product_id=product_id) == None:
+    return False
+  else:
+    return True
 
 
 def select_product(product_id: int) -> dict:
@@ -185,7 +220,10 @@ def select_category(category_id) -> list[dict]:
   cur.execute("SELECT * FROM CATEGORIES WHERE CategoryID=?",
               (category_id,))
   c = cur.fetchone()
-  return {'category_id': c[0], 'name': c[1]}
+  if c == None:
+    return c
+  else:
+    return {'category_id': c[0], 'name': c[1]}
 
 
 def insert_category(name: str) -> dict:
@@ -280,6 +318,9 @@ def get_cart_id(user_id: int) -> int:
 def select_cart(user_id: int) -> dict:
   cart_id = get_cart_id(user_id)
 
+
+
+# BROKEN: Returns null type for valid category id, bad query
   cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity "
               "FROM CART_ITEMS AS CI "
               "JOIN PRODUCTS AS P ON CI.ProductID = P.ProductID "
