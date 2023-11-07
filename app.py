@@ -54,13 +54,21 @@ def get_item_in_cart(product_id : int):
 
 
 def is_valid_product_id(product_id : int):
-  pass
+  if db.select_product(product_id) == None:
+    return False
+  return True
 
 def is_valid_category_id(category_id : int):
-  pass
+  if db.select_category(category_id) == None:
+    return False
+  return True
 
-def is_valid_cart_id(cart_id : int):
-  pass
+def is_valid_tag(tag_id):
+  tags = db.select_all_tags()
+  for tag in tags:
+    if tag['tag_id'] == tag_id:
+      return True
+  return False
 
 def is_valid_cart_item_params(ci : json):
   curr_cart = db.select_cart(current_user.user_id)
@@ -92,7 +100,7 @@ def is_valid_product_params(p : json):
     return False, ("Invalid name type", 400)
   if p['quantity'] < 0 or p['weight'] < 0 or p['price'] < 0:
     return False, ("Cannot have negative weight, price, or quantity", 400)
-  if db.select_category(p['category_id']) == None:
+  if not is_valid_category_id(p['category_id']):
     return False, ("Category of that ID does not exist", 400)
   else:
     return True
@@ -249,6 +257,8 @@ def get_products():
 @login_required
 def get_product():
   product_id = request.args['productID']
+  if not is_valid_product_id(product_id):
+    return "Invalid Product ID, does not exist in current product list", 400  
   # TODO: handle if productID is not present in query string
   return json.dumps(db.select_product(product_id))
 
@@ -267,8 +277,8 @@ def update_product():
   result = is_valid_product_params(p)
   if not isinstance(result, bool) or not result:
     return result[1]
-  if not isinstance(p['product_id'], int):
-    return "Invalid product_id type", 400
+  if not is_valid_product_id(p['product_id']):
+    return "Invalid Product ID, does not exist in current product list", 400  
   return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
 
 
@@ -299,6 +309,8 @@ def create_category():
 @admin_required
 def update_category():
   p = request.get_json()
+  if not is_valid_category_id(p["category_id"]):
+    return "Invalid Category ID, does not exist in current category list", 400 
   return db.update_category(p['category_id'], p['name']) 
 
 
@@ -319,6 +331,8 @@ def create_tag():
 @admin_required
 def update_tag():
   p = request.get_json()
+  if not is_valid_tag(p['tag_id']):
+    return "Invalid Tag ID, does not exist in current tag list", 400
   return db.update_tag(p['tag_id'], p['name']) 
 
 # #
@@ -335,6 +349,8 @@ def get_cart():
 @login_required
 def add_cart_item():
   ci = request.get_json()
+  if not is_valid_product_id(ci['product_id']):
+    return "Invalid Product ID, does not exist in current product list", 400
   result = is_valid_cart_item_params(ci)
   if not isinstance(result, bool) or not result:
     return result[1]
@@ -349,6 +365,8 @@ def add_cart_item():
 @login_required
 def update_cart_item():
   ci = request.get_json()
+  if not is_valid_product_id(ci['product_id']):
+    return "Invalid Product ID, does not exist in current product list", 400
   cart_item = get_item_in_cart(ci["product_id"])
   if cart_item == None:
     return "Product ID not currently in shopping cart", 400
@@ -357,6 +375,9 @@ def update_cart_item():
   return db.update_cart_item(current_user.user_id, ci['cart_item_id'], ci['product_id'], ci['quantity'])
 
 
+
+
+# NOTE TO SELF: Test to see what happens if remove cart item id that doesnt exist
 @app.route('/removeCartItem', methods=['POST'])
 @login_required
 def remove_cart_item():
