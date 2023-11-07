@@ -318,17 +318,14 @@ def get_cart_id(user_id: int) -> int:
 def select_cart(user_id: int) -> dict:
   cart_id = get_cart_id(user_id)
 
-
-
-# BROKEN: Returns null type for valid category id, bad query
-  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity "
+  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity, P.CategoryID "
               "FROM CART_ITEMS AS CI "
               "JOIN PRODUCTS AS P ON CI.ProductID = P.ProductID "
               "WHERE CI.CartID=?", (cart_id,))
 
   return {
     "cart_id": cart_id,
-    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5], 'category': select_category(ci[7]), 'tags': select_product_tags(ci[0])} for ci in cur.fetchall()]
+    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5], 'category': select_category(ci[8]), 'tags': select_product_tags(ci[0])} for ci in cur.fetchall()]
   }
 
 
