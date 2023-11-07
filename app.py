@@ -4,7 +4,7 @@ import json
 from functools import wraps
 import threading
 from flask import Flask, request, send_from_directory
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user
 
 import pdb
 import configparser
@@ -51,6 +51,34 @@ class User:
       return User(user_id, u['username'], u['address'], u['is_admin'])
     except:
       return None
+    
+
+@login_manager.user_loader
+def load_user(user_id):
+  return User.get(user_id)
+
+
+# Flask route decorator to require the request to be made by a logged in user.
+def login_required(f):
+    @wraps(f)
+    def check_login(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return "Unauthorized: You must be logged in to use this route.", 401
+        return f(*args, **kwargs)
+    return check_login
+
+
+# Flask route decorator to require the request to be made by a logged in admin user.
+def admin_required(f):
+    @wraps(f)
+    def check_admin(*args, **kwargs):
+        if not current_user.is_authenticated:
+          return "Unauthorized: You must be logged in to use this route.", 401
+        if not current_user.is_admin:
+            return "Unauthorized: You must be logged in as admin to use this route.", 401
+        return f(*args, **kwargs)
+    return check_admin
+
 
 def get_item_in_cart(product_id : int):
   curr_cart = db.select_cart(current_user.user_id)
@@ -58,9 +86,6 @@ def get_item_in_cart(product_id : int):
     if item['product_id'] == product_id:
       return item
   return None
-
-
-
 
 
 def is_valid_product_id(product_id : int):
@@ -114,36 +139,6 @@ def is_valid_product_params(p : json):
     return False, ("Category of that ID does not exist", 400)
   else:
     return True
-
-
-
-
-
-@login_manager.user_loader
-def load_user(user_id):
-  return User.get(user_id)
-
-
-# Flask route decorator to require the request to be made by a logged in user.
-def login_required(f):
-    @wraps(f)
-    def check_login(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return "Unauthorized: You must be logged in to use this route.", 401
-        return f(*args, **kwargs)
-    return check_login
-
-
-# Flask route decorator to require the request to be made by a logged in admin user.
-def admin_required(f):
-    @wraps(f)
-    def check_admin(*args, **kwargs):
-        if not current_user.is_authenticated:
-          return "Unauthorized: You must be logged in to use this route.", 401
-        if not current_user.is_admin:
-            return "Unauthorized: You must be logged in as admin to use this route.", 401
-        return f(*args, **kwargs)
-    return check_admin
 
 
 def route_if_ready():
@@ -406,6 +401,12 @@ def remove_cart_item():
 @login_required
 def get_orders():
   return db.select_orders(current_user.user_id)
+
+
+@app.route('/getAllOrders', methods=['GET'])
+@admin_required
+def get_all_orders():
+  return db.select_all_orders()
 
 
 @app.route('/getOrderItems', methods=['GET'])  # ?orderID=<orderID>

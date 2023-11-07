@@ -369,6 +369,17 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # #
 # # Orders
 # #
+def select_all_orders() -> list[dict]:
+  cur.execute("SELECT * FROM ORDERS")
+  return [{
+    'order_id': o[0],
+    'user': select_user(o[1]),
+    'total_price': o[2],
+    'total_weight': o[3],
+    'status': o[4],
+    'placed_epoch': o[5],
+    'eta_epoch': o[6]
+  } for o in cur.fetchall()]
 
 
 def select_orders(user_id: int) -> list[dict]:
