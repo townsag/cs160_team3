@@ -1,7 +1,15 @@
 <script>
   //array size not updating
+  import { navigate } from "svelte-routing";
   export let filteredItems;
   export let isAdmin;
+
+  function handleItemClick(item) {
+    //navigate(`/itemView/${item.product_id}`, { state: { item } });
+    navigate(`/itemView/${item.product_id}`);
+
+    console.log("ItemDisplay: " + item.name);
+  }
 </script>
 
 <style>
@@ -15,12 +23,6 @@
   .border {
     min-width: 150px;
     min-height: 150px;
-    max-height: 500px;
-    padding: 10px;
-  }
-
-  .extraDiv {
-    min-height: 200px;
     max-height: 500px;
     padding: 10px;
   }
@@ -48,7 +50,9 @@
       </div>
     {/if}
     {#each filteredItems as item}
-      <div class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div on:click={() => handleItemClick(item)} class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
         <img src={item.image} alt={item.name} class="mb-2 w-full h-40 object-cover" />
   
         <div class="flex flex-col">
@@ -70,8 +74,5 @@
         </div>
       </div>
     {/each}
-  
-    <!-- Blank div to fill up remaining space
-    <div class="extraDiv p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300 invisible"></div>  -->
   </div>
 </body>

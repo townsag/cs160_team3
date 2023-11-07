@@ -9,9 +9,9 @@
   import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
-  import EmBrowse from "./routes/EmBrowse.svelte";
   import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
+  import ItemViewer from "./routes/ItemViewer.svelte";
   import './app.css';
 
   const routes = [
@@ -22,6 +22,7 @@
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
     { path: "/browse", component: Browse },
+    { path: "/itemView/:productId", component: ItemViewer },
     { path: "/employeesmaps", component: EmMaps}
   ];
 
@@ -31,7 +32,6 @@
 <html lang="en" data-theme="lemonade">
   <main>
     <Router {url}>
-      <Navbar />
       <nav class='bg-gray-300'>
         {#each routes as route}
           <Link to={route.path}>{route.path} </Link>
@@ -42,7 +42,6 @@
           <Route path={route.path} component={route.component} />
         {/each}
       </div>
-      <Footer />
     </Router>
   </main>
 </html>

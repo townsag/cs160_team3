@@ -203,8 +203,7 @@
 </style>
 
 <div class="container mx-auto p-4">
-
-  <div class="search-bar-container flex items-center border rounded p-2 mb-4" >
+  <div class="search-bar-container flex items-center border rounded ,," >
     <SearchBar 
       {toggleFilterOpen}
       {searchQuery}
