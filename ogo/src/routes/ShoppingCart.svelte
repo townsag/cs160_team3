@@ -40,6 +40,7 @@
             //console.log(JSON.stringify(result));
 
             filteredItems = result.cart.items
+            console.log(filteredItems);
             calculateTotalCost();
         } else {
             console.error("Failed to fetch cart data:", result.message);
@@ -79,25 +80,18 @@
                         {#if filteredItems && filteredItems.length > 0}
                             <ItemDisplay
                                 {filteredItems}
+                                isAdmin={false}
                                 isCartItem={true}
                             />
                         {:else}
                             <span>There are no items in your cart.</span>
                         {/if}
 
-                        <!--test placeholder-->
-                        <!-- {#each filteredItems as item}
-                            <div class="card bg-neutral text-neutral-content">
-                                <div class="card-body items-center text-center">
-                                    <h2 class="card-title">{item.name}</h2>
-                                </div>
-                            </div>
-                        {/each} -->
-
                     </div>
                 </div>
             </div>
         </div>
+        
         <div class="basis-1/2">
             <div class="card bg-base-100 border-2 border-black-500 mt-8 mb-8">
                 <div class="card-body">
