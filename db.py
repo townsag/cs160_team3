@@ -287,7 +287,7 @@ def select_cart(user_id: int) -> dict:
 
   return {
     "cart_id": cart_id,
-    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5], 'category': select_category(ci[7]), 'tags': select_product_tags(ci[0])} for ci in cur.fetchall()]
+    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5]} for ci in cur.fetchall()]
   }
 
 
@@ -490,6 +490,15 @@ def get_path_planning_batch():
   else:
     return None
 
+def delete_all_tables():
+  # List all tables in the database
+  cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+  tables = cur.fetchall()
 
+  for table in tables:
+    table_name = table[0]
+    cur.execute(f"DELETE FROM {table_name}")
+
+  con.commit()
 
 init()

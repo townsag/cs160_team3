@@ -23,7 +23,7 @@
 
         if (result.success) {
             console.log("Logged in successfully!");
-            navigate("/home");
+            navigate("/browse");
         } else {
             console.error("Login failed:", result.message);
         }

@@ -1,27 +1,22 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { getCart } from "../lib/util/RequestController"
-    import ItemDisplay from '../lib/components/ItemDisplay.svelte';
 
-    const taxRate = 0.0725;
-
-    let filteredItems: any[] = [];
+    let cartItemsList: any[] = [];
 
     let totalWeight = 0;
     let totalCost = 0;
 
     let itemsSubtotal = 0;
     let shippingSubtotal = 0;
-    let taxSubtotal = 0;
+    let taxSubtotal = 0; // probably will use 0 for now
 
     function calculateTotalCost() {
-        totalWeight = Object.values(filteredItems).reduce((acc, item) => acc + item.weight, 0);
+        totalWeight = Object.values(cartItemsList).reduce((acc, item) => acc + item.weight, 0);
 
-        itemsSubtotal = Object.values(filteredItems).reduce((acc, item) => acc + item.price, 0);
+        itemsSubtotal = Object.values(cartItemsList).reduce((acc, item) => acc + item.price, 0);
 
-        taxSubtotal = itemsSubtotal * taxRate;
-
-        console.log("Total weight:", totalWeight);
+        console.log(totalWeight);
         
         if (totalWeight > 20)
             shippingSubtotal = 20;
@@ -37,7 +32,8 @@
         if (result.success) {
             //console.log(JSON.stringify(result));
 
-            filteredItems = result.cart.items
+            cartItemsList = result.cart.items
+            console.log(cartItemsList);
             calculateTotalCost();
         } else {
             console.error("Failed to fetch cart data:", result.message);
@@ -58,22 +54,13 @@
 
                     <div class="grid grid-rows-4 grid-flow-col gap-4">
 
-                        {#if filteredItems && filteredItems.length > 0}
-                            <ItemDisplay
-                                {filteredItems}
-                            />
-                        {:else}
-                            <span>There are no items in your cart.</span>
-                        {/if}
-
-                        <!--test placeholder-->
-                        <!-- {#each filteredItems as item}
+                        {#each cartItemsList as item}
                             <div class="card bg-neutral text-neutral-content">
                                 <div class="card-body items-center text-center">
                                     <h2 class="card-title">{item.name}</h2>
                                 </div>
                             </div>
-                        {/each} -->
+                        {/each}
 
                     </div>
                 </div>

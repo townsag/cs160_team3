@@ -6,6 +6,16 @@ import threading
 from flask import Flask, request, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, current_user
 
+import pdb
+import configparser
+
+config = configparser.ConfigParser()
+config.read('.env')
+API_KEY = config['KEYS']['GOOGLE_ROUTES_API_KEY']
+ORIGIN = "1 Washington Sq, San Jose, CA 95192"
+
+
+
 login_manager = LoginManager()
 app = Flask(__name__, static_folder='ogo/dist')
 app.secret_key = b'replace_this_later'  # TODO: use enviroment variable instead
@@ -72,6 +82,8 @@ def admin_required(f):
 
 def route_if_ready():
   print("started route if ready thread")
+  # 
+  # pdb.set_trace()
   batch = db.get_path_planning_batch()
   if batch == None:
     print("no path yet")
@@ -125,6 +137,7 @@ def signup():
 @app.route('/login', methods=['POST'])
 def login():
   u = request.get_json()
+  # print(u,"\n")
   j = db.validate_user(u['username'], u['password'])
   if j:
     login_user(load_user(j['user_id']))
@@ -279,6 +292,7 @@ def get_orders():
 @app.route('/getOrderItems', methods=['GET'])  # ?orderID=<orderID>
 @login_required
 def get_order_items():
+  # pdb.set_trace()
   order_id = request.args['orderID']
   return db.select_order_items(current_user.user_id, order_id)
 
@@ -307,13 +321,21 @@ def get_routes_list():
 @app.route('/getRoute', methods=['GET'])  # ?order_id=<order_id> | ?route_id=<route_id>
 @admin_required
 def get_route():
+  print("debug in get route")
+  print("is admin: ", current_user.is_admin)
   if 'route_id' in request.args:
+    print("DEBUG: ", request.args["route_id"])
     return db.select_route_from_routeid(request.args['route_id'])
 
   if 'order_id' in request.args:
     return db.select_route_from_orderid(request.args['order_id'])
 
   return "Bad Query String", 400
+
+@app.route('/getMapConstants', methods=['GET'])
+@admin_required
+def get_map_constants():
+  return {"API_KEY": API_KEY, "robot_origin": ORIGIN}
 
 
 if __name__ == '__main__':
