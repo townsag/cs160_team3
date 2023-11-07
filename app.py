@@ -51,12 +51,16 @@ def get_item_in_cart(product_id : int):
 
 
 
+
+
 def is_valid_product_id(product_id : int):
   pass
 
 def is_valid_category_id(category_id : int):
   pass
 
+def is_valid_cart_id(cart_id : int):
+  pass
 
 def is_valid_cart_item_params(ci : json):
   curr_cart = db.select_cart(current_user.user_id)
@@ -345,6 +349,11 @@ def add_cart_item():
 @login_required
 def update_cart_item():
   ci = request.get_json()
+  cart_item = get_item_in_cart(ci["product_id"])
+  if cart_item == None:
+    return "Product ID not currently in shopping cart", 400
+  if ci['quantity'] > 20:
+    return "Cart item quantity is too large, must be 20 or less", 400
   return db.update_cart_item(current_user.user_id, ci['cart_item_id'], ci['product_id'], ci['quantity'])
 
 
