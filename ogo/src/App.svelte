@@ -3,7 +3,6 @@
   import Root from "./routes/Root.svelte";
   import Login from "./routes/Login.svelte";
   import Signup from "./routes/Signup.svelte";
-  import Home from "./routes/Home.svelte";
   import UserSettings from "./routes/UserSettings.svelte";
   import EmployeeProduct from "./routes/EmployeeProduct.svelte";
   import ShoppingCart from "./routes/ShoppingCart.svelte";
@@ -18,7 +17,6 @@
     { path: "/", component: Root },
     { path: "/login", component: Login },
     { path: "/signup", component: Signup },
-    { path: "/home", component: Home },
     { path: "/settings", component: UserSettings },
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
