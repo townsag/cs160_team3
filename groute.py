@@ -99,11 +99,15 @@ def plan_path(orders: list[grouteInputOrder]) -> grouteResponse:
 # print(res.polyline)
 
 
-def distance_check(destination_address: str):
+def distance_check(destination_address: str) -> bool:
   url = f'https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={destination_address}&key={API_KEY}'
   data = requests.get(url).json()
 
-  meters = data['rows'][0]['elements'][0]['distance']['value']
+  try:
+    meters = data['rows'][0]['elements'][0]['distance']['value']
+  except KeyError: # There will be a KeyError if the address was not able to be parsed.
+    return False
+  
   miles = 0.000621371 * meters
   
   return miles <= MAX_MILES
