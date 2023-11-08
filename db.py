@@ -272,11 +272,11 @@ def select_user(user_id: int) -> dict:
 def validate_user(username: str, password: str) -> dict:
   cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
-  row = cur.fetchone()
-  
-  if row != None and bcrypt.checkpw(password.encode('utf-8'), row[2]):
-    return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
-  
+
+  for row in cur.fetchall():
+    if bcrypt.checkpw(password.encode('utf-8'), row[2]):
+      return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
+    
   return None
 
 
