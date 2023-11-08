@@ -129,17 +129,18 @@ Tries to make a purchase with requested order into DB
   * If there is enough inventory/quantity for all products in order, executes order and returns True
   * If there is not enough inventory/quantity for all products in order, rolls back all orders and returns False
 '''
-def purchase_product_order(requested_product_quantities: dict):
-  product_ids = requested_product_quantities.keys()
+def purchase_product_order(requested_items: list[dict]):
   cur = con.cursor()
   try:
     cur.execute("BEGIN TRANSACTION")
-    for product_id in product_ids:
-      cur.execute("UPDATE PRODUCTS SET Quantity=Quanitity-? WHERE ProductID=?",
-                  (requested_product_quantities[product_ids], product_id))
+    for i in requested_items:
+      print(i)
+      cur.execute("UPDATE PRODUCTS SET Quantity=Quantity-? WHERE ProductID=?",
+                  (i['quantity'], i['product_id']))
     con.commit()
     return True
-  except sqlite3.Error:
+  except sqlite3.Error as e:
+    print(e)
     con.rollback()
     return False
  
@@ -279,16 +280,16 @@ def validate_user(username: str, password: str) -> dict:
   return None
 
 
-def insert_user(username: str, password: str, address: str, is_admin: bool) -> dict:
+def insert_user(username: str, password: str, is_admin: bool) -> dict:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
   cur = con.cursor()
-  cur.execute("INSERT INTO USERS (Username, Password, Address, IsAdmin) VALUES (?, ?, ?, ?)",
-              (username, hashedpw, address, int(is_admin)))
+  cur.execute("INSERT INTO USERS (Username, Password, IsAdmin) VALUES (?, ?, ?)",
+              (username, hashedpw, int(is_admin)))
   con.commit()
 
   user_id = cur.lastrowid
-  return {'user_id': user_id, 'username': username, 'address': address, 'is_admin': is_admin}
+  return {'user_id': user_id, 'username': username, 'address': None, 'is_admin': is_admin}
 
 
 def update_user_username(user_id: int, username: str):

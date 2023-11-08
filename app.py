@@ -1,5 +1,5 @@
 import db
-from groute import grouteInputOrder, grouteResponse, plan_path
+from groute import grouteInputOrder, grouteResponse, plan_path, distance_check
 import json
 from functools import wraps
 import threading
@@ -191,7 +191,8 @@ def signup():
     login_user(l)
     return 'Login Success'
   
-  if 'is_admin' not in u: u['is_admin'] = False 
+  if 'is_admin' not in u: u['is_admin'] = False
+  
   user_char_ct = len(u['username'])
   pass_char_ct = len(u['password'])
   if user_char_ct > 20 or user_char_ct < 1:
@@ -199,7 +200,7 @@ def signup():
   if pass_char_ct > 20 or pass_char_ct < 1:
     return 'Invalid password character count', 400
   
-  u = db.insert_user(u['username'], u['password'], u['address'], u['is_admin'])
+  u = db.insert_user(u['username'], u['password'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
@@ -243,8 +244,12 @@ def update_user():
       db.update_user_username(current_user.user_id, u['username'])
       db.update_user_password(current_user.user_id, u['password'])  
     
-  if 'address' in u: db.update_user_address(current_user.user_id, u['address'])
-  if 'is_admin' in u: db.update_user_admin(current_user.user_id, u['is_admin'])
+  if 'address' in u: 
+    if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+    db.update_user_address(current_user.user_id, u['address'])
+
+  if 'is_admin' in u: 
+    db.update_user_admin(current_user.user_id, u['is_admin'])
 
   return "Success", 200
 
@@ -428,15 +433,21 @@ Place user's order by updating DB product quantities and user order history, the
   Output:
   * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
   * If there is not enough inventory/quantity for all products in order, returns 400 error
+  * If the calling user does not have a valid address set, returns 400 error
 '''
 @app.route('/placeOrder', methods=['POST'])
 @login_required
 def place_order():
+  if current_user.address is None:
+    return "No valid address set.", 400
+
   order_items = request.get_json()
   if db.purchase_product_order(order_items):
     order = db.insert_order(current_user.user_id, order_items)
+
     # Start thread to create route if the requirements are met.
     threading.Thread(target=route_if_ready).start()
+
     return order
   else: 
     return "Not enough items in inventory", 400
@@ -481,6 +492,7 @@ def get_route():
     return db.select_route_from_orderid(request.args['order_id'])
 
   return "Bad Query String", 400
+
 
 @app.route('/getMapConstants', methods=['GET'])
 @admin_required
