@@ -59,19 +59,29 @@
     const newQuantity = parseInt(event.target.value, 10);
 
     if (!isNaN(newQuantity) && newQuantity <= 20) {
-      const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
+      try {
+        const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
 
-      if (result.success) {
-        console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
-        cartItemQuantitySignal.set(!$cartItemQuantitySignal);
-      } else {
-        console.error("Failed to update cart item:", result.message);
-        quantityErrorTextState = result.message;
+        if (result.success) {
+          if (newQuantity === 0) {
+            handleRemoveCartItem(item);
+          }
+
+          console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
+          cartItemQuantitySignal.set(!$cartItemQuantitySignal);
+        } else {
+          console.error("Failed to update cart item:", result.message);
+          quantityErrorTextState = result.message;
+          quantityErrorState = true;
+        }
+      } catch (error) {
+        console.log("An error occurred:", error)
+        quantityErrorTextState = "An error occurred.";
         quantityErrorState = true;
       }
     } else {
       console.log("Inputted quantity is not a number less than 20.");
-      quantityErrorTextState = "Inputted quantity is not a valid number less than 20.";
+      quantityErrorTextState = "Inputted quantity must be more than 0 and less than 20.";
       quantityErrorState = true;
     }
   }
