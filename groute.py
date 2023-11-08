@@ -7,6 +7,8 @@ config.read('.env')
 API_KEY = config['KEYS']['GOOGLE_ROUTES_API_KEY']
 ORIGIN = "1 Washington Sq, San Jose, CA 95192"
 
+MAX_MILES = 50
+
 
 class grouteInputOrder:
   def __init__(self, order_id: int, address: str) -> None:
@@ -95,3 +97,13 @@ def plan_path(orders: list[grouteInputOrder]) -> grouteResponse:
 # for l in res.legs:
 #   print(l.order_id, l.index, l.eta, l.lat, l.lon)
 # print(res.polyline)
+
+
+def distance_check(destination_address: str):
+  url = f'https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={destination_address}&key={API_KEY}'
+  data = requests.get(url).json()
+
+  meters = data['rows'][0]['elements'][0]['distance']['value']
+  miles = 0.000621371 * meters
+  
+  return miles <= MAX_MILES
