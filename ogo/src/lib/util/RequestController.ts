@@ -3,7 +3,7 @@
 //
 
 // Signup
-export async function signup(username: string, password: string, address: string = "") {
+export async function signup(username: string, password: string, address: string = "", is_admin: Boolean) {
     try {
         // Check length constraints on username and password
         if (username.length === 0 || password.length === 0) {
@@ -24,7 +24,8 @@ export async function signup(username: string, password: string, address: string
             body: JSON.stringify({
                 "username": username,
                 "password": password,
-                "address": address
+                "address": address,
+                "is_admin": is_admin
             })
         });
 
@@ -96,16 +97,12 @@ export async function logout() {
 }
 
 // Update User
-export async function updateUser(username: string, password: string, address: string) {
+export async function updateUser(data: any) {
     try {
         const updateUserResponse = await fetch("/updateUser", {
             method: "POST",
             headers: { 'Content-Type': "application/json" },
-            body: JSON.stringify({
-                "username": username,
-                "password": password,
-                "address": address
-            })
+            body: JSON.stringify(data)
         });
 
         if (!updateUserResponse.ok) {
@@ -114,7 +111,7 @@ export async function updateUser(username: string, password: string, address: st
             return { success: false, message: errorMessage };
         }
 
-        const updateResult = await updateUserResponse.json();
+        const updateResult = await updateUserResponse.text();
 
         if (updateResult) {
             return { success: true, message: "User updated successfully." };
