@@ -79,6 +79,13 @@ def is_valid_cart_item_params(ci : json):
     return False, ("requested product quantity is too high", 400)
   return True
 
+def calculate_total_cart_weights(order_items : json):
+  total_cart_weight = 0
+  for order_item_product_id in order_items.keys():
+    product = db.select_product(order_item_product_id)
+    total_cart_weight = total_cart_weight + (product["weight"] * order_items[order_item_product_id])
+  return total_cart_weight
+
 def is_valid_product_params(p : json):
     # name, description, image need to be string
   # Link must be a valid link
@@ -180,7 +187,7 @@ def signup():
     l = load_user(j['user_id'])
     login_user(l)
     return 'Login Success'
-  
+
   if 'is_admin' not in u: u['is_admin'] = False 
   user_char_ct = len(u['username'])
   pass_char_ct = len(u['password'])
@@ -403,10 +410,23 @@ def get_order_items():
 
 
 
+
+
+
+# order_items = [
+#   {
+#     'product_id': 1,
+#     'quantity': 2
+#   },
+#   {
+#     'product_id': 2,
+#     'quantity': 3
+#    }
+# ]
 '''
 Place user's order by updating DB product quantities and user order history, then generate new route if there is enough inventory.
   Input:
-  * JSON that maps product ID's to order quantities
+  * List of JSONs for product ID's and order quantities
   Output:
   * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
   * If there is not enough inventory/quantity for all products in order, returns 400 error
@@ -415,6 +435,10 @@ Place user's order by updating DB product quantities and user order history, the
 @login_required
 def place_order():
   order_items = request.get_json()
+  order_items = request # UPDATE ORDER_ITEMS PASS TO BE PRODUCT
+  total_cart_weight = calculate_total_cart_weights(order_items)
+  if total_cart_weight > 200.0:
+    return "Order is too heavy to purchase. Will not be able to create route.", 400
   if db.purchase_product_order(order_items):
     order = db.insert_order(current_user.user_id, order_items)
     # Start thread to create route if the requirements are met.

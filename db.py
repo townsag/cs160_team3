@@ -134,8 +134,8 @@ def purchase_product_order(requested_product_quantities: dict):
   try:
     cur.execute("BEGIN TRANSACTION")
     for product_id in product_ids:
-      cur.execute("UPDATE PRODUCTS SET Quantity=Quanitity-? WHERE ProductID=?",
-                  (requested_product_quantities[product_ids], product_id))
+      cur.execute("UPDATE PRODUCTS SET Quantity=Quantity-? WHERE ProductID=?",
+                  (int(requested_product_quantities[product_id]), int(product_id)))
     con.commit()
     return True
   except sqlite3.Error:
