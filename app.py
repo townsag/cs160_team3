@@ -119,9 +119,9 @@ def is_valid_cart_item_params(ci : json):
 
 def calculate_total_cart_weights(order_items : json):
   total_cart_weight = 0
-  for order_item_product_id in order_items.keys():
-    product = db.select_product(order_item_product_id)
-    total_cart_weight = total_cart_weight + (product["weight"] * order_items[order_item_product_id])
+  for order_item in order_items:
+    product = db.select_product(order_item['product_id'])
+    total_cart_weight = total_cart_weight + (product["weight"] * order_item["quantity"])
   return total_cart_weight
 
 def is_valid_product_params(p : json):
@@ -249,15 +249,18 @@ def update_user():
       return 'Invalid username character count', 400
     db.update_user_username(current_user.user_id, u['username'])
 
-  if 'password' in u:
+  if 'password' in u: 
     pass_char_ct = len(u['password'])
     if pass_char_ct > 20 or pass_char_ct < 1:
       return 'Invalid password character count', 400  
     db.update_user_password(current_user.user_id, u['password'])  
     
-  # if 'address' in u: 
-  #   if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
-  #   db.update_user_address(current_user.user_id, u['address'])
+  if 'address' in u: 
+
+    # Hitting Errors with Distance Check
+    # if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+    
+    db.update_user_address(current_user.user_id, u['address'])
 
   if 'is_admin' in u: 
     db.update_user_admin(current_user.user_id, u['is_admin'])
@@ -466,7 +469,6 @@ def place_order():
     return "No valid address set.", 400
 
   order_items = request.get_json()
-  order_items = request # UPDATE ORDER_ITEMS PASS TO BE PRODUCT
   total_cart_weight = calculate_total_cart_weights(order_items)
   if total_cart_weight > 200.0:
     return "Order is too heavy to purchase. Will not be able to create route.", 400
