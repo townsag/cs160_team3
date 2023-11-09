@@ -3,24 +3,26 @@
   import Root from "./routes/Root.svelte";
   import Login from "./routes/Login.svelte";
   import Signup from "./routes/Signup.svelte";
-  import Home from "./routes/Home.svelte";
   import UserSettings from "./routes/UserSettings.svelte";
   import EmployeeProduct from "./routes/EmployeeProduct.svelte";
   import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
-  import EmBrowse from "./routes/EmBrowse.svelte";
+  import EmMaps from "./routes/EmployeeMaps.svelte";
+  import Browse from "./routes/Browse.svelte";
+  import ItemViewer from "./routes/ItemViewer.svelte";
   import './app.css';
 
   const routes = [
     { path: "/", component: Root },
     { path: "/login", component: Login },
     { path: "/signup", component: Signup },
-    { path: "/home", component: Home },
     { path: "/settings", component: UserSettings },
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
-    { path: "/employee-browse", component: EmBrowse }
+    { path: "/browse", component: Browse },
+    { path: "/itemView/:productId", component: ItemViewer},
+    { path: "/employeesmaps", component: EmMaps}
   ];
 
   export let url = "";

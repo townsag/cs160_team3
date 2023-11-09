@@ -36,7 +36,7 @@
         console.log(storedUsername);
         console.log(storedPassword);
 
-        const result = await signup(storedUsername, storedPassword, ""); // TODO: address?
+        const result = await signup(storedUsername, storedPassword, "", toggleIsCheckedState); // TODO: address?
 
         if (result.success) {
             console.log("Signed up successfully!", JSON.stringify(result.user));

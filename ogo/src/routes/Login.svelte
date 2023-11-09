@@ -23,7 +23,7 @@
 
         if (result.success) {
             console.log("Logged in successfully!");
-            navigate("/home");
+            navigate("/browse");
         } else {
             console.error("Login failed:", result.message);
         }
@@ -65,8 +65,8 @@
 
         // console.log(result);
 
-    async function handleToggle() {
-        toggleIsCheckedState = !toggleIsCheckedState;
+    // async function handleToggle() {
+    //     toggleIsCheckedState = !toggleIsCheckedState;
 
         // Test
         // const post = await fetch("/createProduct", {
@@ -86,7 +86,7 @@
 
         // console.log(post);
         // TODO: switch customer/employee
-    }
+    // }
 </script>
 
 <html lang="en" data-theme="lemonade">
@@ -97,10 +97,10 @@
             <div class="card-body">
                 <div class="flex justify-between items-center">
                     <h1 class="card-title">LOGIN</h1>
-                    <div class="flex">
+                    <!-- <div class="flex">
                         <h2 class="mr-2">{toggleIsCheckedState ? "Employee" : "Customer"}</h2>
                         <input on:click={handleToggle} type="checkbox" class="toggle toggle-primary" />
-                    </div>
+                    </div> -->
                 </div>
                 <div class="form-control w-full max-w-xs">
                     <!-- svelte-ignore a11y-label-has-associated-control -->

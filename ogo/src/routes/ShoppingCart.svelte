@@ -1,9 +1,11 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from "svelte";
     import { getCart } from "../lib/util/RequestController"
-    import ItemDisplay from '../lib/components/ItemDisplay.svelte';
+    import { cartItemQuantitySignal, cartItemRemovedSignal } from "../lib/stores/CartObserver";
+    import ItemDisplay from "../lib/components/ItemDisplay.svelte";
 
-    const taxRate = 0.0725;
+    // California sales tax rate
+    const TAX_RATE = 0.0725;
 
     let filteredItems: any[] = [];
 
@@ -14,12 +16,11 @@
     let shippingSubtotal = 0;
     let taxSubtotal = 0;
 
+    // calculate total cost of the order for itemized summary purposes
     function calculateTotalCost() {
-        totalWeight = Object.values(filteredItems).reduce((acc, item) => acc + item.weight, 0);
-
-        itemsSubtotal = Object.values(filteredItems).reduce((acc, item) => acc + item.price, 0);
-
-        taxSubtotal = itemsSubtotal * taxRate;
+        totalWeight = Object.values(filteredItems).reduce((acc, item) => acc + (item.weight * item.quantity), 0);
+        itemsSubtotal = Object.values(filteredItems).reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        taxSubtotal = itemsSubtotal * TAX_RATE;
 
         console.log("Total weight:", totalWeight);
         
@@ -31,6 +32,7 @@
         totalCost = itemsSubtotal + shippingSubtotal + taxSubtotal;
     }
 
+    // retrieve cart data
     async function handleGetCart() {
         const result = await getCart();
 
@@ -38,14 +40,31 @@
             //console.log(JSON.stringify(result));
 
             filteredItems = result.cart.items
+            console.log(filteredItems);
             calculateTotalCost();
         } else {
             console.error("Failed to fetch cart data:", result.message);
         }
     }
 
+    // get cart onMount
     onMount(async () => {
         await handleGetCart();
+    });
+
+    // signals for cart changes to make the page reactive
+    const quantitySignalUnsubscribe = cartItemQuantitySignal.subscribe(() => {
+        handleGetCart();
+    })
+
+    const removedSignalUnsubscribe = cartItemRemovedSignal.subscribe(() => {
+        handleGetCart();
+    })
+
+    // unsubscribe from signals to prevent memory leaks when component is not in use
+    onDestroy(() => {
+        quantitySignalUnsubscribe();
+        removedSignalUnsubscribe();
     });
 </script>
 
@@ -61,24 +80,18 @@
                         {#if filteredItems && filteredItems.length > 0}
                             <ItemDisplay
                                 {filteredItems}
+                                isAdmin={false}
+                                isCartItem={true}
                             />
                         {:else}
                             <span>There are no items in your cart.</span>
                         {/if}
 
-                        <!--test placeholder-->
-                        <!-- {#each filteredItems as item}
-                            <div class="card bg-neutral text-neutral-content">
-                                <div class="card-body items-center text-center">
-                                    <h2 class="card-title">{item.name}</h2>
-                                </div>
-                            </div>
-                        {/each} -->
-
                     </div>
                 </div>
             </div>
         </div>
+        
         <div class="basis-1/2">
             <div class="card bg-base-100 border-2 border-black-500 mt-8 mb-8">
                 <div class="card-body">

@@ -1,10 +1,20 @@
 import db
-from groute import grouteInputOrder, grouteResponse, plan_path
+from groute import grouteInputOrder, grouteResponse, plan_path, distance_check
 import json
 from functools import wraps
 import threading
 from flask import Flask, request, send_from_directory
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user
+
+import pdb
+import configparser
+
+config = configparser.ConfigParser()
+config.read('.env')
+API_KEY = config['KEYS']['GOOGLE_ROUTES_API_KEY']
+ORIGIN = "1 Washington Sq, San Jose, CA 95192"
+
+
 
 login_manager = LoginManager()
 app = Flask(__name__, static_folder='ogo/dist')
@@ -20,17 +30,19 @@ class User:
     self.username = username
     self.address = address
     self.is_admin = is_admin
-    self.is_active = True
 
   def get_id(self):
     return str(self.user_id)
 
+  @property 
   def is_authenticated(self):
     return True
 
+  @property
   def is_active(self):
-    return self.is_active
+    return True
 
+  @property
   def is_anonymous(self):
     return False
 
@@ -39,8 +51,37 @@ class User:
     try:
       u = db.select_user(user_id)
       return User(user_id, u['username'], u['address'], u['is_admin'])
-    except:
+    except Exception as e:
+      print('User.get() error:', e)
       return None
+    
+
+@login_manager.user_loader
+def load_user(user_id):
+  return User.get(user_id)
+
+
+# Flask route decorator to require the request to be made by a logged in user.
+def login_required(f):
+    @wraps(f)
+    def check_login(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return "Unauthorized: You must be logged in to use this route.", 401
+        return f(*args, **kwargs)
+    return check_login
+
+
+# Flask route decorator to require the request to be made by a logged in admin user.
+def admin_required(f):
+    @wraps(f)
+    def check_admin(*args, **kwargs):
+        if not current_user.is_authenticated:
+          return "Unauthorized: You must be logged in to use this route.", 401
+        if not current_user.is_admin:
+            return "Unauthorized: You must be logged in as admin to use this route.", 401
+        return f(*args, **kwargs)
+    return check_admin
+
 
 def get_item_in_cart(product_id : int):
   curr_cart = db.select_cart(current_user.user_id)
@@ -48,9 +89,6 @@ def get_item_in_cart(product_id : int):
     if item['product_id'] == product_id:
       return item
   return None
-
-
-
 
 
 def is_valid_product_id(product_id : int):
@@ -113,38 +151,10 @@ def is_valid_product_params(p : json):
     return True
 
 
-
-
-
-@login_manager.user_loader
-def load_user(user_id):
-  return User.get(user_id)
-
-
-# Flask route decorator to require the request to be made by a logged in user.
-def login_required(f):
-    @wraps(f)
-    def check_login(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return "Unauthorized: You must be logged in to use this route.", 401
-        return f(*args, **kwargs)
-    return check_login
-
-
-# Flask route decorator to require the request to be made by a logged in admin user.
-def admin_required(f):
-    @wraps(f)
-    def check_admin(*args, **kwargs):
-        if not current_user.is_authenticated:
-          return "Unauthorized: You must be logged in to use this route.", 401
-        if not current_user.is_admin:
-            return "Unauthorized: You must be logged in as admin to use this route.", 401
-        return f(*args, **kwargs)
-    return check_admin
-
-
 def route_if_ready():
   print("started route if ready thread")
+  # 
+  # pdb.set_trace()
   batch = db.get_path_planning_batch()
   if batch == None:
     print("no path yet")
@@ -187,16 +197,18 @@ def signup():
     l = load_user(j['user_id'])
     login_user(l)
     return 'Login Success'
-
-  if 'is_admin' not in u: u['is_admin'] = False 
+  
+  if 'is_admin' not in u: u['is_admin'] = False
+  
   user_char_ct = len(u['username'])
   pass_char_ct = len(u['password'])
   if user_char_ct > 20 or user_char_ct < 1:
     return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
     return 'Invalid password character count', 400
-  
-  u = db.insert_user(u['username'], u['password'], u['address'], u['is_admin'])
+  if db.select_user_from_un(u['username']) != None:
+    return 'Invalid username: already taken', 400
+  u = db.insert_user(u['username'], u['password'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
@@ -205,6 +217,7 @@ def signup():
 @app.route('/login', methods=['POST'])
 def login():
   u = request.get_json()
+  # print(u,"\n")
   j = db.validate_user(u['username'], u['password'])
   if j:
     login_user(load_user(j['user_id']))
@@ -221,26 +234,33 @@ def logout():
   return msg
 
 
+# Do we allow multiple logins of an account on multiple pages? Potential race condition with updateUser
 @app.route('/updateUser', methods=['POST'])
 @login_required
 def update_user():
   u = request.get_json()
-  if 'username' in u: 
+
+  if 'username' in u:   
+    stored_user_with_username = db.select_user_from_un(u['username'])
+    if stored_user_with_username != None and stored_user_with_username['username'] != current_user.username:
+      return "Invalid Entry - User Already Exists", 400
     user_char_ct = len(u['username'])
     if user_char_ct > 20 or user_char_ct < 1:
       return 'Invalid username character count', 400
-    if 'password' in u:
-      pass_char_ct = len(u['password'])
-      if pass_char_ct > 20 or pass_char_ct < 1:
-        return 'Invalid password character count', 400  
-      user_entry = db.validate_user(u['username'], u['password'])
-      if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
-        return "Invalid Entry - User Already Exists", 400
-      db.update_user_username(current_user.user_id, u['username'])
-      db.update_user_password(current_user.user_id, u['password'])  
+    db.update_user_username(current_user.user_id, u['username'])
+
+  if 'password' in u:
+    pass_char_ct = len(u['password'])
+    if pass_char_ct > 20 or pass_char_ct < 1:
+      return 'Invalid password character count', 400  
+    db.update_user_password(current_user.user_id, u['password'])  
     
-  if 'address' in u: db.update_user_address(current_user.user_id, u['address'])
-  if 'is_admin' in u: db.update_user_admin(current_user.user_id, u['is_admin'])
+  # if 'address' in u: 
+  #   if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+  #   db.update_user_address(current_user.user_id, u['address'])
+
+  if 'is_admin' in u: 
+    db.update_user_admin(current_user.user_id, u['is_admin'])
 
   return "Success", 200
 
@@ -402,9 +422,16 @@ def get_orders():
   return db.select_orders(current_user.user_id)
 
 
+@app.route('/getAllOrders', methods=['GET'])
+@admin_required
+def get_all_orders():
+  return db.select_all_orders()
+
+
 @app.route('/getOrderItems', methods=['GET'])  # ?orderID=<orderID>
 @login_required
 def get_order_items():
+  # pdb.set_trace()
   order_id = request.args['orderID']
   return db.select_order_items(current_user.user_id, order_id)
 
@@ -430,10 +457,14 @@ Place user's order by updating DB product quantities and user order history, the
   Output:
   * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
   * If there is not enough inventory/quantity for all products in order, returns 400 error
+  * If the calling user does not have a valid address set, returns 400 error
 '''
 @app.route('/placeOrder', methods=['POST'])
 @login_required
 def place_order():
+  if current_user.address is None:
+    return "No valid address set.", 400
+
   order_items = request.get_json()
   order_items = request # UPDATE ORDER_ITEMS PASS TO BE PRODUCT
   total_cart_weight = calculate_total_cart_weights(order_items)
@@ -441,8 +472,10 @@ def place_order():
     return "Order is too heavy to purchase. Will not be able to create route.", 400
   if db.purchase_product_order(order_items):
     order = db.insert_order(current_user.user_id, order_items)
+
     # Start thread to create route if the requirements are met.
     threading.Thread(target=route_if_ready).start()
+
     return order
   else: 
     return "Not enough items in inventory", 400
@@ -477,13 +510,22 @@ def get_routes_list():
 @app.route('/getRoute', methods=['GET'])  # ?order_id=<order_id> | ?route_id=<route_id>
 @admin_required
 def get_route():
+  print("debug in get route")
+  print("is admin: ", current_user.is_admin)
   if 'route_id' in request.args:
+    print("DEBUG: ", request.args["route_id"])
     return db.select_route_from_routeid(request.args['route_id'])
 
   if 'order_id' in request.args:
     return db.select_route_from_orderid(request.args['order_id'])
 
   return "Bad Query String", 400
+
+
+@app.route('/getMapConstants', methods=['GET'])
+@admin_required
+def get_map_constants():
+  return {"API_KEY": API_KEY, "robot_origin": ORIGIN}
 
 
 if __name__ == '__main__':
