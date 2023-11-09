@@ -1,17 +1,14 @@
-<script>
-  export let openFilter;
-  export let toggleFilterOpen;
-  export let toggleGlutenFree;
-  export let toggleVegetarian;
-  export let toggleVegan;
-  export let allCategoriesList;
-  export let allTagsList;
-  export let toggleCategory;
-  export let toggleTags;
+<script lang='ts'>
+  export let openFilter: Boolean;
+  export let toggleFilterOpen: any;
+  export let allCategoriesList: any[];
+  export let allTagsList: any[];
+  export let toggleCategory: any;
+  export let toggleTags: any;
 
   //overflow-y: scroll;
 
-  function handleCategoryChange(event) {
+  function handleCategoryChange(event: any) {
     // Retrieve the selected category value from the event
     const selectedCategory = event.target.value;
 
@@ -19,8 +16,8 @@
     toggleCategory(selectedCategory);
   }
 
-  let toggleTagsList = new Array(allTagsList.lenght);
-  function toggleTag(tagName) {
+  let toggleTagsList = new Array(allTagsList.length);
+  function toggleTag(tagName: string) {
     for (let i = 0; i < allTagsList.length; i++) {
       if (allTagsList[i].name == tagName) {
         toggleTagsList[i] = !toggleTagsList[i];

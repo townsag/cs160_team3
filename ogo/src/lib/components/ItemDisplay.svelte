@@ -4,7 +4,7 @@
   import { removeCartItem, updateCartItem } from "../util/RequestController"
   import { cartItemQuantitySignal, cartItemRemovedSignal } from "../stores/CartObserver";
 
-  export let filteredItems: any;
+  export let filteredItems: any[];
   export let isAdmin: Boolean;
   export let isCartItem: Boolean;
 
@@ -34,9 +34,18 @@
     }
   }
 
+  function handleCreateItemClick() {
+    if (!isCartItem) {
+      navigate(`/itemView/${0}`);
+
+      console.log("Clicked on create item");
+    }
+  }
+
   //let displayedItem = [];
   //displayedItem = filteredItems;
   //console.log("displayed list (in itemdisplay): " + displayedItem);
+  //console.log("displayed list (in itemdisplay): " + filteredItems);
 
   //
   // BELOW USED IF ITEM DISPLAY IS FOR CART ITEM
@@ -125,7 +134,9 @@
 
   <div class="grid-container mt-4">
     {#if isAdmin && !isCartItem}
-      <div class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div on:click={() => handleCreateItemClick()} class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
         <img src={"https://cdn.vectorstock.com/i/preview-1x/98/76/plus-sign-vector-46979876.jpg"} alt={"Plus Sign"} class="mb-2 w-full h-60 object-cover" />
         <div class="flex flex-col">
           <div class="mb-2">

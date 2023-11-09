@@ -1,14 +1,24 @@
-<script>
+<script lang='ts'>
     import { onMount } from 'svelte';
 
-    let productID = "0";
-    productID = window.location.href.match(/\/(\d+)$/)[1];
+    let productID = window.location.href.match(/\/(\d+)$/)[1];
     console.log(productID);
+
+    let currentUser;
+    let isAdmin = false;
+
+    let itemName = "Name";
+    let itemDescription = "Description";
+    let itemImgUrl = "https://cdn.vectorstock.com/i/preview-1x/98/76/plus-sign-vector-46979876.jpg";
+    let itemQuantityInStock = 0;
+    let itemSelectedQuantity = 0;
+    let itemPrice = 0.0;
+    let itemWeight = 0.0;
 
     /**
      * @type {{ name: any; description: any; image: any; quantity: any; price: number; weight: any; }}
      */
-    let item;
+    let item: any;
     let finishLoading = false;
 
     async function sequential_api_calls(){
@@ -17,7 +27,26 @@
             const data = await response.json();
             item = data;
             console.log("curItem: " + data.name);
-            finishLoading = true;
+            console.log("Product ID: " + productID);
+
+            itemName = item.name;
+            itemDescription = item.description;
+            itemImgUrl = item.image;
+            itemQuantityInStock = item.quantity;
+            itemPrice = item.price;
+            itemWeight = item.weight;
+        } catch (error) {
+            console.log("error: ", error);
+            console.log("curItem: " + null);
+            productID = "0";
+            console.log("Product ID: " + productID);
+        }
+        try{                                  //getUser
+            const response = await fetch("/getUser", { method: "GET" });
+            const data = await response.json();
+            currentUser = data;
+            isAdmin = currentUser.is_admin;
+            console.log("isAdmin: " + isAdmin);
         } catch (error) {
             console.log("error: ", error);
         }
@@ -25,23 +54,20 @@
 
     onMount(async () => {
         sequential_api_calls();
+        finishLoading = true;
     }); 
     
-    let image1 = "https://www.applesfromny.com/wp-content/uploads/2020/05/20Ounce_NYAS-Apples2.png";
-    let image = "https://5.imimg.com/data5/SELLER/Default/2021/8/YN/SE/FV/72826034/red-apple.jpg";
-    let image3 = "https://5.imimg.com/data5/AK/RA/MY-68428614/apple-500x500.jpg";
-    let image2 = "https://5.imimg.com/data5/YY/EN/MY-8155364/fresh-apple-500x500.jpg";
-    let image4 = "https://www.organicangels.com/pub/media/catalog/product/cache/36ab34911dcaeecf8b2210fc9d79ccec/a/d/addon_applefuji.jpg";
-    let image5 = "https://www.kapruka.com/shops/specialGifts/productImages/1215060818546_apples.jpg";
-    let name = "apple";
-    let price = 99.99;
-    const images = [image, image1, image2, image3, image4, image5];
-
     function addToCart() {
         console.log("added to cart");
     }
     function buyNow() {
         console.log("buy now");
+    }
+    function createItem() {
+        console.log("create item");
+    }
+    function applyChanges() {
+        console.log("apply changes");
     }
 </script>
 
@@ -49,9 +75,9 @@
     .item-container {
       min-width: 400px;
       max-width: 800px;
-      gap: 20px;
-      margin: 20px;
+      gap: 10px;
       padding: 20px;
+      align-self: center;
     }
   
     .main-image {
@@ -59,27 +85,19 @@
       align-self: center;
     }
   
-    .thumbnail-container {
-      display: flex;
-      overflow-x: scroll;
-      gap: 15px;
-    }
-  
-    .thumbnail {
-      width: 150px;
-      height: width;
-      object-fit: cover;
-    }
-  
     .item-details {
-        width: 100%;
+        max-width: 80vw;
+        padding: 20px;
+        object-fit: scale-down;
+        align-self: center;
     }
 
     .midContainer {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         min-height: 80vh; 
         width: 80%;
+        align-content: center;
     }
 
     .bigFont {
@@ -102,45 +120,105 @@
         vertical-align: top;
         padding: 20px;
     }
+
+    .heightBig {
+        height: 100px; /* Set the desired height in pixels or any other valid CSS height value */
+    }
+
+    .heightMid {
+        height: 45px; /* Set the desired height in pixels or any other valid CSS height value */
+    }
+
+    .heightSmall {
+        height: 30px; /* Set the desired height in pixels or any other valid CSS height value */
+    }
 </style>
 
 {#if finishLoading}
-    <div class="midContainer mx-auto p-2 mb-4">
-        <div class="item-container">
-            <div class="border rounded-3xl shadow-md">
-                <img src={item.image} alt={item.name} class="main-image mb-2 w-full h-full object-cover"/>
+    <div style="align-self: center; align-items: center;">   
+        {#if isAdmin} 
+            <div class="midContainer mx-auto p-2 mb-4">
+                <div class="item-container">
+                    <div class="border rounded-3xl shadow-md">
+                        <img src={itemImgUrl} alt={itemName} class="main-image mb-2 w-full h-full object-cover"/>
+                    </div>
+                </div>
+                <div class="item-details">
+                    <table style="border: 0px solid black; width: 100%;">
+                        <tr>
+                            <td colspan="2">
+                                <input bind:value={itemName} type="text" placeholder=itemName class="input input-bordered w-full bigFont heightBig" style="width: 100%;"/>
+                            </td>
+                        </tr>
+                        <tr><td><div class="mb-5"></div></td></tr>
+                        <tr>
+                            <td colspan="2">
+                                <input bind:value={itemDescription} type="text" placeholder=itemDescription class="input input-bordered w-full smallFont heightSmall" />
+                            </td>
+                        </tr>
+                        <tr><td><div class="mb-5"></div></td></tr>
+                        <tr>
+                            <td colspan="2">
+                                <input bind:value={itemImgUrl} type="text" placeholder=itemImgUrl class="input input-bordered w-full smallFont heightSmall" />
+                            </td>
+                        </tr>
+                        <tr><td><div class="mb-2"></div></td></tr>
+                        <tr>
+                            <td style="padding-right: 40px;">
+                                <label for="weightInput" class="mediumFont">Weight(lbs): </label>
+                                <input bind:value={itemWeight} type="text" placeholder=itemWeight id="weightInput" class="input input-bordered w-full smallFont heightSmall" />
+                            </td>
+                            <td>
+                                <label for="inStockInput" class="mediumFont">InStock: </label>
+                                <input bind:value={itemQuantityInStock} type="text" placeholder=itemQuantityInStock id="inStockInput" class="input input-bordered w-full smallFont heightSmall" />
+                            </td>
+                        </tr>
+                        <tr><td><div class="mb-2"></div></td></tr>
+                        <tr>
+                            <td colspan="2">
+                                <label for="priceInput" class="mediumFont">Price($): </label>
+                                <input bind:value={itemPrice} type="text" placeholder=itemPrice.toFixed(2) id="priceInput" class="input input-bordered w-full smallFont heightSmall" />
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="mb-20"></div>
+                    {#if productID != "0"}
+                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-2xl" on:click={applyChanges}>Apply Changes</button>
+                    {:else}
+                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-2xl" on:click={createItem}>Create Item</button>
+                    {/if}
+                </div>
             </div>
-            <div class="mb-4"></div>
-            <div class="thumbnail-container">
-                {#each images as image (image)}
-                <img src={image} alt="Thumbnail" class="thumbnail" />
-                {/each}
+        {:else} 
+            <div class="midContainer mx-auto p-2 mb-4">
+                <div class="item-container">
+                    <div class="border rounded-3xl shadow-md">
+                        <img src={itemImgUrl} alt={itemName} class="main-image mb-2 w-full h-full object-cover"/>
+                    </div>
+                </div>
+                <div class="item-details">
+                    <table style="border: 0px solid black; width: 100%;">
+                        <tr>
+                            <td class="bigFont" colspan="2">{itemName}</td>
+                        </tr>
+                        <tr>
+                            <td class="smallFont" colspan="2">{itemDescription}</td>
+                        </tr>
+                        <tr>
+                            <td class="mediumFont" style="padding-right: 50px;">Weight: {itemWeight} lbs</td>
+                            <td class="mediumFont">In Stock: {itemQuantityInStock}</td>
+                        </tr>
+                        <tr>
+                            <td class="mediumFont" style="padding-right: 50px;">Price: ${itemPrice.toFixed(2)}</td>
+                            <td class="mediumFont">Quantity: {itemSelectedQuantity}</td>
+                        </tr>
+                    </table>
+                    <div class="mb-20"></div>
+                    <div style="padding-left: 20px; align-items: center;">
+                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-2xl" on:click={addToCart}>Add to Cart</button>
+                    </div>
+                </div>
             </div>
-        </div>
-    
-        <div class="item-details">
-            <table style="border: 0px solid black; width: 100%;">
-                <tr>
-                    <td class="bigFont" colspan="2">{item.name}</td>
-                </tr>
-                <tr>
-                    <td class="smallFont" colspan="2">{item.description}</td>
-                </tr>
-                <tr>
-                    <td class="mediumFont" colspan="2">Weight: {item.weight} lbs</td>
-                </tr>
-                <tr>
-                    <td class="mediumFont" style="padding-right: 50px;">Price: ${item.price.toFixed(2)}</td>
-                    <td class="mediumFont">Quantity: {"quantity"}</td>
-                </tr>
-            </table>
-            <div class="mb-20"></div>
-            <table style="border: 0px solid black; width: 100%;">
-                <tr>
-                    <td style="padding-left: 20px; display: flex; align-items: center;"><button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-2xl" on:click={addToCart}>Add to Cart</button></td>
-                    <td><button style="display: flex; align-items: center;" class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-2xl" on:click={buyNow}>Buy Now</button></td>
-                </tr>
-            </table>
-        </div>
+        {/if}
     </div>
 {/if}

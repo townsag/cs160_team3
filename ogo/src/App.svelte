@@ -21,7 +21,7 @@
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
     { path: "/browse", component: Browse },
-    { path: "/itemView/:productId", component: ItemViewer },
+    { path: "/itemView/:productId", component: ItemViewer},
     { path: "/employeesmaps", component: EmMaps}
   ];
 

@@ -1,8 +1,8 @@
-<script>
-  export let toggleFilterOpen;
-  export let searchQuery;
-  export let handleInput;
-  export let startSearching;
+<script lang='ts'>
+  export let toggleFilterOpen: any;
+  export let searchQuery: string;
+  export let handleInput: any;
+  export let startSearching: any;
 </script>
 
 <div class="search-bar-container flex items-center border rounded p-2">
