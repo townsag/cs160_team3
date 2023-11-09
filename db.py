@@ -273,8 +273,18 @@ def select_user(user_id: int) -> dict:
   cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
+  if row == None:
+    return None
   return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
+
+def select_user_from_un(username: str) -> dict:
+  cur = con.cursor()
+  cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
+  row = cur.fetchone()
+  if row == None:
+    return None
+  return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
 def validate_user(username: str, password: str) -> dict:
   cur = con.cursor()
@@ -285,7 +295,6 @@ def validate_user(username: str, password: str) -> dict:
       return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
     
   return None
-
 
 def insert_user(username: str, password: str, is_admin: bool) -> dict:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())

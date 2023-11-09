@@ -117,6 +117,13 @@ def is_valid_cart_item_params(ci : json):
     return False, ("requested product quantity is too high", 400)
   return True
 
+def calculate_total_cart_weights(order_items : json):
+  total_cart_weight = 0
+  for order_item in order_items:
+    product = db.select_product(order_item['product_id'])
+    total_cart_weight = total_cart_weight + (product["weight"] * order_item["quantity"])
+  return total_cart_weight
+
 def is_valid_product_params(p : json):
     # name, description, image need to be string
   # Link must be a valid link
@@ -199,7 +206,8 @@ def signup():
     return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
     return 'Invalid password character count', 400
-  
+  if db.select_user_from_un(u['username']) != None:
+    return 'Invalid username: already taken', 400
   u = db.insert_user(u['username'], u['password'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
@@ -226,26 +234,32 @@ def logout():
   return msg
 
 
+# Do we allow multiple logins of an account on multiple pages? Potential race condition with updateUser
 @app.route('/updateUser', methods=['POST'])
 @login_required
 def update_user():
   u = request.get_json()
-  if 'username' in u: 
+
+  if 'username' in u:   
+    stored_user_with_username = db.select_user_from_un(u['username'])
+    if stored_user_with_username != None and stored_user_with_username['username'] != current_user.username:
+      return "Invalid Entry - User Already Exists", 400
     user_char_ct = len(u['username'])
     if user_char_ct > 20 or user_char_ct < 1:
       return 'Invalid username character count', 400
-    if 'password' in u:
-      pass_char_ct = len(u['password'])
-      if pass_char_ct > 20 or pass_char_ct < 1:
-        return 'Invalid password character count', 400  
-      user_entry = db.validate_user(u['username'], u['password'])
-      if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
-        return "Invalid Entry - User Already Exists", 400
-      db.update_user_username(current_user.user_id, u['username'])
-      db.update_user_password(current_user.user_id, u['password'])  
+    db.update_user_username(current_user.user_id, u['username'])
+
+  if 'password' in u: 
+    pass_char_ct = len(u['password'])
+    if pass_char_ct > 20 or pass_char_ct < 1:
+      return 'Invalid password character count', 400  
+    db.update_user_password(current_user.user_id, u['password'])  
     
   if 'address' in u: 
-    if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+
+    # Hitting Errors with Distance Check
+    # if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+    
     db.update_user_address(current_user.user_id, u['address'])
 
   if 'is_admin' in u: 
@@ -426,10 +440,23 @@ def get_order_items():
 
 
 
+
+
+
+# order_items = [
+#   {
+#     'product_id': 1,
+#     'quantity': 2
+#   },
+#   {
+#     'product_id': 2,
+#     'quantity': 3
+#    }
+# ]
 '''
 Place user's order by updating DB product quantities and user order history, then generate new route if there is enough inventory.
   Input:
-  * JSON that maps product ID's to order quantities
+  * List of JSONs for product ID's and order quantities
   Output:
   * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
   * If there is not enough inventory/quantity for all products in order, returns 400 error
@@ -442,6 +469,9 @@ def place_order():
     return "No valid address set.", 400
 
   order_items = request.get_json()
+  total_cart_weight = calculate_total_cart_weights(order_items)
+  if total_cart_weight > 200.0:
+    return "Order is too heavy to purchase. Will not be able to create route.", 400
   if db.purchase_product_order(order_items):
     order = db.insert_order(current_user.user_id, order_items)
 
