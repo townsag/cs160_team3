@@ -137,9 +137,9 @@ def is_valid_product_params(p : json):
     return False, ("Invalid image link type", 400)
   if not isinstance(p['quantity'], int):
     return False, ("Invalid quantity type", 400)
-  if not isinstance(p['price'], float):
+  if not isinstance(p['price'], float) and not isinstance(p['price'], int):
     return False, ("Invalid price type", 400)
-  if not isinstance(p['weight'], float):
+  if not isinstance(p['weight'], float) and not isinstance(p['weight'], int):
     return False, ("Invalid weight type", 400)
   if not isinstance(p['quantity'], int):
     return False, ("Invalid name type", 400)
