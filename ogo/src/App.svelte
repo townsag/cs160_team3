@@ -11,6 +11,7 @@
   import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
   import ItemViewer from "./routes/ItemViewer.svelte";
+  import Payment from "./routes/Payment.svelte";
   import './app.css';
 
   const routes = [
@@ -22,7 +23,8 @@
     { path: "/employee-product", component: EmployeeProduct },
     { path: "/browse", component: Browse },
     { path: "/itemView/:productId", component: ItemViewer},
-    { path: "/employeesmaps", component: EmMaps}
+    { path: "/employeesmaps", component: EmMaps},
+    { path: "/payment", component: Payment}
   ];
 
   export let url = "";
