@@ -233,3 +233,14 @@ export async function removeCartItem(cartItemId: number) {
         return { success: false, message: "An error occurred removing the cart item." };
     }
 }
+
+// Places API
+export async function fetchApiKey() {
+    try {
+        const response = await fetch("/getPlacesConstants");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching API key:", error);
+    }
+}

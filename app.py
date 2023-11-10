@@ -12,6 +12,7 @@ import configparser
 config = configparser.ConfigParser()
 config.read('.env')
 API_KEY = config['KEYS']['GOOGLE_ROUTES_API_KEY']
+PLACES_API_KEY = config['KEYS']['GOOGLE_PLACES_API_KEY']
 ORIGIN = "1 Washington Sq, San Jose, CA 95192"
 
 
@@ -542,6 +543,12 @@ def get_route():
 @admin_required
 def get_map_constants():
   return {"API_KEY": API_KEY, "robot_origin": ORIGIN}
+
+
+@app.route('/getPlacesConstants', methods=['GET'])
+@login_required
+def get_places_constants():
+    return {"API_KEY": PLACES_API_KEY}
 
 
 if __name__ == '__main__':
