@@ -43,7 +43,7 @@
                 toggleTagsList[i] = !toggleTagsList[i];
             }
         }
-        console.log(toggleTagsList);
+        //console.log(toggleTagsList);
     }
 
     async function sequential_api_calls(){
@@ -60,7 +60,7 @@
             const response = await fetch("/getTags", { method: "GET" });
             const data = await response.json();
             allTagsList = data;
-            console.log("allTagsList: " + data);
+            //console.log("allTagsList: " + data);
             loadedTags = true;
         } catch (error) {
             console.log("error: ", error);
@@ -90,7 +90,7 @@
 
             for (let i = 0; i < item.tags.length; i++) {
                 itemTags[i] = item.tags[i].name;
-                console.log("Added tag: " + item.tags[i].name);
+                //console.log("Added tag: " + item.tags[i].name);
             }
             console.log(itemTags);
             loadedRealTags = true;
@@ -119,7 +119,7 @@
                     toggleTag(itemTags[i]);
                 }
             }
-            console.log("Not Displayed: " + toggleTagsList);
+            //console.log("Not Displayed: " + toggleTagsList);
             loadedTags = false;
             loadedRealTags = false;
             finishLoading = true;
@@ -146,7 +146,7 @@
                 "description": itemDescription,
 				"image": itemImgUrl,
 				"quantity": itemQuantityInStock,
-				"price": itemPrice,
+				"price": itemPrice, 
 				"weight": itemWeight,
                 "category_id": itemCategoryID,
                 "tags": toggleTagsListID
@@ -155,20 +155,15 @@
 		if (createProductResponse.ok) {
 			const message = await createProductResponse.text();
 			console.log(message);
-            navigate("/browse");
+            alert("Created item: " + itemName);
+            returnToBrowse();
 		} else {
-			console.error("Error creating product:", await createProductResponse.text());
+            const message = await createProductResponse.text();
+			console.error("Error creating product:", message);
+            alert("Cannot created item: " + itemName);
 		}
 	}
     async function handleApplyChanges() {
-		console.log(itemName);
-        console.log(itemDescription);
-        console.log(itemImgUrl);
-        console.log(itemQuantityInStock);
-        console.log(itemPrice);
-        console.log(itemWeight);
-        console.log(itemCategoryID);
-        console.log(toggleTagsListID);
 		const updateProductResponse = await fetch("/updateProduct", {
             method: "POST",
             headers: {
@@ -180,7 +175,7 @@
                 "description": itemDescription,
 				"image": itemImgUrl,
 				"quantity": itemQuantityInStock,
-				"price": itemPrice,
+				"price": itemPrice, 
 				"weight": itemWeight,
                 "category_id": itemCategoryID,
                 "tags": toggleTagsListID
@@ -189,15 +184,46 @@
 		if (updateProductResponse.ok) {
 			const message = await updateProductResponse.text();
 			console.log(message);
-            navigate("/browse");
+            alert("Updated item: " + itemName);
+            returnToBrowse();
 		} else {
-			console.error("Error updating product:", await updateProductResponse.text());
+            const message = await updateProductResponse.text();
+			console.error("Error updating product:", message);
+            alert("Cannot update item: " + message);
 		}
 	}
+    async function addItemToCart() {
+		const updateProductResponse = await fetch("/addCartItem", {
+            method: "POST",
+            headers: {
+            'Content-Type': "application/json"
+            },
+            body: JSON.stringify({
+                "product_id": parseInt(productID),
+                "quantity": itemSelectedQuantity
+            })
+        })
+		if (updateProductResponse.ok) {
+			const message = await updateProductResponse.text();
+			console.log(message);
+            alert("Added " + itemSelectedQuantity + " " + itemName);
+            returnToBrowse();
+		} else {
+            const message = await updateProductResponse.text();
+			console.error("Error adding to cart:", message);
+            alert("Cannot add item: " + message);
+		}
+	}
+
+    function returnToBrowse() {
+        navigate("/browse");
+    }
     
     function addToCart() {
-        console.log("added to cart");
-        //navigate("/browse");
+        if (itemSelectedQuantity != 0) {
+            addItemToCart();
+        }
+        //console.log("added to cart");
     }
     function createItem() {
         toggleTagsListID.length = 0;
@@ -230,9 +256,6 @@
             }
         }
         handleApplyChanges();
-    }
-    function cancel() {
-        navigate("/browse");
     }
 </script>
 
@@ -283,18 +306,6 @@
         text-align: left;
         vertical-align: top;
         padding: 20px;
-    }
-
-    .heightBig {
-        height: 100px; /* Set the desired height in pixels or any other valid CSS height value */
-    }
-
-    .heightMid {
-        height: 45px; /* Set the desired height in pixels or any other valid CSS height value */
-    }
-
-    .heightSmall {
-        height: 30px; /* Set the desired height in pixels or any other valid CSS height value */
     }
 
     .tagScroll {
@@ -439,7 +450,7 @@
                         </td>
                         <td></td>
                         <td style="padding-top: 40px;">
-                            <button style="width: 90%;" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 text-2xl" on:click={cancel}>Cancel</button>
+                            <button style="width: 90%;" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 text-2xl" on:click={returnToBrowse}>Cancel</button>
                         </td>
                     </tr>
                 </table>
@@ -465,12 +476,17 @@
                         </tr>
                         <tr>
                             <td class="mediumFont" style="padding-right: 50px;">Price: ${itemPrice.toFixed(2)}</td>
-                            <td class="mediumFont">Quantity: {itemSelectedQuantity}</td>
+                            <td>
+                                <label for="quantityInput" class="">Quantity: </label>
+                                <input id="quantityInput" bind:value={itemSelectedQuantity} type="number" placeholder=itemSelectedQuantity class="input input-bordered heightSmall" style="width: 40%;"/>
+                            </td>
                         </tr>
                     </table>
                     <div class="mb-20"></div>
                     <div style="padding-left: 20px; align-items: center;">
-                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-2xl" on:click={addToCart}>Add to Cart</button>
+                        {#if productID != "0"}
+                            <button class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-2xl" on:click={addToCart}>Add to Cart</button>
+                        {/if}
                     </div>
                 </div>
             </div>
