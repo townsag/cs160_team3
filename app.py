@@ -109,6 +109,11 @@ def is_valid_tag(tag_id):
   return False
 
 def is_valid_cart_item_params(ci : json):
+  if not isinstance(ci['quantity'], int):
+    return False, ("Invalid quantity type", 400)
+  if not isinstance(ci['product_id'], int):
+    return False, ("Invalid productID type", 400)
+
   curr_cart = db.select_cart(current_user.user_id)
   cart_item = get_item_in_cart(ci["product_id"])
   if cart_item != None:
@@ -395,8 +400,17 @@ def add_cart_item():
 @login_required
 def update_cart_item():
   ci = request.get_json()
+
+  if not isinstance(ci['quantity'], int):
+    return "Invalid quantity type", 400
+  if not isinstance(ci['product_id'], int):
+    return "Invalid productID type", 400
+  if not isinstance(ci['cart_item_id'], int):
+    return "Invalid cartItemID type", 400
+  
   if not is_valid_product_id(ci['product_id']):
     return "Invalid Product ID, does not exist in current product list", 400
+  
   cart_item = get_item_in_cart(ci["product_id"])
   if cart_item == None:
     return "Product ID not currently in shopping cart", 400
