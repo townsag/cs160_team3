@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import AddressAutocomplete from "../lib/components/AddressAutocomplete.svelte"
     import { getCurrentUser, updateUser } from "../lib/util/RequestController"
     
     let user: any;
@@ -7,7 +8,7 @@
 
     let changedUsernameState = "";
     let changedPasswordState = "";
-    let changedAddressState = "";
+    let changedAddressState: google.maps.places.PlaceResult;
 
     let storedChangedUsername = "";
     let storedChangedPassword = "";
@@ -62,7 +63,7 @@
     }
 
     async function handleNewAddress() {
-        storedChangedAddress = changedAddressState;
+        storedChangedAddress = changedAddressState.name || "";
 
         const userData = {
             "address": storedChangedAddress,
@@ -71,11 +72,15 @@
         console.log(userData);
 
         try {
-            await await updateUser(userData);
+            await updateUser(userData);
             await getUser();
         } catch (error) {
             console.error("Error updating address:", error);
         }
+    }
+
+    function handlePlaceSelect(place: google.maps.places.PlaceResult) {
+        changedAddressState = place;
     }
 
     // get user immediately upon component mount
@@ -112,12 +117,7 @@
             </div>
 
             <div>
-                <input
-                    type="text"
-                    placeholder="Address"
-                    bind:value={changedAddressState}
-                    class="input input-bordered w-full max-w-xs"
-                />
+                <AddressAutocomplete onPlaceSelect={handlePlaceSelect} />
 
                 <button on:click={handleNewAddress} class="btn btn-secondary">Update</button>
             </div>
