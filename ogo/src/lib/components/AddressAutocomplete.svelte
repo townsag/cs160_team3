@@ -3,6 +3,7 @@
     import { Loader } from "@googlemaps/js-api-loader";
     import { fetchApiKey } from "../util/RequestController";
 
+    export let placeholder: string;
     export let onPlaceSelect: ((place: any) => void) | undefined;
 
     const loadGoogleMaps = async () => {
@@ -28,9 +29,10 @@
 
         autocomplete.addListener("place_changed", () => {
             const place = autocomplete.getPlace();
-            console.log("Selected place:", place);
+
+            console.log("Selected place:", place.formatted_address);
             if (onPlaceSelect) {
-                onPlaceSelect(place);
+                onPlaceSelect(place.formatted_address);
             }
         });
     };
@@ -42,8 +44,8 @@
     <input
         type="text"
         id="autocomplete"
-        placeholder="Address"
-        class="input input-bordered w-full max-w-xs"
+        placeholder={placeholder}
+        class="input input-bordered w-full max-w-md"
     />
 </html>
 
