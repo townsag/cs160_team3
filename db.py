@@ -560,7 +560,7 @@ def get_path_planning_batch():
 
   batch = []
   total_weight = 0.0
-    
+
   for row in cur.fetchall():
     order_id, weight, address = row
 
