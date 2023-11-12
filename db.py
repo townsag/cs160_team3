@@ -3,10 +3,9 @@ import time
 import bcrypt
 
 con = sqlite3.connect("db.db", check_same_thread=False)
-cur = con.cursor()
-
 
 def init():
+  cur = con.cursor()
   cur.executescript('''
   CREATE TABLE IF NOT EXISTS USERS (
       UserID INTEGER PRIMARY KEY,
@@ -29,7 +28,13 @@ def init():
       Quantity INTEGER,
       Price REAL,
       Weight REAL,
-      CategoryID INTEGER REFERENCES CATEGORIES(CategoryID)
+      CategoryID INTEGER REFERENCES CATEGORIES(CategoryID),
+      CHECK (Quantity >= 0)
+      CHECK (Quantity <= 9999)
+      CHECK (Price >= 0.0)
+      CHECK (Weight >= 0.0)
+      CHECK (CategoryID >= 1)
+      
   );
 
   CREATE TABLE IF NOT EXISTS TAGS (
@@ -53,6 +58,8 @@ def init():
       CartID INTEGER REFERENCES CARTS(CartID),
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
       Quantity INTEGER
+      CHECK (Quantity >= 0)
+      CHECK (Quantity <= 20)
   );
 
   CREATE TABLE IF NOT EXISTS ORDERS (
@@ -63,6 +70,8 @@ def init():
       Status INTEGER,
       PlacedEpoch INTEGER,
       ETAEpoch INTEGER
+      CHECK (TotalPrice >= 0.0)
+      CHECK (TotalWeight >= 0.0)
   );
 
   CREATE TABLE IF NOT EXISTS ORDER_ITEMS (
@@ -70,6 +79,7 @@ def init():
       OrderID INTEGER REFERENCES ORDERS(OrderID),
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
       Quantity INTEGER
+      CHECK (Quantity >= 0)
   );
 
   CREATE TABLE IF NOT EXISTS ROUTES (
@@ -97,6 +107,7 @@ def init():
 
 
 def insert_product(name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO PRODUCTS (Name, Description, Image, Quantity, Price, Weight, CategoryID) VALUES (?, ?, ?, ?, ?, ?, ?)",
               (name, description, image, quantity, price, weight, category_id))
   product_id = cur.lastrowid
@@ -110,16 +121,34 @@ def insert_product(name: str, description: str, image: str, quantity: int, price
   return select_product(product_id)
 
 
-def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
-  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=?, CategoryID=? WHERE ProductID=?",
-              (name, description, image, quantity, price, weight, category_id, product_id))
-
-  cur.execute("DELETE FROM PRODUCT_TAGS WHERE ProductID=?", (product_id,))
-
-  for tag_id in tags:
-    cur.execute("INSERT INTO PRODUCT_TAGS (TagID, ProductID) VALUES (?, ?)",
-                (tag_id, product_id))
-
+'''
+Tries to make a purchase with requested order into DB
+  Input:
+  * Dictionary that maps product ID's to order quantities
+  Output:
+  * If there is enough inventory/quantity for all products in order, executes order and returns True
+  * If there is not enough inventory/quantity for all products in order, rolls back all orders and returns False
+'''
+def purchase_product_order(requested_items: list[dict]):
+  cur = con.cursor()
+  try:
+    cur.execute("BEGIN TRANSACTION")
+    for i in requested_items:
+      print(i)
+      cur.execute("UPDATE PRODUCTS SET Quantity=Quantity-? WHERE ProductID=?",
+                  (i['quantity'], i['product_id']))
+    con.commit()
+    return True
+  except sqlite3.Error as e:
+    print(e)
+    con.rollback()
+    return False
+ 
+# What if product ID not found?
+def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
+  cur = con.cursor()
+  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=? WHERE ProductID=?",
+              (name, description, image, quantity, price, weight, product_id))
   con.commit()
 
   tags = select_product_tags(product_id)
@@ -127,7 +156,17 @@ def update_product(product_id: int, name: str, description: str, image: str, qua
   # TODO: possibly return false or throw error if there is not a product in the db with the given productid
 
 
+# Checks to see if given product ID is in database.
+# If in database, returns True. Else, returns False.
+def is_product_in_db(product_id: int):
+  if select_product(product_id=product_id) == None:
+    return False
+  else:
+    return True
+
+
 def select_product(product_id: int) -> dict:
+  cur = con.cursor()
   cur.execute("SELECT * FROM PRODUCTS WHERE ProductID=?", (product_id,))
   prod = cur.fetchone()
 
@@ -137,16 +176,19 @@ def select_product(product_id: int) -> dict:
 
 
 def select_products() -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM PRODUCTS")
   return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category': select_category(row[7]), 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def search_products(query: str) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM PRODUCTS WHERE Name LIKE ? COLLATE NOCASE OR Description LIKE ? COLLATE NOCASE", ('%' + query + '%', '%' + query + '%'))
   return [{'product_id': row[0], 'name': row[1], 'description': row[2], 'image': row[3], 'quantity': row[4], 'price': row[5], 'weight': row[6], 'category': select_category(row[7]), 'tags': select_product_tags(row[0])} for row in cur.fetchall()]
 
 
 def insert_tag(name: str) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO TAGS (Name) VALUES (?)",
               (name,))
   con.commit()
@@ -156,11 +198,13 @@ def insert_tag(name: str) -> dict:
 
 
 def select_all_tags() -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM TAGS")
   return [{'tag_id': t[0], 'name': t[1]} for t in cur.fetchall()]
 
 
 def select_product_tags(product_id:int) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT T.TagID, T.Name "
               "FROM PRODUCT_TAGS AS PT "
               "JOIN Tags AS T ON T.TagID = PT.TagID "
@@ -169,6 +213,7 @@ def select_product_tags(product_id:int) -> list[dict]:
 
 
 def update_tag(tag_id: int, name: str) -> dict:
+  cur = con.cursor()
   cur.execute("UPDATE TAGS SET Name=? WHERE TagID=?",
               (name, tag_id))
   con.commit()
@@ -177,18 +222,24 @@ def update_tag(tag_id: int, name: str) -> dict:
 
 
 def select_all_categories() -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM CATEGORIES")
   return [{'category_id': c[0], 'name': c[1]} for c in cur.fetchall()]
 
 
 def select_category(category_id) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM CATEGORIES WHERE CategoryID=?",
               (category_id,))
   c = cur.fetchone()
-  return {'category_id': c[0], 'name': c[1]}
+  if c == None:
+    return c
+  else:
+    return {'category_id': c[0], 'name': c[1]}
 
 
 def insert_category(name: str) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO CATEGORIES (Name) VALUES (?)",
               (name,))
   con.commit()
@@ -198,6 +249,7 @@ def insert_category(name: str) -> dict:
 
 
 def update_category(category_id: int, name: str) -> dict:
+  cur = con.cursor()
   cur.execute("UPDATE CATEGORIES SET Name=? WHERE CategoryID=?",
               (name, category_id))
   con.commit()
@@ -211,33 +263,37 @@ def update_category(category_id: int, name: str) -> dict:
 # #
 
 def select_user(user_id: int) -> dict:
+  cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
   return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
 
 def validate_user(username: str, password: str) -> dict:
+  cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
-  row = cur.fetchone()
-  
-  if row != None and bcrypt.checkpw(password.encode('utf-8'), row[2]):
-    return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
-  
+
+  for row in cur.fetchall():
+    if bcrypt.checkpw(password.encode('utf-8'), row[2]):
+      return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
+    
   return None
 
 
-def insert_user(username: str, password: str, address: str, is_admin: bool) -> dict:
+def insert_user(username: str, password: str, is_admin: bool) -> dict:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
-  cur.execute("INSERT INTO USERS (Username, Password, Address, IsAdmin) VALUES (?, ?, ?, ?)",
-              (username, hashedpw, address, int(is_admin)))
+  cur = con.cursor()
+  cur.execute("INSERT INTO USERS (Username, Password, IsAdmin) VALUES (?, ?, ?)",
+              (username, hashedpw, int(is_admin)))
   con.commit()
 
   user_id = cur.lastrowid
-  return {'user_id': user_id, 'username': username, 'address': address, 'is_admin': is_admin}
+  return {'user_id': user_id, 'username': username, 'address': None, 'is_admin': is_admin}
 
 
 def update_user_username(user_id: int, username: str):
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET Username=? WHERE UserID=?",
               (username, user_id))
   con.commit()
@@ -245,18 +301,22 @@ def update_user_username(user_id: int, username: str):
 
 def update_user_password(user_id: int, password: str) -> None:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+  
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET Password=? WHERE UserID=?",
               (hashedpw, user_id))
   con.commit()
 
 
 def update_user_address(user_id: int, address: str) -> None:
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET Address=? WHERE UserID=?",
               (address, user_id))
   con.commit()
 
 
 def update_user_admin(user_id: int, is_admin: bool) -> None:
+  cur = con.cursor()
   cur.execute("UPDATE USERS SET IsAdmin=? WHERE UserID=?",
               (int(is_admin), user_id))
   con.commit()
@@ -267,6 +327,7 @@ def update_user_admin(user_id: int, is_admin: bool) -> None:
 
 
 def get_cart_id(user_id: int) -> int:
+  cur = con.cursor()
   cur.execute("SELECT CartID FROM CARTS WHERE UserID=?", (user_id,))
   cart_row = cur.fetchone()
 
@@ -280,18 +341,20 @@ def get_cart_id(user_id: int) -> int:
 def select_cart(user_id: int) -> dict:
   cart_id = get_cart_id(user_id)
 
-  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity "
+  cur = con.cursor()
+  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, CI.CartItemID, CI.Quantity, P.CategoryID "
               "FROM CART_ITEMS AS CI "
               "JOIN PRODUCTS AS P ON CI.ProductID = P.ProductID "
               "WHERE CI.CartID=?", (cart_id,))
 
   return {
     "cart_id": cart_id,
-    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5]} for ci in cur.fetchall()]
+    "items": [{"cart_item_id": ci[6], "quantity": ci[7], "product_id": ci[0], "name": ci[1], "description": ci[2], "image":ci[3], "price": ci[4], "weight": ci[5], 'category': select_category(ci[8]), 'tags': select_product_tags(ci[0])} for ci in cur.fetchall()]
   }
 
 
 def insert_cart(user_id: int) -> dict:
+  cur = con.cursor()
   cur.execute("INSERT INTO CARTS (UserID) VALUES (?)", (user_id,))
   con.commit()
   cart_id = cur.lastrowid
@@ -301,6 +364,7 @@ def insert_cart(user_id: int) -> dict:
 def insert_cart_item(user_id: int, product_id: int, quantity: int) -> dict:
   cart_id = get_cart_id(user_id)
 
+  cur = con.cursor()
   cur.execute("INSERT INTO CART_ITEMS (CartID, ProductID, Quantity) VALUES (?, ?, ?)",
               (cart_id, product_id, quantity))
   con.commit()
@@ -312,6 +376,7 @@ def insert_cart_item(user_id: int, product_id: int, quantity: int) -> dict:
 def update_cart_item(user_id: int, cart_item_id: int, product_id: int, quantity: int) -> dict:
   cart_id = get_cart_id(user_id)
 
+  cur = con.cursor()
   cur.execute("UPDATE CART_ITEMS SET Quantity=?, ProductID=? WHERE CartItemID=? AND CartID=?", (quantity, product_id, cart_item_id, cart_id))
   con.commit()
 
@@ -321,6 +386,7 @@ def update_cart_item(user_id: int, cart_item_id: int, product_id: int, quantity:
 def delete_cart_item(user_id: int, cart_item_id: int) -> None:
   cart_id = get_cart_id(user_id)
 
+  cur = con.cursor()
   cur.execute("DELETE FROM CART_ITEMS WHERE CartItemID=? AND CartID=?", (cart_item_id, cart_id))
   con.commit()
 
@@ -328,9 +394,22 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # #
 # # Orders
 # #
+def select_all_orders() -> list[dict]:
+  cur = con.cursor()
+  cur.execute("SELECT * FROM ORDERS")
+  return [{
+    'order_id': o[0],
+    'user': select_user(o[1]),
+    'total_price': o[2],
+    'total_weight': o[3],
+    'status': o[4],
+    'placed_epoch': o[5],
+    'eta_epoch': o[6]
+  } for o in cur.fetchall()]
 
 
 def select_orders(user_id: int) -> list[dict]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
 
   return [{
@@ -347,6 +426,7 @@ def select_orders(user_id: int) -> list[dict]:
 def select_order_items(user_id: int, order_id: int) -> list[dict]:
   # TODO: ensure that the user owns the order
 
+  cur = con.cursor()
   cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, OI.OrderItemID, OI.Quantity "
               "FROM ORDER_ITEMS AS OI "
               "JOIN PRODUCTS AS P ON OI.ProductID = P.ProductID "
@@ -391,6 +471,7 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
   status = 0
   placed_epoch = int(time.time())
 
+  cur = con.cursor()
   cur.execute("INSERT INTO ORDERS (UserID, TotalPrice, TotalWeight, Status, PlacedEpoch) VALUES (?, ?, ?, ?, ?)",
               (user_id, total_price, total_weight, status, placed_epoch))
 
@@ -419,6 +500,7 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
 #   }
 # ]
 def insert_route(polyline: str, legs: list[dict]):
+  cur = con.cursor()
   cur.execute("INSERT INTO ROUTES (Polyline, CreationEpoch) VALUES (?, ?)",
               (polyline, int(time.time())))
 
@@ -435,11 +517,13 @@ def insert_route(polyline: str, legs: list[dict]):
 
 
 def select_all_routeid() -> list[int]:
+  cur = con.cursor()
   cur.execute("SELECT * FROM ROUTES")
   return [{"route_id": r[0], "creation_epoch": r[2]} for r in cur.fetchall()]
 
 
 def select_route_from_routeid(route_id: int):
+  cur = con.cursor()
   cur.execute("SELECT * FROM ROUTES WHERE RouteID=?", (route_id,))
   r = cur.fetchone()
   polyline = r[1]
@@ -462,11 +546,13 @@ def select_route_from_routeid(route_id: int):
 
 
 def select_route_from_orderid(order_id: int):
+  cur = con.cursor()
   cur.execute("SELECT RouteID FROM ROUTE_ORDERS WHERE OrderID=?", (order_id,))
   return select_route_from_routeid(cur.fetchone()[0])
 
 
 def get_path_planning_batch():
+  cur = con.cursor()
   cur.execute("SELECT O.OrderID, O.TotalWeight, U.Address "
               "FROM ORDERS AS O "
               "JOIN USERS AS U ON U.UserID = O.UserID "
@@ -492,6 +578,7 @@ def get_path_planning_batch():
 
 def delete_all_tables():
   # List all tables in the database
+  cur = con.cursor()
   cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
   tables = cur.fetchall()
 

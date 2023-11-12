@@ -1,5 +1,5 @@
 import db
-from groute import grouteInputOrder, grouteResponse, plan_path
+from groute import grouteInputOrder, grouteResponse, plan_path, distance_check
 import json
 from functools import wraps
 import threading
@@ -30,17 +30,19 @@ class User:
     self.username = username
     self.address = address
     self.is_admin = is_admin
-    self.is_active = True
 
   def get_id(self):
     return str(self.user_id)
 
+  @property 
   def is_authenticated(self):
     return True
 
+  @property
   def is_active(self):
-    return self.is_active
+    return True
 
+  @property
   def is_anonymous(self):
     return False
 
@@ -49,9 +51,10 @@ class User:
     try:
       u = db.select_user(user_id)
       return User(user_id, u['username'], u['address'], u['is_admin'])
-    except:
+    except Exception as e:
+      print('User.get() error:', e)
       return None
-
+    
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -80,11 +83,73 @@ def admin_required(f):
     return check_admin
 
 
+def get_item_in_cart(product_id : int):
+  curr_cart = db.select_cart(current_user.user_id)
+  for item in curr_cart['items']:
+    if item['product_id'] == product_id:
+      return item
+  return None
+
+
+def is_valid_product_id(product_id : int):
+  if db.select_product(product_id) == None:
+    return False
+  return True
+
+def is_valid_category_id(category_id : int):
+  if db.select_category(category_id) == None:
+    return False
+  return True
+
+def is_valid_tag(tag_id):
+  tags = db.select_all_tags()
+  for tag in tags:
+    if tag['tag_id'] == tag_id:
+      return True
+  return False
+
+def is_valid_cart_item_params(ci : json):
+  curr_cart = db.select_cart(current_user.user_id)
+  cart_item = get_item_in_cart(ci["product_id"])
+  if cart_item != None:
+    ci['quantity'] = ci['quantity'] + cart_item['quantity']
+  if ci['quantity'] > 20:
+    return False, ("requested product quantity is too high", 400)
+  return True
+
+def is_valid_product_params(p : json):
+    # name, description, image need to be string
+  # Link must be a valid link
+  # quantity, price, weight need to be type Integer
+  # quantity, price, weight cannot be < 0 
+  if not isinstance(p['name'], str):
+    return False, ("Invalid name type", 400)
+  if not isinstance(p['description'], str):
+    return False, ("Invalid description type", 400)
+  if not isinstance(p['image'], str):
+    return False, ("Invalid image link type", 400)
+  if not isinstance(p['quantity'], int):
+    return False, ("Invalid quantity type", 400)
+  if not isinstance(p['price'], float):
+    return False, ("Invalid price type", 400)
+  if not isinstance(p['weight'], float):
+    return False, ("Invalid weight type", 400)
+  if not isinstance(p['quantity'], int):
+    return False, ("Invalid name type", 400)
+  if p['quantity'] < 0 or p['weight'] < 0 or p['price'] < 0:
+    return False, ("Cannot have negative weight, price, or quantity", 400)
+  if not is_valid_category_id(p['category_id']):
+    return False, ("Category of that ID does not exist", 400)
+  else:
+    return True
+
+
 def route_if_ready():
   print("started route if ready thread")
   # 
   # pdb.set_trace()
   batch = db.get_path_planning_batch()
+  print("this is batch: ", batch)
   if batch == None:
     print("no path yet")
     return
@@ -126,9 +191,17 @@ def signup():
     l = load_user(j['user_id'])
     login_user(l)
     return 'Login Success'
-
-  if 'is_admin' not in u: u['is_admin'] = False 
-  u = db.insert_user(u['username'], u['password'], u['address'], u['is_admin'])
+  
+  if 'is_admin' not in u: u['is_admin'] = False
+  
+  user_char_ct = len(u['username'])
+  pass_char_ct = len(u['password'])
+  if user_char_ct > 20 or user_char_ct < 1:
+    return 'Invalid username character count', 400
+  if pass_char_ct > 20 or pass_char_ct < 1:
+    return 'Invalid password character count', 400
+  
+  u = db.insert_user(u['username'], u['password'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
@@ -142,11 +215,12 @@ def login():
   if j:
     login_user(load_user(j['user_id']))
     return 'Success'
-  return 'Failure'
+  return 'Failure', 400
 
 
 @app.route('/logout')
 @login_required
+
 def logout():
   msg = f"Logging out {current_user.username}"
   logout_user()
@@ -157,10 +231,26 @@ def logout():
 @login_required
 def update_user():
   u = request.get_json()
-  if 'username' in u: db.update_user_username(current_user.user_id, u['username'])
-  if 'password' in u: db.update_user_password(current_user.user_id, u['password'])
-  if 'address' in u: db.update_user_address(current_user.user_id, u['address'])
-  if 'is_admin' in u: db.update_user_admin(current_user.user_id, u['is_admin'])
+  if 'username' in u: 
+    user_char_ct = len(u['username'])
+    if user_char_ct > 20 or user_char_ct < 1:
+      return 'Invalid username character count', 400
+    if 'password' in u:
+      pass_char_ct = len(u['password'])
+      if pass_char_ct > 20 or pass_char_ct < 1:
+        return 'Invalid password character count', 400  
+      user_entry = db.validate_user(u['username'], u['password'])
+      if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
+        return "Invalid Entry - User Already Exists", 400
+      db.update_user_username(current_user.user_id, u['username'])
+      db.update_user_password(current_user.user_id, u['password'])  
+    
+  if 'address' in u: 
+    if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+    db.update_user_address(current_user.user_id, u['address'])
+
+  if 'is_admin' in u: 
+    db.update_user_admin(current_user.user_id, u['is_admin'])
 
   return "Success", 200
 
@@ -184,6 +274,8 @@ def get_products():
 @login_required
 def get_product():
   product_id = request.args['productID']
+  if not is_valid_product_id(product_id):
+    return "Invalid Product ID, does not exist in current product list", 400  
   # TODO: handle if productID is not present in query string
   return json.dumps(db.select_product(product_id))
 
@@ -199,6 +291,11 @@ def search_products():
 @admin_required
 def update_product():
   p = request.get_json()
+  result = is_valid_product_params(p)
+  if not isinstance(result, bool) or not result:
+    return result[1]
+  if not is_valid_product_id(p['product_id']):
+    return "Invalid Product ID, does not exist in current product list", 400  
   return db.update_product(p['product_id'], p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
 
 
@@ -206,6 +303,9 @@ def update_product():
 @admin_required
 def create_product():
   p = request.get_json()
+  result = is_valid_product_params(p)
+  if not isinstance(result, bool) or not result:
+    return result[1]
   return db.insert_product(p['name'], p['description'], p['image'], p['quantity'], p['price'], p['weight'], p['category_id'], p['tags'])
 
 
@@ -226,6 +326,8 @@ def create_category():
 @admin_required
 def update_category():
   p = request.get_json()
+  if not is_valid_category_id(p["category_id"]):
+    return "Invalid Category ID, does not exist in current category list", 400 
   return db.update_category(p['category_id'], p['name']) 
 
 
@@ -246,8 +348,9 @@ def create_tag():
 @admin_required
 def update_tag():
   p = request.get_json()
+  if not is_valid_tag(p['tag_id']):
+    return "Invalid Tag ID, does not exist in current tag list", 400
   return db.update_tag(p['tag_id'], p['name']) 
-
 
 # #
 # # Cart Routes
@@ -258,20 +361,40 @@ def get_cart():
   return db.select_cart(current_user.user_id)
 
 
+
 @app.route('/addCartItem', methods=['POST'])
 @login_required
 def add_cart_item():
   ci = request.get_json()
-  return db.insert_cart_item(current_user.user_id, ci['product_id'], ci['quantity'])
+  if not is_valid_product_id(ci['product_id']):
+    return "Invalid Product ID, does not exist in current product list", 400
+  result = is_valid_cart_item_params(ci)
+  if not isinstance(result, bool) or not result:
+    return result[1]
+  cart_item = get_item_in_cart(ci["product_id"])
+  if cart_item != None:
+    return db.update_cart_item(current_user.user_id, cart_item['cart_item_id'], ci['product_id'], ci['quantity'])
+  else:
+    return db.insert_cart_item(current_user.user_id, ci['product_id'], ci['quantity'])
 
 
 @app.route('/updateCartItem', methods=['POST'])
 @login_required
 def update_cart_item():
   ci = request.get_json()
+  if not is_valid_product_id(ci['product_id']):
+    return "Invalid Product ID, does not exist in current product list", 400
+  cart_item = get_item_in_cart(ci["product_id"])
+  if cart_item == None:
+    return "Product ID not currently in shopping cart", 400
+  if ci['quantity'] > 20:
+    return "Cart item quantity is too large, must be 20 or less", 400
   return db.update_cart_item(current_user.user_id, ci['cart_item_id'], ci['product_id'], ci['quantity'])
 
 
+
+
+# NOTE TO SELF: Test to see what happens if remove cart item id that doesnt exist
 @app.route('/removeCartItem', methods=['POST'])
 @login_required
 def remove_cart_item():
@@ -289,6 +412,12 @@ def get_orders():
   return db.select_orders(current_user.user_id)
 
 
+@app.route('/getAllOrders', methods=['GET'])
+@admin_required
+def get_all_orders():
+  return db.select_all_orders()
+
+
 @app.route('/getOrderItems', methods=['GET'])  # ?orderID=<orderID>
 @login_required
 def get_order_items():
@@ -297,18 +426,59 @@ def get_order_items():
   return db.select_order_items(current_user.user_id, order_id)
 
 
+@app.route('/getOrderItemsEmployee', methods=["GET"]) # ?orderID=<orderID>
+@admin_required
+def get_order_items_employee():
+  user_id = request.args["userID"]
+  order_id = request.args["orderID"]
+  return db.select_order_items(user_id=user_id, order_id=order_id)
+
+
+
+'''
+Place user's order by updating DB product quantities and user order history, then generate new route if there is enough inventory.
+  Input:
+  * JSON that maps product ID's to order quantities
+  Output:
+  * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
+  * If there is not enough inventory/quantity for all products in order, returns 400 error
+  * If the calling user does not have a valid address set, returns 400 error
+'''
 @app.route('/placeOrder', methods=['POST'])
 @login_required
 def place_order():
+  if current_user.address is None:
+    return "No valid address set.", 400
+
   order_items = request.get_json()
-  order = db.insert_order(current_user.user_id, order_items)
+  if db.purchase_product_order(order_items):
+    order = db.insert_order(current_user.user_id, order_items)
 
-  # Start thread to create route if the requirements are met.
-  threading.Thread(target=route_if_ready).start()
+    # Start thread to create route if the requirements are met.
+    threading.Thread(target=route_if_ready).start()
 
-  return order
-
-
+    return order
+  else: 
+    return "Not enough items in inventory", 400
+  
+def update_inventory(order):
+  if not bool(order):
+    return True
+  head_item_num = order.keys()[0]
+  head_item_ct = order[head_item_num]
+  item_dict = db.select_product(head_item_num)
+  old_quantity = item_dict['quantity']
+  new_quantity = old_quantity - head_item_ct
+  if new_quantity < 0:
+    return False
+  else:
+    db.update_product(head_item_num, item_dict['name'], item_dict['description'], item_dict['image'], new_quantity, item_dict['price'], item_dict['weight'])
+    if not update_inventory(order.pop(head_item_ct)):
+      db.update_product(head_item_num, item_dict['name'], item_dict['description'], item_dict['image'], old_quantity, item_dict['price'], item_dict['weight'])
+      return False
+    else:
+      return True
+    
 # #
 # # Path Planning Routes
 # #
@@ -331,6 +501,7 @@ def get_route():
     return db.select_route_from_orderid(request.args['order_id'])
 
   return "Bad Query String", 400
+
 
 @app.route('/getMapConstants', methods=['GET'])
 @admin_required
