@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import AddressAutocomplete from "../lib/components/AddressAutocomplete.svelte"
-    import { getCurrentUser, updateUser } from "../lib/util/RequestController"
+    import AddressAutocomplete from "../lib/components/AddressAutocomplete.svelte";
+    import { getCurrentUser, updateUser } from "../lib/util/RequestController";
+    import Navbar from "../lib/components/Navbar.svelte";
     
     let user: any;
 
@@ -94,6 +95,7 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
+    <Navbar/>
     <div class="relative min-w-screen h-screen flex-grow flex flex-col px-4 sm:px-0">
         <h1 id="usernameDisplay" class="card-title p-8 pb-4">Hello {usernameState}!</h1>
 

@@ -6,7 +6,7 @@
   import UserSettings from "./routes/UserSettings.svelte";
   import EmployeeProduct from "./routes/EmployeeProduct.svelte";
   import ShoppingCart from "./routes/ShoppingCart.svelte";
-  import Navbar from "./lib/components/Navbar.svelte";
+  //import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
@@ -31,12 +31,7 @@
 <html lang="en" data-theme="lemonade">
   <main>
     <Router {url}>
-      <Navbar />
-      <nav class='bg-gray-300'>
-        {#each routes as route}
-          <Link to={route.path}>{route.path} </Link>
-        {/each}
-      </nav>
+      
       <div>
         {#each routes as route}
           <Route path={route.path} component={route.component} />

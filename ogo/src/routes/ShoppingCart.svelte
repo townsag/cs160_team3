@@ -3,6 +3,7 @@
     import { getCart } from "../lib/util/RequestController"
     import { cartItemQuantitySignal, cartItemRemovedSignal } from "../lib/stores/CartObserver";
     import ItemDisplay from "../lib/components/ItemDisplay.svelte";
+    import Navbar from "../lib/components/Navbar.svelte";
 
     // California sales tax rate
     const TAX_RATE = 0.0725;
@@ -69,6 +70,7 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
+    <Navbar/>
     <div class="flex flex-row">
         <div class="basis-1/2">
             <div class="card bg-base-100 border-2 border-black-500 mt-8 mb-8">

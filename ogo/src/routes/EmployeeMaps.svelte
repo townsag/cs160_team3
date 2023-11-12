@@ -2,6 +2,7 @@
 <script lang="ts">
     import Map from "../lib/components/Map.svelte";
     import RouteSummary from "../lib/components/RouteSummary.svelte";
+    import Navbar from "../lib/components/Navbar.svelte";
 
     let route_data: any = {};
     let orders_props: any = [];
@@ -150,6 +151,7 @@
 <!-- svelte-ignore a11y-missing-attribute -->
 <html>
     <body>
+        <Navbar/>
         <h1>Welcome to employee home: {username}</h1>
         <div>
             <div>

@@ -4,6 +4,7 @@
 	import SearchBar from '../lib/components/SearchBar.svelte';
   import FilterBar from '../lib/components/FilterBar.svelte';
   import ItemDisplay from '../lib/components/ItemDisplay.svelte';
+  import Navbar from "../lib/components/Navbar.svelte";
 
   let currentCategory = "";
   let filterTags: any[] = [];
@@ -164,6 +165,7 @@
   }
 </style>
 
+<Navbar/>
 <div class="container mx-auto p-4">
   <div class="search-bar-container flex items-center border rounded ,," >
     <SearchBar 

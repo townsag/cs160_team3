@@ -1,6 +1,7 @@
 <script lang='ts'>
     import { onMount } from 'svelte';
     import { navigate } from 'svelte-routing';
+    import Navbar from "../lib/components/Navbar.svelte";
 
     let productID = window.location.href.match(/\/(\d+)$/)[1];
     console.log(productID);
@@ -310,6 +311,7 @@
 </style>
 
 {#if finishLoading}
+    <Navbar/>
     <div style="align-self: center; align-items: center;">   
         {#if isAdmin} 
             <div class="midContainer mx-auto p-2 mb-4">
