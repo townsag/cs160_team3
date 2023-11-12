@@ -33,6 +33,10 @@
     let itemTags: any[] = [];
     let loadedTags = false;
     let loadedRealTags = false;
+
+    let callAlert: boolean = false;
+    let alertMsg: String = "";
+    let alertType: String = "";
     
     function handleCategoryChange(event: any) {
         itemCategory = event.target.value;
@@ -99,7 +103,7 @@
     }
 
     onMount(async () => {
-        sequential_api_calls();       
+        sequential_api_calls();  
     }); 
 
     $: {
@@ -116,6 +120,19 @@
             loadedTags = false;
             loadedRealTags = false;
             finishLoading = true;
+        }
+
+        if (itemPrice < 0) {
+            itemPrice = 0.0;
+        }
+        if (itemWeight < 0) {
+            itemWeight = 0.0;
+        }
+        if (itemQuantityInStock < 0) {
+            itemQuantityInStock = 0;
+        }
+        if (itemSelectedQuantity < 0) {
+            itemSelectedQuantity = 0;
         }
     }
 
@@ -148,7 +165,7 @@
 		if (createProductResponse.ok) {
 			const message = await createProductResponse.text();
 			console.log(message);
-            alert("Created item: " + itemName);
+            //alert("Created item: " + itemName);
             returnToBrowse();
 		} else {
             const message = await createProductResponse.text();
@@ -215,9 +232,8 @@
     function addToCart() {
         if (itemSelectedQuantity > 0) {
             addItemToCart();
-        } else {
-            alert("Quantity must be greater than 0");
         }
+        returnToBrowse();
     }
     function createItem() {
         toggleTagsListID.length = 0;
@@ -308,6 +324,10 @@
         padding: 10px;
         border: 0px solid black;
     }
+
+    .bg-primary-dark:hover {
+        background-color: darken(yourPrimaryColor, 10%);
+    }
 </style>
 
 {#if finishLoading}
@@ -317,27 +337,33 @@
             <div class="midContainer mx-auto p-2 mb-4">
                 <table class="testMargin" style="border: width: 100%; height: 65vh;">
                     <tr>
-                        <td style="height: 40vh;">
+                        <td  colspan="2" style="height: 40vh;">
                             <div class="border rounded-3xl shadow-md" style="min-height:50%; height: 100%;">
                                 <img src={itemImgUrl} alt={itemName} class="main-image w-full h-full object-cover"/>
                             </div>
                         </td>
                     </tr>
                     <tr>
+                        <td style="width: 20%">
+                            <label for="nameInput" class="text-3xl font-semibold">Name: </label>
+                        </td>
                        <td>
-                            <!--<label for="nameInput" class="text-3xl font-semibold">Name: </label>-->
                             <input id="nameInput" bind:value={itemName} type="text" placeholder=itemName class="input input-bordered text-3xl font-semibold" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <!--<label for="descInput" class="text-xl font-normal">Description: </label>-->
+                            <label for="descInput" class="text-xl font-normal">Description: </label>
+                        </td>
+                        <td>
                             <input id="descInput" bind:value={itemDescription} type="text" placeholder=itemDescription class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <!--<label for="urlInput" class="text-xl font-normal">URL: </label>-->
+                            <label for="urlInput" class="text-xl font-normal">URL: </label>
+                        </td>
+                        <td>
                             <input id="urlInput" bind:value={itemImgUrl} type="text" placeholder=itemImgUrl class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
@@ -348,13 +374,13 @@
                             <div class="filter-item">
                                 <label for="categoryDropDown" class="text-xl font-normal">Category: </label>
                                 {#if productID != "0"}
-                                    <select class="text-xl font-normal" bind:value={itemCategory} style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
+                                    <select class="text-xl font-normal rounded-lg" bind:value={itemCategory} style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
                                         {#each allCategoriesList as category}
                                             <option class="text-xl font-normal" value={category.name}>{category.name}</option>
                                         {/each}
                                     </select>
                                 {:else}
-                                    <select class="text-xl font-normal" style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
+                                    <select class="text-xl font-normal rounded-lg" style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
                                         {#each allCategoriesList as category}
                                             <option class="text-xl font-normal" value={category.name}>{category.name}</option>
                                         {/each}
@@ -366,7 +392,7 @@
                     <tr>
                         <td colspan="2">
                             <label for="tagInput" class="text-xl font-normal">Tags:</label>
-                            <div class="tagScroll" style="min-height: 10vh;">
+                            <div class="tagScroll rounded-lg" style="min-height: 10vh;">
                                 {#each allTagsList as tag, index}
                                     <label class="text-xl font-normal" style="padding: 5px;">
                                         {tag.name}
@@ -407,13 +433,13 @@
                     <tr>
                         <td style="padding-top: 40px; width: 50%">
                             {#if productID != "0"}
-                                <button style="width: 90%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-xl" on:click={applyChanges}>Apply Changes</button>
+                                <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={applyChanges}>Apply</button>
                             {:else}
-                                <button style="width: 90%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-xl" on:click={createItem}>Create Item</button>
+                                <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={createItem}>Create Item</button>
                             {/if}
                         </td>
                         <td style="padding-top: 40px; text-align: right;">
-                            <button style="width: 90%;" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 text-xl" on:click={returnToBrowse}>Cancel</button>
+                            <button style="width: 90%;" class="btn bg-red-500 text-white rounded-xl text-xl" on:click={returnToBrowse}>Cancel</button>
                         </td>
                     </tr>
                 </table>
@@ -440,7 +466,7 @@
                     </tr>
                     <tr>
                         <td class="" style="word-wrap: break-word;">
-                            <span class="bg-green-200 text-green-800 px-2 py-1 rounded-full text-base mr-2 mb-2">{itemCategory}</span>
+                            <span class="bg-primary text-white px-2 py-1 rounded-full text-base mr-2 mb-2">{itemCategory}</span>
                             {#each allTagsList as tag}
                                 <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-base mr-2 mb-2">{tag.name}</span>
                             {/each}
@@ -477,7 +503,7 @@
                         <td colspan="2">
                             <div style="align-items: center;">
                                 {#if productID != "0"}
-                                    <button style="width: 100%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-2xl" on:click={addToCart}>Add to Cart</button>
+                                    <button style="width: 100%;" class="btn bg-primary text-white mt-3 rounded-xl text-2xl" on:click={addToCart}>Add to Cart</button>
                                 {/if}
                             </div>
                         </td>

@@ -4,6 +4,7 @@
     import bg from "../assets/bg1.jpeg";
     import { login, getCurrentUser } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
+    import { onMount } from 'svelte';
 
     let usernameState = "";
     let passwordState = "";
@@ -26,6 +27,8 @@
             navigate("/browse");
         } else {
             console.error("Login failed:", result.message);
+            alert("Login failed: wrong password or username");
+            passwordState = '';
         }
 
         const userResult = await getCurrentUser();
@@ -34,6 +37,24 @@
             console.log('User data:', userResult.user.user_id, userResult.user.username);
         } else {
             console.error('Error fetching user:', result.message);
+        }
+    }
+
+    onMount(() => {
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    });
+
+    function handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            // Check which input is focused and trigger the corresponding action
+            const activeElement = document.activeElement;
+            if (activeElement.tagName === 'INPUT') {
+                handleSubmit();
+            }
         }
     }
 
@@ -118,7 +139,7 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <!-- svelte-ignore a11y-missing-attribute -->
-                <a on:click={() => navigate('/signup')} class="text-blue-500 hover:underline cursor-pointer text-center">New user? Sign up here!</a>
+                <a on:click={() => navigate('/signup')} class="text-primary hover:underline cursor-pointer text-center">New user? Sign up here!</a>
             </div>
         </div>
     </div>

@@ -132,7 +132,7 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <!-- svelte-ignore a11y-missing-attribute -->
-                <a on:click={() => navigate('/login')} class="text-blue-500 hover:underline cursor-pointer text-center">Returning user? Login here!</a>
+                <a on:click={() => navigate('/login')} class="text-primary hover:underline cursor-pointer text-center">Returning user? Login here!</a>
             </div>
         </div>
     </div>
