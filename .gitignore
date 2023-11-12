@@ -2,3 +2,4 @@
 __pycache__/*
 keys.config
 db.db
+ogo/package-lock.json
