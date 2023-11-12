@@ -9,9 +9,9 @@
   import ShoppingCart from "./routes/ShoppingCart.svelte";
   import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
-  import EmBrowse from "./routes/EmBrowse.svelte";
   import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
+  import CustomerOrderHistory from "./routes/CustomerOrderHistory.svelte";
   import './app.css';
 
   const routes = [
@@ -22,7 +22,8 @@
     { path: "/cart", component: ShoppingCart },
     { path: "/employee-product", component: EmployeeProduct },
     { path: "/browse", component: Browse },
-    { path: "/employeesmaps", component: EmMaps}
+    { path: "/employeesmaps", component: EmMaps},
+    { path: "/customer-order-history", component: CustomerOrderHistory}
   ];
 
   export let url = "";
