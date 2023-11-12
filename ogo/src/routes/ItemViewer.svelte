@@ -43,7 +43,6 @@
                 toggleTagsList[i] = !toggleTagsList[i];
             }
         }
-        //console.log(toggleTagsList);
     }
 
     async function sequential_api_calls(){
@@ -52,7 +51,6 @@
             const data = await response.json();
             currentUser = data;
             isAdmin = currentUser.is_admin;
-            //console.log("isAdmin: " + isAdmin);
         } catch (error) {
             console.log("error: ", error);
         }
@@ -60,7 +58,6 @@
             const response = await fetch("/getTags", { method: "GET" });
             const data = await response.json();
             allTagsList = data;
-            //console.log("allTagsList: " + data);
             loadedTags = true;
         } catch (error) {
             console.log("error: ", error);
@@ -69,7 +66,6 @@
             const response = await fetch("/getCategories", { method: "GET" });
             const data = await response.json();
             allCategoriesList = data;
-            //console.log("allCategoriesList: " + data);
         } catch (error) {
             console.log("error: ", error);
         }
@@ -90,7 +86,6 @@
 
             for (let i = 0; i < item.tags.length; i++) {
                 itemTags[i] = item.tags[i].name;
-                //console.log("Added tag: " + item.tags[i].name);
             }
             console.log(itemTags);
             loadedRealTags = true;
@@ -108,18 +103,15 @@
 
     $: {
         if ((loadedTags && loadedRealTags && productID != "0") || (loadedTags && productID == "0")) {
-            //console.log(allTagsList.length);
             toggleTagsList = new Array(allTagsList.length);
             for (let i = 0; i < toggleTagsList.length; i++) {
                 toggleTagsList[i] = false;
             }
-            //console.log(itemTags);
             if (itemTags.length != 0) {
                 for (let i = 0; i < itemTags.length ; i++) {
                     toggleTag(itemTags[i]);
                 }
             }
-            //console.log("Not Displayed: " + toggleTagsList);
             loadedTags = false;
             loadedRealTags = false;
             finishLoading = true;
@@ -220,10 +212,11 @@
     }
     
     function addToCart() {
-        if (itemSelectedQuantity != 0) {
+        if (itemSelectedQuantity > 0) {
             addItemToCart();
+        } else {
+            alert("Quantity must be greater than 0");
         }
-        //console.log("added to cart");
     }
     function createItem() {
         toggleTagsListID.length = 0;
@@ -260,22 +253,8 @@
 </script>
 
 <style>
-    .item-container {
-        min-width: 30vw;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 30vh;
-    }
-  
     .main-image {
         object-fit: cover;
-        align-self: center;
-    }
-  
-    .item-details {
-        max-width: 80vw;
-        object-fit: scale-down;
         align-self: center;
     }
 
@@ -285,27 +264,32 @@
         min-height: 80vh; 
         width: 80%;
         align-content: center;
+        margin: auto;
     }
 
-    .bigFont {
-        font-size: 95px;
-        text-align: left;
-        vertical-align: top;
-        padding: 20px;
+    @media (min-width: 1000px) {
+        /* Apply styles when the screen width is 768 pixels or more */
+        .midContainer {
+            flex-direction: row; /* Display items side by side */
+        }
+
+        table:first-child {
+            width: 60%; /* First table takes 60% of the container's width */
+            margin-top: 5vh;
+        }
+
+        table:last-child {
+            width: 35%; /* Second table takes 35% of the container's width */
+            margin-top: 5vh;
+        }
+
+        .midContainer .testMargin {
+            margin-right: 30px;
+        }
     }
 
-    .mediumFont {
-        font-size: 40px;
-        text-align: left;
-        vertical-align: top;
-        padding: 20px;
-    }
-
-    .smallFont {
-        font-size: 25px;
-        text-align: left;
-        vertical-align: top;
-        padding: 20px;
+    .testMargin {
+        margin-right: 0px;
     }
 
     .tagScroll {
@@ -319,37 +303,9 @@
         width: 100%
     }
 
-    .tableTest {
-        align-content: center;
-        justify-content: space-between;
-        border: 0px solid black;
-        width: 80vw;
-        border-collapse: collapse;
-        padding: 10px;
-    }
-
-    .tableTest td {
-        text-align: right; /* Align text inside cells to the left */
-        vertical-align: middle;
-        border: 0px solid black;
-        padding: 10px;
-    }
-
     td {
         padding: 10px;
         border: 0px solid black;
-    }
-
-    .column1 {
-        width: 70%;
-    }
-
-    .column2 {
-        width: 25%; 
-    }
-
-    .columnSpacer {
-        width: 5%; 
     }
 </style>
 
@@ -357,29 +313,48 @@
     <div style="align-self: center; align-items: center;">   
         {#if isAdmin} 
             <div class="midContainer mx-auto p-2 mb-4">
-                <table class="tableTest">
+                <table class="testMargin" style="border: width: 100%; height: 65vh;">
                     <tr>
-                        <td class="column1" rowspan="2" style="text-align: center;">
-                            <div class="item-container">
-                                <div class="border rounded-3xl shadow-md" style="width: 65%;">
-                                    <img src={itemImgUrl} alt={itemName} class="main-image w-full h-full object-cover"/>
-                                </div>
+                        <td style="height: 40vh;">
+                            <div class="border rounded-3xl shadow-md" style="min-height:50%; height: 100%;">
+                                <img src={itemImgUrl} alt={itemName} class="main-image w-full h-full object-cover"/>
                             </div>
                         </td>
-                        <td class="columnSpacer"></td>
-                        <td class="column2" style="text-align: left;">
+                    </tr>
+                    <tr>
+                       <td>
+                            <!--<label for="nameInput" class="text-3xl font-semibold">Name: </label>-->
+                            <input id="nameInput" bind:value={itemName} type="text" placeholder=itemName class="input input-bordered text-3xl font-semibold" style="width: 100%;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <!--<label for="descInput" class="text-xl font-normal">Description: </label>-->
+                            <input id="descInput" bind:value={itemDescription} type="text" placeholder=itemDescription class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <!--<label for="urlInput" class="text-xl font-normal">URL: </label>-->
+                            <input id="urlInput" bind:value={itemImgUrl} type="text" placeholder=itemImgUrl class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                        </td>
+                    </tr>
+                </table>
+                <table style="border: width: 100%; height: 100%; min-height: 30vh">
+                    <tr>
+                        <td colspan="2">
                             <div class="filter-item">
-                                <label for="categoryDropDown" class="">Category: </label>
+                                <label for="categoryDropDown" class="text-xl font-normal">Category: </label>
                                 {#if productID != "0"}
-                                    <select bind:value={itemCategory} style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
+                                    <select class="text-xl font-normal" bind:value={itemCategory} style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
                                         {#each allCategoriesList as category}
-                                            <option value={category.name}>{category.name}</option>
+                                            <option class="text-xl font-normal" value={category.name}>{category.name}</option>
                                         {/each}
                                     </select>
                                 {:else}
-                                    <select style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
+                                    <select class="text-xl font-normal" style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
                                         {#each allCategoriesList as category}
-                                            <option value={category.name}>{category.name}</option>
+                                            <option class="text-xl font-normal" value={category.name}>{category.name}</option>
                                         {/each}
                                     </select>
                                 {/if}
@@ -387,108 +362,125 @@
                         </td>
                     </tr>
                     <tr>
-                        <td></td>
-                        <td style="text-align: left;">
-                            <label for="tagInput" class="">Tags:</label>
-                            <div class="tagScroll">
+                        <td colspan="2">
+                            <label for="tagInput" class="text-xl font-normal">Tags:</label>
+                            <div class="tagScroll" style="min-height: 10vh;">
                                 {#each allTagsList as tag, index}
-                                    <label class="" style="padding: 5px;">
+                                    <label class="text-xl font-normal" style="padding: 5px;">
                                         {tag.name}
                                         {#if productID != "0"}
-                                            <input type="checkbox" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
+                                            <input class="text-xl font-normal" type="checkbox" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
                                         {:else}
-                                            <input type="checkbox" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
+                                            <input class="text-xl font-normal" type="checkbox" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
                                         {/if}
                                     </label>
                                 {/each}
                             </div>
                         </td>
                     </tr>
-                    <tr><td><div style="padding-top: 20px;"></div></td></tr>
                     <tr>
                         <td>
-                            <label for="nameInput" class="">Name: </label>
-                            <input id="nameInput" bind:value={itemName} type="text" placeholder=itemName class="input input-bordered heightSmall" style="width: 85%;"/>
+                            <label for="weightInput" class="text-xl font-normal">Weight(lbs): </label>
                         </td>
-                        <td></td>
                         <td>
-                            <label for="weightInput" class="">Weight(lbs): </label>
-                            <input id="weightInput" bind:value={itemWeight} type="number" placeholder=itemWeight class="input input-bordered heightSmall" style="width: 40%;"/>
+                            <input id="weightInput" bind:value={itemWeight} type="number" placeholder=itemWeight class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
-                        
                     </tr>
                     <tr>
                         <td>
-                            <label for="descInput" class="">Description: </label>
-                            <input id="descInput" bind:value={itemDescription} type="text" placeholder=itemDescription class="input input-bordered heightSmall" style="width: 85%;"/>
+                            <label for="priceInput" class="text-xl font-normal text-green-600 font-semibold">Price($): </label>
                         </td>
-                        <td></td>
                         <td>
-                            <label for="inStockInput" class="">In Stock: </label>
-                            <input id="inStockInput" bind:value={itemQuantityInStock} type="number" placeholder=itemQuantityInStock class="input input-bordered heightSmall" style="width: 40%;"/>
+                            <input id="priceInput" bind:value={itemPrice} type="number" placeholder=itemPrice.toFixed(2) class="input input-bordered heightSmall text-xl font-normal text-green-600 font-semibold" style="width: 100%;"/>
                         </td>
-                        
                     </tr>
                     <tr>
                         <td>
-                            <label for="urlInput" class="">URL: </label>
-                            <input id="urlInput" bind:value={itemImgUrl} type="text" placeholder=itemImgUrl class="input input-bordered heightSmall" style="width: 85%;"/>
+                            <label for="inStockInput" class="text-xl font-normal">In Stock: </label>
                         </td>
-                        <td></td>
                         <td>
-                            <label for="priceInput" class="">Price($): </label>
-                            <input id="priceInput" bind:value={itemPrice} type="number" placeholder=itemPrice.toFixed(2) class="input input-bordered heightSmall" style="width: 40%;"/>
+                            <input id="inStockInput" bind:value={itemQuantityInStock} type="number" placeholder=itemQuantityInStock class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding-top: 40px;">
+                        <td style="padding-top: 40px; width: 50%">
                             {#if productID != "0"}
-                                <button style="width: 90%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-2xl" on:click={applyChanges}>Apply Changes</button>
+                                <button style="width: 90%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-xl" on:click={applyChanges}>Apply Changes</button>
                             {:else}
-                                <button style="width: 90%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-2xl" on:click={createItem}>Create Item</button>
+                                <button style="width: 90%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-xl" on:click={createItem}>Create Item</button>
                             {/if}
                         </td>
-                        <td></td>
-                        <td style="padding-top: 40px;">
-                            <button style="width: 90%;" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 text-2xl" on:click={returnToBrowse}>Cancel</button>
+                        <td style="padding-top: 40px; text-align: right;">
+                            <button style="width: 90%;" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 text-xl" on:click={returnToBrowse}>Cancel</button>
                         </td>
                     </tr>
                 </table>
             </div>
         {:else} 
             <div class="midContainer mx-auto p-2 mb-4">
-                <div class="item-container">
-                    <div class="border rounded-3xl shadow-md">
-                        <img src={itemImgUrl} alt={itemName} class="main-image mb-2 w-full h-full object-cover"/>
-                    </div>
-                </div>
-                <div class="item-details">
-                    <table style="border: 0px solid black; width: 100%;">
-                        <tr>
-                            <td class="bigFont" colspan="2">{itemName}</td>
-                        </tr>
-                        <tr>
-                            <td class="smallFont" colspan="2">{itemDescription}</td>
-                        </tr>
-                        <tr>
-                            <td class="mediumFont" style="padding-right: 50px;">Weight: {itemWeight} lbs</td>
-                            <td class="mediumFont">In Stock: {itemQuantityInStock}</td>
-                        </tr>
-                        <tr>
-                            <td class="mediumFont" style="padding-right: 50px;">Price: ${itemPrice.toFixed(2)}</td>
-                            <td>
-                                <label for="quantityInput" class="">Quantity: </label>
-                                <input id="quantityInput" bind:value={itemSelectedQuantity} type="number" placeholder=itemSelectedQuantity class="input input-bordered heightSmall" style="width: 40%;"/>
-                            </td>
-                        </tr>
-                    </table>
-                    <div class="mb-20"></div>
-                    <div style="padding-left: 20px; align-items: center;">
-                        {#if productID != "0"}
-                            <button class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-2xl" on:click={addToCart}>Add to Cart</button>
-                        {/if}
-                    </div>
-                </div>
+                <table class="testMargin" style="border: width: 100%; height: 60vh;">
+                    <tr>
+                        <td style="height: 40vh;">
+                            <div class="border rounded-3xl shadow-md" style="min-height:50%; height: 100%;">
+                                <img src={itemImgUrl} alt={itemName} class="main-image w-full h-full object-cover"/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h2 class="text-3xl font-semibold">{itemName}</h2>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-xl font-normal">{itemDescription}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="" style="word-wrap: break-word;">
+                            <span class="bg-green-200 text-green-800 px-2 py-1 rounded-full text-base mr-2 mb-2">{itemCategory}</span>
+                            {#each allTagsList as tag}
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-base mr-2 mb-2">{tag.name}</span>
+                            {/each}
+                        </td>
+                    </tr>
+                </table>
+                <table style="border: width: 100%; height: 100%;">
+                    <tr>
+                        <td style="width: 45%;">
+                            <p class="text-xl font-normal">Weight: {itemWeight.toFixed(2)} lbs</p>
+                        </td>
+                        <td>
+                            <p class="text-xl font-normal">Total: {(itemWeight * itemSelectedQuantity).toFixed(2)} lbs</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-xl font-normal text-green-600 font-semibold">Price: ${itemPrice.toFixed(2)}</p>
+                        </td>
+                        <td>
+                            <p class="text-xl font-normal text-green-600 font-semibold">Total: ${(itemPrice * itemSelectedQuantity).toFixed(2)}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="text-xl font-normal">In Stock: {itemQuantityInStock}</p>
+                        </td>
+                        <td>
+                            <label for="quantityInput" class="text-xl font-normal">Quantity: </label>
+                            <input id="quantityInput" bind:value={itemSelectedQuantity} type="number" placeholder=itemSelectedQuantity class="input input-bordered heightSmall" style="width: 40%;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div style="align-items: center;">
+                                {#if productID != "0"}
+                                    <button style="width: 100%;" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 text-2xl" on:click={addToCart}>Add to Cart</button>
+                                {/if}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
         {/if}
     </div>
