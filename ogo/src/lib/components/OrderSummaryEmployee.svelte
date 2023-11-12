@@ -54,7 +54,7 @@
 
 </script>
 
-<div class="bg-green-500 h-1/6 w-full rounded-xl">
+<div class="bg-green-500 h-1/6 w-full rounded-xl border-black border-2">
     <div class="flex flex-row place-content-around">
         <div class="text-md text-yellow-200 p-2">Order Number: {order_id}</div>
         <div class="text-sm text-yellow-200 p-2">Placed on: {order_date.getMonth()}/{order_date.getDay()}/{order_date.getFullYear()}</div>
