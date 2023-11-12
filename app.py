@@ -43,6 +43,7 @@ class User:
   def is_active(self):
     return True
 
+
   @property
   def is_anonymous(self):
     return False
@@ -162,6 +163,7 @@ def route_if_ready():
   # 
   # pdb.set_trace()
   batch = db.get_path_planning_batch()
+  print("this is batch: ", batch)
   if batch == None:
     print("no path yet")
     return
@@ -454,24 +456,19 @@ def get_order_items():
   return db.select_order_items(current_user.user_id, order_id)
 
 
+@app.route('/getOrderItemsEmployee', methods=["GET"]) # ?orderID=<orderID>
+@admin_required
+def get_order_items_employee():
+  user_id = request.args["userID"]
+  order_id = request.args["orderID"]
+  return db.select_order_items(user_id=user_id, order_id=order_id)
 
 
 
-
-# order_items = [
-#   {
-#     'product_id': 1,
-#     'quantity': 2
-#   },
-#   {
-#     'product_id': 2,
-#     'quantity': 3
-#    }
-# ]
 '''
 Place user's order by updating DB product quantities and user order history, then generate new route if there is enough inventory.
   Input:
-  * List of JSONs for product ID's and order quantities
+  * JSON that maps product ID's to order quantities
   Output:
   * If there is enough inventory/quantity for all products in order, returns the order that has been placed 
   * If there is not enough inventory/quantity for all products in order, returns 400 error

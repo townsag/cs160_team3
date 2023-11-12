@@ -1,1 +1,9 @@
+<<<<<<< HEAD
 .env
+__pycache__/*
+keys.config
+db.db
+ogo/package-lock.json
+=======
+.env
+>>>>>>> 0d692c25ef65eaa19dbfae456ef3ad2ad70ad227

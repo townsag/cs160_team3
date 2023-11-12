@@ -286,15 +286,16 @@ def select_user_from_un(username: str) -> dict:
     return None
   return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
+
 def validate_user(username: str, password: str) -> dict:
   cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
-
   for row in cur.fetchall():
     if bcrypt.checkpw(password.encode('utf-8'), row[2]):
       return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
     
   return None
+
 
 def insert_user(username: str, password: str, is_admin: bool) -> dict:
   hashedpw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -576,7 +577,7 @@ def get_path_planning_batch():
 
   batch = []
   total_weight = 0.0
-    
+
   for row in cur.fetchall():
     order_id, weight, address = row
 
