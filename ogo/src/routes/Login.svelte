@@ -65,8 +65,8 @@
 
         // console.log(result);
 
-    async function handleToggle() {
-        toggleIsCheckedState = !toggleIsCheckedState;
+    // async function handleToggle() {
+    //     toggleIsCheckedState = !toggleIsCheckedState;
 
         // Test
         // const post = await fetch("/createProduct", {
@@ -86,7 +86,7 @@
 
         // console.log(post);
         // TODO: switch customer/employee
-    }
+    // }
 </script>
 
 <html lang="en" data-theme="lemonade">
@@ -97,10 +97,10 @@
             <div class="card-body">
                 <div class="flex justify-between items-center">
                     <h1 class="card-title">LOGIN</h1>
-                    <div class="flex">
+                    <!-- <div class="flex">
                         <h2 class="mr-2">{toggleIsCheckedState ? "Employee" : "Customer"}</h2>
                         <input on:click={handleToggle} type="checkbox" class="toggle toggle-primary" />
-                    </div>
+                    </div> -->
                 </div>
                 <div class="form-control w-full max-w-xs">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -115,11 +115,12 @@
                     <input bind:value={passwordState} type="password" class="input input-bordered w-full max-w-xs" />
                 </div>
                 <button on:click={handleSubmit} class="btn bg-secondary mt-6">Submit</button>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <!-- svelte-ignore a11y-missing-attribute -->
+                <a on:click={() => navigate('/signup')} class="text-blue-500 hover:underline cursor-pointer text-center">New user? Sign up here!</a>
             </div>
         </div>
-        <p class="m-8">
-            New user? Sign up <a href="/signup"><u>here</u></a>
-        </p>
     </div>
 </html>
 

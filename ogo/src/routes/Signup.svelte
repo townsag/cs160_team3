@@ -36,11 +36,11 @@
         console.log(storedUsername);
         console.log(storedPassword);
 
-        const result = await signup(storedUsername, storedPassword, ""); // TODO: address?
+        const result = await signup(storedUsername, storedPassword, "", toggleIsCheckedState); // TODO: address?
 
         if (result.success) {
             console.log("Signed up successfully!", JSON.stringify(result.user));
-            navigate("/home");
+            navigate("/login");
         } else {
             console.error("Signup failed:", result.message);
             signupErrorTextState = result.message;
@@ -129,11 +129,12 @@
                     <input bind:value={passwordState} type="password" class="input input-bordered w-full max-w-xs" />
                 </div>
                 <button on:click={handleSubmit} class="btn bg-secondary mt-6">Submit</button>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <!-- svelte-ignore a11y-missing-attribute -->
+                <a on:click={() => navigate('/login')} class="text-blue-500 hover:underline cursor-pointer text-center">Returning user? Login here!</a>
             </div>
         </div>
-        <p class="m-8">
-            Returning user? Login <a href="/login"><u>here</u></a>
-        </p>
     </div>
 </html>
 

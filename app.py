@@ -12,6 +12,7 @@ import configparser
 config = configparser.ConfigParser()
 config.read('.env')
 API_KEY = config['KEYS']['GOOGLE_ROUTES_API_KEY']
+PLACES_API_KEY = config['KEYS']['GOOGLE_PLACES_API_KEY']
 ORIGIN = "1 Washington Sq, San Jose, CA 95192"
 
 
@@ -41,6 +42,7 @@ class User:
   @property
   def is_active(self):
     return True
+
 
   @property
   def is_anonymous(self):
@@ -109,6 +111,11 @@ def is_valid_tag(tag_id):
   return False
 
 def is_valid_cart_item_params(ci : json):
+  if not isinstance(ci['quantity'], int):
+    return False, ("Invalid quantity type", 400)
+  if not isinstance(ci['product_id'], int):
+    return False, ("Invalid productID type", 400)
+
   curr_cart = db.select_cart(current_user.user_id)
   cart_item = get_item_in_cart(ci["product_id"])
   if cart_item != None:
@@ -116,6 +123,13 @@ def is_valid_cart_item_params(ci : json):
   if ci['quantity'] > 20:
     return False, ("requested product quantity is too high", 400)
   return True
+
+def calculate_total_cart_weights(order_items : json):
+  total_cart_weight = 0
+  for order_item in order_items:
+    product = db.select_product(order_item['product_id'])
+    total_cart_weight = total_cart_weight + (product["weight"] * order_item["quantity"])
+  return total_cart_weight
 
 def is_valid_product_params(p : json):
     # name, description, image need to be string
@@ -130,9 +144,9 @@ def is_valid_product_params(p : json):
     return False, ("Invalid image link type", 400)
   if not isinstance(p['quantity'], int):
     return False, ("Invalid quantity type", 400)
-  if not isinstance(p['price'], float):
+  if not isinstance(p['price'], float) and not isinstance(p['price'], int):
     return False, ("Invalid price type", 400)
-  if not isinstance(p['weight'], float):
+  if not isinstance(p['weight'], float) and not isinstance(p['weight'], int):
     return False, ("Invalid weight type", 400)
   if not isinstance(p['quantity'], int):
     return False, ("Invalid name type", 400)
@@ -200,7 +214,8 @@ def signup():
     return 'Invalid username character count', 400
   if pass_char_ct > 20 or pass_char_ct < 1:
     return 'Invalid password character count', 400
-  
+  if db.select_user_from_un(u['username']) != None:
+    return 'Invalid username: already taken', 400
   u = db.insert_user(u['username'], u['password'], u['is_admin'])
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
@@ -227,26 +242,32 @@ def logout():
   return msg
 
 
+# Do we allow multiple logins of an account on multiple pages? Potential race condition with updateUser
 @app.route('/updateUser', methods=['POST'])
 @login_required
 def update_user():
   u = request.get_json()
-  if 'username' in u: 
+
+  if 'username' in u:   
+    stored_user_with_username = db.select_user_from_un(u['username'])
+    if stored_user_with_username != None and stored_user_with_username['username'] != current_user.username:
+      return "Invalid Entry - User Already Exists", 400
     user_char_ct = len(u['username'])
     if user_char_ct > 20 or user_char_ct < 1:
       return 'Invalid username character count', 400
-    if 'password' in u:
-      pass_char_ct = len(u['password'])
-      if pass_char_ct > 20 or pass_char_ct < 1:
-        return 'Invalid password character count', 400  
-      user_entry = db.validate_user(u['username'], u['password'])
-      if user_entry == None or (user_entry['username'] == current_user.username and user_entry['password'] == current_user.password):   # User needs to check to see if the user's username/password matches anyone else OTHER than the one currently logged in
-        return "Invalid Entry - User Already Exists", 400
-      db.update_user_username(current_user.user_id, u['username'])
-      db.update_user_password(current_user.user_id, u['password'])  
+    db.update_user_username(current_user.user_id, u['username'])
+
+  if 'password' in u: 
+    pass_char_ct = len(u['password'])
+    if pass_char_ct > 20 or pass_char_ct < 1:
+      return 'Invalid password character count', 400  
+    db.update_user_password(current_user.user_id, u['password'])  
     
   if 'address' in u: 
-    if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+
+    # Hitting Errors with Distance Check
+    # if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+    
     db.update_user_address(current_user.user_id, u['address'])
 
   if 'is_admin' in u: 
@@ -382,8 +403,17 @@ def add_cart_item():
 @login_required
 def update_cart_item():
   ci = request.get_json()
+
+  if not isinstance(ci['quantity'], int):
+    return "Invalid quantity type", 400
+  if not isinstance(ci['product_id'], int):
+    return "Invalid productID type", 400
+  if not isinstance(ci['cart_item_id'], int):
+    return "Invalid cartItemID type", 400
+  
   if not is_valid_product_id(ci['product_id']):
     return "Invalid Product ID, does not exist in current product list", 400
+  
   cart_item = get_item_in_cart(ci["product_id"])
   if cart_item == None:
     return "Product ID not currently in shopping cart", 400
@@ -451,6 +481,9 @@ def place_order():
     return "No valid address set.", 400
 
   order_items = request.get_json()
+  total_cart_weight = calculate_total_cart_weights(order_items)
+  if total_cart_weight > 200.0:
+    return "Order is too heavy to purchase. Will not be able to create route.", 400
   if db.purchase_product_order(order_items):
     order = db.insert_order(current_user.user_id, order_items)
 
@@ -507,6 +540,12 @@ def get_route():
 @admin_required
 def get_map_constants():
   return {"API_KEY": API_KEY, "robot_origin": ORIGIN}
+
+
+@app.route('/getPlacesConstants', methods=['GET'])
+@login_required
+def get_places_constants():
+    return {"API_KEY": PLACES_API_KEY}
 
 
 if __name__ == '__main__':

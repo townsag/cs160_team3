@@ -3,7 +3,7 @@
 //
 
 // Signup
-export async function signup(username: string, password: string, address: string = "") {
+export async function signup(username: string, password: string, address: string = "", is_admin: Boolean) {
     try {
         // Check length constraints on username and password
         if (username.length === 0 || password.length === 0) {
@@ -24,7 +24,8 @@ export async function signup(username: string, password: string, address: string
             body: JSON.stringify({
                 "username": username,
                 "password": password,
-                "address": address
+                "address": address,
+                "is_admin": is_admin
             })
         });
 
@@ -96,16 +97,12 @@ export async function logout() {
 }
 
 // Update User
-export async function updateUser(username: string, password: string, address: string) {
+export async function updateUser(data: any) {
     try {
         const updateUserResponse = await fetch("/updateUser", {
             method: "POST",
             headers: { 'Content-Type': "application/json" },
-            body: JSON.stringify({
-                "username": username,
-                "password": password,
-                "address": address
-            })
+            body: JSON.stringify(data)
         });
 
         if (!updateUserResponse.ok) {
@@ -114,9 +111,9 @@ export async function updateUser(username: string, password: string, address: st
             return { success: false, message: errorMessage };
         }
 
-        const updateResult = await updateUserResponse.json();
+        const updateResult = await updateUserResponse.text();
 
-        if (updateResult && updateResult.success) {
+        if (updateResult) {
             return { success: true, message: "User updated successfully." };
         } else {
             return { success: false, message: "Failed to update user." };
@@ -201,7 +198,7 @@ export async function updateCartItem(cartItemId: number, productId: number, quan
 
         const updateResult = await updateCartItemResponse.json();
 
-        if (updateResult && updateResult.success) {
+        if (updateResult) {
             return { success: true, message: "Cart item updated successfully." };
         } else {
             return { success: false, message: "Failed to update cart item." };
@@ -234,5 +231,16 @@ export async function removeCartItem(cartItemId: number) {
     } catch (error) {
         console.error("An error occurred removing the cart item:", error);
         return { success: false, message: "An error occurred removing the cart item." };
+    }
+}
+
+// Places API
+export async function fetchApiKey() {
+    try {
+        const response = await fetch("/getPlacesConstants");
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching API key:", error);
     }
 }

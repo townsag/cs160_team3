@@ -35,7 +35,6 @@ db.insert_product("Broccoli", "Nutritious cruciferous vegetable", "https://thumb
 db.insert_product("Mango", "Sweet tropical fruit", "https://wallpapers.com/images/hd/mango-background-9no344bpdko4hrrs.jpg", 50, 18.99, 2.8, 1, [1, 2, 3, 4, 5])
 db.insert_product("Chickpeas", "Protein-packed legumes", "https://t3.ftcdn.net/jpg/02/83/97/16/360_F_283971637_l01oKnCdtSDjeSrr0HzsK35wQtx91CNc.jpg", 50, 7.99, 2.0, 4, [1, 2, 3, 4, 5])
 
-
 # test shopping cart
 db.insert_cart_item(1, 1, 1)
 db.insert_cart_item(1, 2, 2)

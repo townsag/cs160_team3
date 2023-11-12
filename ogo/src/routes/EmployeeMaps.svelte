@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
     import Map from "../lib/components/Map.svelte";
     import OrderSummaryEmployee from "../lib/components/OrderSummaryEmployee.svelte";
+    import Navbar from "../lib/components/Navbar.svelte";
 
     let route_data: any = {};
     let orders_props: any = [];
@@ -149,6 +150,7 @@
 </script>
 
 <!-- svelte-ignore a11y-missing-attribute -->
+<Navbar/>
 <div class="bg-green-500 flex flex-row justify-around items-center">
     <div class="p-5 text-yellow-200 text-xl">Welcome to employee home: {username}</div>
     {#if returned_routes_flag}

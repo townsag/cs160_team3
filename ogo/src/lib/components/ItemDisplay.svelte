@@ -1,7 +1,99 @@
-<script>
+<script lang='ts'>
   //array size not updating
-  export let filteredItems;
-  export let isAdmin;
+  import { navigate } from "svelte-routing";
+  import { removeCartItem, updateCartItem } from "../util/RequestController"
+  import { cartItemQuantitySignal, cartItemRemovedSignal } from "../stores/CartObserver";
+
+  export let filteredItems: any[];
+  export let isAdmin: Boolean;
+  export let isCartItem: Boolean;
+
+  let quantityErrorState = false;
+  let quantityErrorTextState = "";
+  let quantityErrorModal: HTMLDialogElement;
+
+  $: if (quantityErrorState) {
+      showQuantityErrorModal();
+  }
+
+  function showQuantityErrorModal() {
+    quantityErrorModal.showModal();
+  }
+
+  function closeQuantityErrorModal() {
+    quantityErrorModal.close();
+    quantityErrorState = false;
+  }
+
+  function handleItemClick(item: any) {
+    if (!isCartItem) {
+      //navigate(`/itemView/${item.product_id}`, { state: { item } });
+      navigate(`/itemView/${item.product_id}`);
+
+      console.log("ItemDisplay: " + item.name);
+    }
+  }
+
+  function handleCreateItemClick() {
+    if (!isCartItem) {
+      navigate(`/itemView/${0}`);
+
+      console.log("Clicked on create item");
+    }
+  }
+
+  //let displayedItem = [];
+  //displayedItem = filteredItems;
+  //console.log("displayed list (in itemdisplay): " + displayedItem);
+  //console.log("displayed list (in itemdisplay): " + filteredItems);
+
+  //
+  // BELOW USED IF ITEM DISPLAY IS FOR CART ITEM
+  //
+
+  // Cart Item Removal
+  async function handleRemoveCartItem(item: any) {
+    const result = await removeCartItem(item.cart_item_id);
+
+    if (result.success) {
+        console.log("Cart item removed successfully.");
+        cartItemRemovedSignal.set(!$cartItemRemovedSignal);
+    } else {
+        console.error("Failed to remove cart item:", result.message);
+    }
+  }
+
+  // Cart Item Quantity Change
+  async function handleQuantityChange(item: any, event: any) {
+    const newQuantity = parseInt(event.target.value, 10);
+
+    if (!isNaN(newQuantity) && newQuantity <= 20) {
+      try {
+        const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
+
+        if (result.success) {
+          if (newQuantity === 0) {
+            handleRemoveCartItem(item);
+          }
+
+          console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
+          cartItemQuantitySignal.set(!$cartItemQuantitySignal);
+        } else {
+          console.error("Failed to update cart item:", result.message);
+          quantityErrorTextState = result.message;
+          quantityErrorState = true;
+        }
+      } catch (error) {
+        console.log("An error occurred:", error)
+        quantityErrorTextState = "An error occurred.";
+        quantityErrorState = true;
+      }
+    } else {
+      console.log("Inputted quantity is not a number less than 20.");
+      quantityErrorTextState = "Inputted quantity must be more than 0 and less than 20.";
+      quantityErrorState = true;
+    }
+  }
 </script>
 
 <style>
@@ -19,12 +111,6 @@
     padding: 10px;
   }
 
-  .extraDiv {
-    min-height: 200px;
-    max-height: 500px;
-    padding: 10px;
-  }
-
   body {
     min-height: 80vh;
     margin: 0;
@@ -36,9 +122,21 @@
 </style>
 
 <body>
+  <dialog bind:this={quantityErrorModal} class="modal">
+    <div class="modal-box bg-red-300">
+        <h3 class="font-bold text-lg">Error!</h3>
+        <p class="py-4">{quantityErrorTextState}</p>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button on:click={closeQuantityErrorModal}>close</button>
+    </form>
+  </dialog>
+
   <div class="grid-container mt-4">
-    {#if isAdmin}
-      <div class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+    {#if isAdmin && !isCartItem}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div on:click={() => handleCreateItemClick()} class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
         <img src={"https://cdn.vectorstock.com/i/preview-1x/98/76/plus-sign-vector-46979876.jpg"} alt={"Plus Sign"} class="mb-2 w-full h-60 object-cover" />
         <div class="flex flex-col">
           <div class="mb-2">
@@ -47,8 +145,11 @@
         </div>
       </div>
     {/if}
+
     {#each filteredItems as item}
-      <div class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div on:click={() => handleItemClick(item)} class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
         <img src={item.image} alt={item.name} class="mb-2 w-full h-40 object-cover" />
   
         <div class="flex flex-col">
@@ -56,7 +157,7 @@
             <h2 class="text-lg font-semibold">{item.name}</h2>
             <p class="text-gray-600 mb-1">{item.category.name}</p>
             <p class="text-green-600 font-semibold">${item.price.toFixed(2)}</p>
-            <p class="text-gray-600">{item.weight} lbs</p>
+            <p class="text-gray-600">{item.weight} lb.</p>
           </div>
   
           <!-- Tags (only display if tags exist) -->
@@ -67,11 +168,20 @@
               {/each}
             </div>
           {/if}
+
+          {#if isCartItem}
+            <!-- svelte-ignore a11y-label-has-associated-control -->
+            <input
+              type="number" value={item.quantity}
+              on:input={(event) => handleQuantityChange(item, event)}
+              class="input input-bordered w-full max-w-xs"
+            />
+            
+            <button on:click={() => handleRemoveCartItem(item)} class="btn bg-red-500 text-white mt-2">Remove</button>
+          {/if}
+
         </div>
       </div>
     {/each}
-  
-    <!-- Blank div to fill up remaining space
-    <div class="extraDiv p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300 invisible"></div>  -->
   </div>
 </body>

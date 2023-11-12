@@ -145,14 +145,21 @@ def purchase_product_order(requested_items: list[dict]):
     return False
  
 # What if product ID not found?
-def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float) -> dict:
+def update_product(product_id: int, name: str, description: str, image: str, quantity: int, price: float, weight: float, category_id: int, tags: list[int]) -> dict:
   cur = con.cursor()
-  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=? WHERE ProductID=?",
-              (name, description, image, quantity, price, weight, product_id))
+
+  cur.execute("UPDATE PRODUCTS SET Name=?, Description=?, Image=?, Quantity=?, Price=?, Weight=?, CategoryID=? WHERE ProductID=?",
+              (name, description, image, quantity, price, weight, category_id, product_id))
+  
+  cur.execute("DELETE FROM PRODUCT_TAGS WHERE ProductID=?",
+              (product_id,))
+  for tag_id in tags:
+    cur.execute("INSERT INTO PRODUCT_TAGS (TagID, ProductID) VALUES (?, ?)",
+                (tag_id, product_id))
+    
   con.commit()
 
-  tags = select_product_tags(product_id)
-  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'category': select_category(category_id), 'tags': tags}
+  return {'product_id': product_id, 'name': name, 'description': description, 'image': image, 'quantity': quantity, 'price': price, 'weight': weight, 'category': select_category(category_id), 'tags': select_product_tags(product_id)}
   # TODO: possibly return false or throw error if there is not a product in the db with the given productid
 
 
@@ -266,13 +273,23 @@ def select_user(user_id: int) -> dict:
   cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE UserID=?", (user_id,))
   row = cur.fetchone()
+  if row == None:
+    return None
+  return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
+
+
+def select_user_from_un(username: str) -> dict:
+  cur = con.cursor()
+  cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
+  row = cur.fetchone()
+  if row == None:
+    return None
   return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
 
 def validate_user(username: str, password: str) -> dict:
   cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
-
   for row in cur.fetchall():
     if bcrypt.checkpw(password.encode('utf-8'), row[2]):
       return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
