@@ -2,8 +2,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
     import Map from "../lib/components/Map.svelte";
-    // import OrderSummaryCustomer from "../lib/components/OrderSummaryCustomer.svelte";
-    // import Dropdown from "../lib/components/Dropdown.svelte";
     import OrderSummaryEmployee from "../lib/components/OrderSummaryEmployee.svelte";
 
     let route_data: any = {};
@@ -143,22 +141,10 @@
     //hardcoded values rn:
     //  -center of map (in map component)
     
-    //=====uncomment this=====//
-    // onMount(async ()=>{
-    //     get_username();
-    //     await get_api_key();
-    //     get_all_routes();
-    //     get_all_order_info();
-    // })
     get_username();
     get_api_key();
     get_all_routes();
     get_all_order_info();
-    
-    
-    
-    // get_order_info();
-    
     
 </script>
 
@@ -191,31 +177,6 @@
     {/if}
 </div>
 
-
-<!-- <h1>Welcome to employee home: {username}</h1>
-<div>
-    {#if returned_routes_flag}
-        
-        <div class="bg-green-500">
-            <select on:change={handleSelect} class="bg-yellow-200 text-md rounded-lg  w-1/6 p-2 m-2">
-                {#each routes_list as option}
-                    <option value={option}>Route_id: {String(option)}</option>
-                {/each}
-            </select>
-        </div>
-        
-        {#if returned_route_info && API_KEY !== "none"}
-            
-            <Map bind:this={map_obj} API_KEY={API_KEY}/>
-        {:else}
-            <p>map component not rendered because missing props</p>
-            <p>{route_data}</p>
-            <p>{API_KEY}</p>
-        {/if}
-    {:else}
-        <p>dropdown and map missing because failed to recieve routes list</p>
-    {/if}
-</div> -->
 <div class="p-2 bg-yellow-200">
     {#if orders_props.length > 0}
         {#each orders_props as props (props.order_id)}
@@ -228,16 +189,3 @@
             <p>Or this user may not be authenticated as an admin</p>
     {/if}
 </div>
-
-
-
-<!-- <style>
-    .map-holder {
-        width: 100%;
-        height: 100%;
-        border-radius: 25px;
-    }
-</style> -->
-
-
-
