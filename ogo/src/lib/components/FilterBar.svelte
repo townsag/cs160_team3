@@ -30,7 +30,7 @@
 <style>
   .filter-bar-container {
     position: absolute;
-    top: 106px;
+    top: 67px;
     left: 0;
     bottom: 0; /* Set bottom to 0 to make it touch the bottom */
     width: 300px;
