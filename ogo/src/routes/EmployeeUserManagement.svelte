@@ -84,7 +84,6 @@
     min-height: 80vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
   } 
 </style>
 
