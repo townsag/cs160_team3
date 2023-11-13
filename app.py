@@ -282,6 +282,28 @@ def get_user():
   return {'user_id': current_user.user_id, 'username': current_user.username, 'address': current_user.address, 'is_admin': current_user.is_admin}
 
 
+@app.route('/getAllUsers', methods=['GET'])
+@admin_required
+def get_all_users():
+  return db.select_all_users()
+
+
+@app.route('/demoteUser', methods=['POST'])
+@admin_required
+def demote_user():
+  p = request.get_json()
+  db.update_user_admin(p['user_id'], False)
+  return "Success", 200
+
+
+@app.route('/promoteUser', methods=['POST'])
+@admin_required
+def promote_user():
+  p = request.get_json()
+  db.update_user_admin(p['user_id'], True)
+  return "Success", 200
+
+
 # #
 # # Product Routes
 # #

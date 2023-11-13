@@ -287,6 +287,12 @@ def select_user_from_un(username: str) -> dict:
   return {'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])}
 
 
+def select_all_users() -> list[dict]:
+  cur = con.cursor()
+  cur.execute("SELECT * FROM USERS")
+  return [{'user_id': row[0], 'username': row[1], 'address': row[3], 'is_admin': bool(row[4])} for row in cur.fetchall()]
+
+
 def validate_user(username: str, password: str) -> dict:
   cur = con.cursor()
   cur.execute("SELECT * FROM USERS WHERE Username=?", (username,))
