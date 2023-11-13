@@ -40,7 +40,19 @@
         }
     }
 
+    async function sequential_api_calls(){
+		try{                                  //getUser
+			const response = await fetch("/getUser", { method: "GET" });
+			const data = await response.json();
+            navigate("/browse");
+		} catch (error) {
+		}
+	}
+
+
     onMount(() => {
+        sequential_api_calls();
+
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
@@ -48,7 +60,7 @@
         };
     });
 
-    function handleKeyDown(event) {
+    function handleKeyDown(event: any) {
         if (event.key === 'Enter') {
             // Check which input is focused and trigger the corresponding action
             const activeElement = document.activeElement;

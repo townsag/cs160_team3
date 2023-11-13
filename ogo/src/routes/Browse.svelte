@@ -167,7 +167,7 @@
 
 <Navbar/>
 <div class="container mx-auto p-4">
-  <div class="search-bar-container flex items-center border rounded ,," >
+  <div class="{openFilter ? '' : 'blur'}">
     <SearchBar 
       {toggleFilterOpen}
       {searchQuery}

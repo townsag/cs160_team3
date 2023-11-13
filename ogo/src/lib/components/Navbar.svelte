@@ -24,11 +24,15 @@
 	function handleShoppingCart() {
 		navigate("/cart");
 	}
+	
 	function handleOrders() {
 		if (userType == 2) {
 			navigate("/employeesmaps");
 		}
 		console.log("go to customer order history");
+	}
+	function handleBrowse() {
+		navigate("/browse");
 	}
 
 	let currentUser;
@@ -47,6 +51,7 @@
 		} catch (error) {
 			console.log("error: ", error);
 			userType = 0;
+			navigate("/login");
 		}
 	}
 
@@ -72,6 +77,15 @@
 			</a>
 		</div>
 		<div class="flex-none">
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-label-has-associated-control -->
+				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+			<label tabindex="0" class="btn btn-circle ml-2 mr-2" on:click={handleBrowse}>
+				<div class="indicator">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="-2 -2 30 30"><path d="M21.172 24l-7.387-7.387c-1.388.874-3.024 1.387-4.785 1.387-4.971 0-9-4.029-9-9s4.029-9 9-9 9 4.029 9 9c0 1.761-.514 3.398-1.387 4.785l7.387 7.387-2.828 2.828zm-12.172-8c3.859 0 7-3.14 7-7s-3.141-7-7-7-7 3.14-7 7 3.141 7 7 7z"/></svg>
+				</div>
+			</label>
 			<div class="dropdown dropdown-end">
 				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 				<!-- svelte-ignore a11y-label-has-associated-control -->

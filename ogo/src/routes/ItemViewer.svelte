@@ -9,9 +9,9 @@
     let currentUser;
     let isAdmin = false;
 
-    let itemName = "Name";
-    let itemDescription = "Description";
-    let itemImgUrl = "https://cdn.vectorstock.com/i/preview-1x/98/76/plus-sign-vector-46979876.jpg";
+    let itemName = "";
+    let itemDescription = "";
+    let itemImgUrl = "";
     let itemQuantityInStock = 0;
     let itemSelectedQuantity = 0;
     let itemPrice = 0.0;
@@ -316,17 +316,13 @@
         align-content: center;
         justify-content: space-between;
         overflow-y: scroll;
-        border: 1px solid gray;
+        border: 1px solid lightgray;
         width: 100%
     }
 
     td {
         padding: 10px;
         border: 0px solid black;
-    }
-
-    .bg-primary-dark:hover {
-        background-color: darken(yourPrimaryColor, 10%);
     }
 </style>
 
@@ -335,7 +331,7 @@
     <div style="align-self: center; align-items: center;">   
         {#if isAdmin} 
             <div class="midContainer mx-auto p-2 mb-4">
-                <table class="testMargin" style="border: width: 100%; height: 65vh;">
+                <table class="testMargin" style="border: width: 100%; height: 60vh;">
                     <tr>
                         <td  colspan="2" style="height: 40vh;">
                             <div class="border rounded-3xl shadow-md" style="min-height:50%; height: 100%;">
@@ -348,7 +344,7 @@
                             <label for="nameInput" class="text-3xl font-semibold">Name: </label>
                         </td>
                        <td>
-                            <input id="nameInput" bind:value={itemName} type="text" placeholder=itemName class="input input-bordered text-3xl font-semibold" style="width: 100%;"/>
+                            <input id="nameInput" bind:value={itemName} type="text" class="input input-bordered text-3xl font-semibold" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -356,7 +352,7 @@
                             <label for="descInput" class="text-xl font-normal">Description: </label>
                         </td>
                         <td>
-                            <input id="descInput" bind:value={itemDescription} type="text" placeholder=itemDescription class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                            <input id="descInput" bind:value={itemDescription} type="text" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -364,7 +360,7 @@
                             <label for="urlInput" class="text-xl font-normal">URL: </label>
                         </td>
                         <td>
-                            <input id="urlInput" bind:value={itemImgUrl} type="text" placeholder=itemImgUrl class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                            <input id="urlInput" bind:value={itemImgUrl} type="text" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                 </table>
@@ -374,13 +370,13 @@
                             <div class="filter-item">
                                 <label for="categoryDropDown" class="text-xl font-normal">Category: </label>
                                 {#if productID != "0"}
-                                    <select class="text-xl font-normal rounded-lg" bind:value={itemCategory} style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
+                                    <select class="select text-xl font-normal rounded-lg" bind:value={itemCategory} style="border: 1px solid lightgray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
                                         {#each allCategoriesList as category}
                                             <option class="text-xl font-normal" value={category.name}>{category.name}</option>
                                         {/each}
                                     </select>
                                 {:else}
-                                    <select class="text-xl font-normal rounded-lg" style="border: 1px solid gray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
+                                    <select class="select text-xl font-normal rounded-lg" style="border: 1px solid lightgray; width: 100%;" id="categoryDropDown" on:change={handleCategoryChange}>
                                         {#each allCategoriesList as category}
                                             <option class="text-xl font-normal" value={category.name}>{category.name}</option>
                                         {/each}
@@ -394,14 +390,12 @@
                             <label for="tagInput" class="text-xl font-normal">Tags:</label>
                             <div class="tagScroll rounded-lg" style="min-height: 10vh;">
                                 {#each allTagsList as tag, index}
-                                    <label class="text-xl font-normal" style="padding: 5px;">
-                                        {tag.name}
-                                        {#if productID != "0"}
-                                            <input class="text-xl font-normal" type="checkbox" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
-                                        {:else}
-                                            <input class="text-xl font-normal" type="checkbox" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
-                                        {/if}
-                                    </label>
+                                    <div class="form-control hover:bg-gray-100 px-2 py-1">
+                                        <label class="label cursor-pointer text-xl font-normal" style="padding: 5px;">
+                                          <span class="label-text text-xl font-normal">{tag.name}</span> 
+                                          <input type="checkbox" class="checkbox checkbox-primary" on:change={() => toggleTag(tag.name)} bind:checked={toggleTagsList[index]}/>
+                                        </label>
+                                    </div>
                                 {/each}
                             </div>
                         </td>
@@ -411,7 +405,7 @@
                             <label for="weightInput" class="text-xl font-normal">Weight(lbs): </label>
                         </td>
                         <td>
-                            <input id="weightInput" bind:value={itemWeight} type="number" placeholder=itemWeight class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                            <input id="weightInput" bind:value={itemWeight} type="number" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -419,7 +413,7 @@
                             <label for="priceInput" class="text-xl font-normal text-green-600 font-semibold">Price($): </label>
                         </td>
                         <td>
-                            <input id="priceInput" bind:value={itemPrice} type="number" placeholder=itemPrice.toFixed(2) class="input input-bordered heightSmall text-xl font-normal text-green-600 font-semibold" style="width: 100%;"/>
+                            <input id="priceInput" bind:value={itemPrice} type="number" class="input input-bordered heightSmall text-xl font-normal text-green-600 font-semibold" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -427,7 +421,7 @@
                             <label for="inStockInput" class="text-xl font-normal">In Stock: </label>
                         </td>
                         <td>
-                            <input id="inStockInput" bind:value={itemQuantityInStock} type="number" placeholder=itemQuantityInStock class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                            <input id="inStockInput" bind:value={itemQuantityInStock} type="number" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>

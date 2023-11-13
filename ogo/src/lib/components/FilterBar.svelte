@@ -33,7 +33,7 @@
     top: 67px;
     left: 0;
     bottom: 0; /* Set bottom to 0 to make it touch the bottom */
-    width: 300px;
+    width: 350px;
     background-color: #f5f5f5;
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
     transition: width 0.3s ease-out;
@@ -86,8 +86,8 @@
 <div class="filter-bar-container" class:collapsed={openFilter}>
   <div class="filter-content">
     <div class="filter-item">
-      <label>Category: </label>
-      <select on:change={handleCategoryChange}>
+      <label class="text-lg font-normal">Category: </label>
+      <select class="select text-lg font-normal" on:change={handleCategoryChange}>
         <option value="">All</option>
         {#each allCategoriesList as category}
           <option value={category.name}>{category.name}</option>
@@ -95,9 +95,11 @@
       </select>
     </div>
     {#each allTagsList as tag}
-      <div class="filter-item">
-        <label>{tag.name}:</label>
-        <input type="checkbox" on:change={() => toggleTag(tag.name)} />
+      <div class="form-control">
+        <label class="label cursor-pointer text-lg font-normal" style="padding: 2px;">
+          <span class="label-text text-lg font-normal">{tag.name}</span> 
+          <input type="checkbox" class="checkbox checkbox-primary" on:change={() => toggleTag(tag.name)}/>
+        </label>
       </div>
     {/each}
   </div>
