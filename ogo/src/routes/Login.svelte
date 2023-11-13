@@ -5,6 +5,7 @@
     import { login, getCurrentUser } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
     import { onMount } from 'svelte';
+    import AlertDaisy from "../lib/components/AlertDaisy.svelte";
 
     let usernameState = "";
     let passwordState = "";
@@ -12,6 +13,13 @@
 
     let storedUsername = "";
     let storedPassword = "";
+
+    let alertShow = false;
+    let alertMsg = "";
+    let alertType = "";
+    function toggleShow() {
+        alertShow = false;
+    }
     
     async function handleSubmit() {
         storedUsername = usernameState;
@@ -27,8 +35,10 @@
             navigate("/browse");
         } else {
             console.error("Login failed:", result.message);
-            alert("Login failed: wrong password or username");
             passwordState = '';
+            alertShow = true;
+            alertMsg = "Login failed: wrong password or username";
+            alertType = "error";
         }
 
         const userResult = await getCurrentUser();
@@ -49,12 +59,9 @@
 		}
 	}
 
-
     onMount(() => {
         sequential_api_calls();
-
         document.addEventListener('keydown', handleKeyDown);
-
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
@@ -69,63 +76,18 @@
             }
         }
     }
-
-        // const loginResponse = await fetch("/login", {
-        //     method: "POST",
-        //     headers: {
-        //     'Content-Type': "application/json"
-        //     },
-        //     body: JSON.stringify({
-        //         "username": storedUsername,
-        //         "password": storedPassword,
-        //     })
-        // })
-        
-        // if (loginResponse.ok) {
-        //     const message = await loginResponse.text();
-        //     console.log(message);
-        //     navigate("/home");
-        // } else {
-        //     console.error("Failed to login.");
-        // }
-
-        // Test
-        // const products = await fetch("/getProducts", {
-        //     method: "GET"
-        // })
-        // const json = await products.json();
-        // const result = JSON.stringify(json);
-
-        // console.log(result);
-
-    // async function handleToggle() {
-    //     toggleIsCheckedState = !toggleIsCheckedState;
-
-        // Test
-        // const post = await fetch("/createProduct", {
-        //     method: "POST",
-        //     headers: {
-        //     'Content-Type': 'application/json;charset=utf-8'
-        //     },
-        //     body: JSON.stringify({
-        //         "name": "Test product",
-        //         "description": "Description for test product",
-        //         "image": "www.google.com",
-        //         "quantity": 1,
-        //         "price": 1.00,
-        //         "weight": 1.0
-        //     })
-        // })
-
-        // console.log(post);
-        // TODO: switch customer/employee
-    // }
 </script>
 
 <html lang="en" data-theme="lemonade">
     <div class="relative min-w-screen h-screen flex-grow flex flex-col items-center justify-center px-4 sm:px-0"
      style="background-image: url({bg}); background-size: cover; background-repeat: no-repeat;">
         <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
+        <AlertDaisy
+            {alertShow}
+            {alertMsg}
+            {alertType}
+            {toggleShow}
+        />
         <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
             <div class="card-body">
                 <div class="flex justify-between items-center">
@@ -156,7 +118,3 @@
         </div>
     </div>
 </html>
-
-<style>
-
-</style>

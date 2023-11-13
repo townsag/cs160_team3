@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { navigate } from 'svelte-routing';
     import Navbar from "../lib/components/Navbar.svelte";
+    import AlertDaisy from "../lib/components/AlertDaisy.svelte";
 
     let productID = window.location.href.match(/\/(\d+)$/)[1];
     console.log(productID);
@@ -34,9 +35,12 @@
     let loadedTags = false;
     let loadedRealTags = false;
 
-    let callAlert: boolean = false;
-    let alertMsg: String = "";
-    let alertType: String = "";
+    let alertShow = false;
+    let alertMsg = "";
+    let alertType = "";
+    function toggleShow() {
+        alertShow = false;
+    }
     
     function handleCategoryChange(event: any) {
         itemCategory = event.target.value;
@@ -122,31 +126,29 @@
             finishLoading = true;
         }
 
-        if (itemPrice < 0) {
-            itemPrice = 0.0;
+        if (itemPrice < 0.01) {
+            itemPrice = 0.01;
         }
-        if (itemWeight < 0) {
-            itemWeight = 0.0;
+        if (itemWeight < 0.01) {
+            itemWeight = 0.01;
         }
         if (itemQuantityInStock < 0) {
             itemQuantityInStock = 0;
         }
-        if (itemSelectedQuantity < 0) {
-            itemSelectedQuantity = 0;
+        if (itemSelectedQuantity < 1) {
+            itemSelectedQuantity = 1;
+        }
+
+        itemPrice = Number(itemPrice.toFixed(2));
+        itemWeight = Number(itemWeight.toFixed(2));
+
+        if (itemSelectedQuantity > itemQuantityInStock) {
+            itemSelectedQuantity = itemQuantityInStock;
         }
     }
 
     async function createProduct() {
-        /*
-        console.log(itemName);
-        console.log(itemDescription);
-        console.log(itemImgUrl);
-        console.log(itemQuantityInStock);
-        console.log(itemPrice);
-        console.log(itemWeight);
-        console.log(itemCategoryID);
-        console.log(toggleTagsListID); */
-		const createProductResponse = await fetch("/createProduct", {
+        const createProductResponse = await fetch("/createProduct", {
             method: "POST",
             headers: {
             'Content-Type': "application/json"
@@ -165,12 +167,14 @@
 		if (createProductResponse.ok) {
 			const message = await createProductResponse.text();
 			console.log(message);
-            //alert("Created item: " + itemName);
             returnToBrowse();
 		} else {
             const message = await createProductResponse.text();
 			console.error("Error creating product:", message);
-            alert("Cannot created item: " + itemName);
+            alertShow = true;
+            alertMsg = "Error creating product: " + message;
+            alertType = "error";
+            //alert("Cannot created item: " + itemName);
 		}
 	}
     async function handleApplyChanges() {
@@ -194,12 +198,15 @@
 		if (updateProductResponse.ok) {
 			const message = await updateProductResponse.text();
 			console.log(message);
-            alert("Updated item: " + itemName);
-            returnToBrowse();
+            alertShow = true;
+            alertMsg = "Updated item: " + itemName;
+            alertType = "success";
 		} else {
             const message = await updateProductResponse.text();
 			console.error("Error updating product:", message);
-            alert("Cannot update item: " + message);
+            alertShow = true;
+            alertMsg = "Error updating product: " + message;
+            alertType = "error";
 		}
 	}
     async function addItemToCart() {
@@ -216,12 +223,18 @@
 		if (updateProductResponse.ok) {
 			const message = await updateProductResponse.text();
 			console.log(message);
-            alert("Added " + itemSelectedQuantity + " " + itemName);
+            //alert("Added " + itemSelectedQuantity + " " + itemName);
+            alertShow = true;
+            alertMsg = "Added " + itemSelectedQuantity + " " + itemName;
+            alertType = "success";
             returnToBrowse();
 		} else {
             const message = await updateProductResponse.text();
 			console.error("Error adding to cart:", message);
-            alert("Cannot add item: " + message);
+            alertShow = true;
+            alertMsg = "Error adding to cart: " + message;
+            alertType = "error";
+            //alert("Cannot add item: " + message);
 		}
 	}
 
@@ -328,6 +341,12 @@
 
 {#if finishLoading}
     <Navbar/>
+    <AlertDaisy
+        {alertShow}
+        {alertMsg}
+        {alertType}
+        {toggleShow}
+    />
     <div style="align-self: center; align-items: center;">   
         {#if isAdmin} 
             <div class="midContainer mx-auto p-2 mb-4">
@@ -490,7 +509,7 @@
                         </td>
                         <td>
                             <label for="quantityInput" class="text-xl font-normal">Quantity: </label>
-                            <input id="quantityInput" bind:value={itemSelectedQuantity} type="number" placeholder=itemSelectedQuantity class="input input-bordered heightSmall" style="width: 40%;"/>
+                            <input id="quantityInput" bind:value={itemSelectedQuantity} type="number" class="input input-bordered heightSmall" style="width: 40%;"/>
                         </td>
                     </tr>
                     <tr>
