@@ -296,9 +296,9 @@ def demote_user():
   return "Success", 200
 
 
-@app.route('/premoteUser', methods=['POST'])
+@app.route('/promoteUser', methods=['POST'])
 @admin_required
-def premote_user():
+def promote_user():
   p = request.get_json()
   db.update_user_admin(p['user_id'], True)
   return "Success", 200

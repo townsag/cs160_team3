@@ -47,9 +47,9 @@
 
     }
 
-    function premote_user(user_id: number){
-      console.log("premoting user: " + user_id);
-      fetch('/premoteUser', {
+    function promote_user(user_id: number){
+      console.log("promoting user: " + user_id);
+      fetch('/promoteUser', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({"user_id": user_id}),
@@ -114,7 +114,7 @@
                   {:else if u.is_admin}
                     <button class="btn btn-xs	btn-primary" on:click={() => demote_user(u.user_id)}>Demote</button>
                   {:else}
-                    <button class="btn btn-xs	btn-error" on:click={() => premote_user(u.user_id)}>Premote</button>
+                    <button class="btn btn-xs	btn-error" on:click={() => promote_user(u.user_id)}>Promote</button>
                   {/if}
                 </td>
               </tr>
