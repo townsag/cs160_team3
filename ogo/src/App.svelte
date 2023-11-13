@@ -12,6 +12,7 @@
   import Browse from "./routes/Browse.svelte";
   import CustomerOrderHistory from "./routes/CustomerOrderHistory.svelte";
   import ItemViewer from "./routes/ItemViewer.svelte";
+  import EmployeeUserManagement from "./routes/EmployeeUserManagement.svelte"
   import './app.css';
 
   const routes = [
@@ -25,6 +26,7 @@
     { path: "/employeesmaps", component: EmMaps},
     { path: "/customer-order-history", component: CustomerOrderHistory},
     { path: "/itemView/:productId", component: ItemViewer},
+    { path: "/employee-user-management", component: EmployeeUserManagement},
   ];
 
   export let url = "";
