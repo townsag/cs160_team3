@@ -45,7 +45,7 @@
         type="text"
         id="autocomplete"
         placeholder={placeholder}
-        class="input input-bordered w-full max-w-md"
+        class="input input-bordered w-full"
     />
 </html>
 

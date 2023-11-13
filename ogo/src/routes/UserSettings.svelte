@@ -3,6 +3,13 @@
     import AddressAutocomplete from "../lib/components/AddressAutocomplete.svelte";
     import { getCurrentUser, updateUser } from "../lib/util/RequestController";
     import Navbar from "../lib/components/Navbar.svelte";
+    import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+    let alertShow = false;
+    let alertMsg = "";
+    let alertType = "";
+    function toggleShow() {
+        alertShow = false;
+    }
     
     let user: any;
 
@@ -11,6 +18,7 @@
 
     let changedUsernameState = "";
     let changedPasswordState = "";
+    let changedPasswordState2 = "";
     let changedAddressState = "";
 
     let storedChangedUsername = "";
@@ -44,14 +52,28 @@
         try {
             await updateUser(userData);
             await getUser();
+            alertShow = true;
+            alertMsg = "Updated username";
+            alertType = "success";
+            changedUsernameState = "";
         } catch (error) {
             console.error("Error updating username:", error);
+            alertShow = true;
+            alertMsg = "Error updating username: " + error;
+            alertType = "error";
         }
     }
 
     async function handleNewPassword() {
-        storedChangedPassword = changedPasswordState;
+        if (changedPasswordState2 != changedPasswordState) {
+            alertShow = true;
+            alertMsg = "Password must match";
+            alertType = "error";
+            changedPasswordState2 = "";
+            return;
+        }
 
+        storedChangedPassword = changedPasswordState;
         const userData = {
             "username": user.username,
             "password": storedChangedPassword
@@ -62,8 +84,16 @@
         try {
             await updateUser(userData);
             await getUser();
+            alertShow = true;
+            alertMsg = "Updated password";
+            alertType = "success";
+            changedPasswordState = "";
+            changedPasswordState2 = "";
         } catch (error) {
             console.error("Error updating password:", error);
+            alertShow = true;
+            alertMsg = "Error updating password: " + error;
+            alertType = "error";
         }
     }
 
@@ -79,8 +109,15 @@
         try {
             await updateUser(userData);
             await getUser();
+            alertShow = true;
+            alertMsg = "Updated address";
+            alertType = "success";
+            changedAddressState = "";
         } catch (error) {
             console.error("Error updating address:", error);
+            alertShow = true;
+            alertMsg = "Error updating address: " + error;
+            alertType = "error";
         }
     }
 
@@ -88,75 +125,195 @@
         changedAddressState = place;
     }
 
+    let userList: any[] = [];
+    let loggedInUserID: number;
+
+    async function fetch_users(){
+        try{
+            const request = await fetch("/getAllUsers");
+            userList = await request.json();
+        } catch (error){
+            console.log("error: ", error);
+        }
+    }
+
+    async function fetch_user_id(){
+        try{
+            const request = await fetch("/getUser");
+            loggedInUserID = (await request.json()).user_id;
+        } catch (error){
+            console.log("error: ", error);
+        }
+    }
+
+    function demote_user(user_id: number){
+      console.log("Demoting user: " + user_id);
+      fetch('/demoteUser', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({"user_id": user_id}),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response;
+      })
+      .then(data => {
+        console.log('Response:', data);
+        userList.find((u:any) => u.user_id == user_id).is_admin = false;
+        userList = userList.slice();
+      })
+      .catch(error => {
+        console.error('Error:', error.message);
+      });
+
+    }
+
+    function promote_user(user_id: number){
+      console.log("promoting user: " + user_id);
+      fetch('/promoteUser', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({"user_id": user_id}),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response;
+      })
+      .then(data => {
+        console.log('Response:', data);
+        userList.find((u:any) => u.user_id == user_id).is_admin = true;
+        userList = userList.slice();
+      })
+      .catch(error => {
+        console.error('Error:', error.message);
+      });
+
+    }
+    let currentUser;
+    let isAdmin = false;
+    async function sequential_api_calls(){
+        try{                                  //getUser
+            const response = await fetch("/getUser", { method: "GET" });
+            const data = await response.json();
+            currentUser = data;
+            isAdmin = currentUser.is_admin;
+        } catch (error) {
+            console.log("error: ", error);
+        }
+    }
+
     // get user immediately upon component mount
     onMount(async() => {
         await getUser();
+        await fetch_user_id();
+        await fetch_users();
+        sequential_api_calls();
     });
 </script>
 
 <html lang="en" data-theme="lemonade">
     <Navbar/>
+    <AlertDaisy
+        {alertShow}
+        {alertMsg}
+        {alertType}
+        {toggleShow}
+    />
     <div class="relative min-w-screen h-screen flex-grow flex flex-col px-4 sm:px-0">
-        <h1 id="usernameDisplay" class="card-title p-8 pb-4">Hello {usernameState}!</h1>
-
-        <div class="card min-w-screen bg-base-100 border-2 border-black-500 m-8">
-            <div class="card-body">
+        <div class="card min-w-screen bg-base-100 border-2 border-black-500 m-6 mb-3 shadow-md">
+            <div class="card-body overflow-x-auto">
                 <h1 class="card-title">Account Information</h1>
-
-                <div class="grid grid-cols-1 gap-4 p-4">
-                    <div>
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label class="label">
-                            <span class="label-text">Username</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            placeholder={usernameState}
-                            bind:value={changedUsernameState}
-                            class="input input-bordered w-full max-w-md"
-                        />
-                    </div>
-
-                    <div class="flex flex-row-reverse w-full max-w-md">
-                        <button on:click={handleNewUsername} class="btn btn-secondary">Update</button>
-                    </div>
-
-                    <div>
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label class="label">
-                            <span class="label-text">Password</span>
-                        </label>
-
-                        <input
-                            type="password"
-                            bind:value={changedPasswordState}
-                            class="input input-bordered w-full max-w-md"
-                        />                    
-                    </div>
-
-                    <div class="flex flex-row-reverse w-full max-w-md">
-                        <button on:click={handleNewPassword} class="btn btn-secondary">Update</button>
-                    </div>
-
-                    <div>
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label class="label">
-                            <span class="label-text">Address</span>
-                        </label>
-                        
-                        <AddressAutocomplete placeholder={addressState} onPlaceSelect={handlePlaceSelect} />                 
-                    </div>
-
-                    <div class="flex flex-row-reverse w-full max-w-md">
-                        <button on:click={handleNewAddress} class="btn btn-secondary max-w-md">Update</button>
-                    </div>
-                </div>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Username</th>
+                            <td colspan="2">
+                                <input
+                                    type="text"
+                                    placeholder={usernameState}
+                                    bind:value={changedUsernameState}
+                                    class="input input-bordered w-full "
+                                />
+                            </td>
+                            <td>
+                                <button on:click={handleNewUsername} class="btn btn-secondary">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Address</th>
+                            <td colspan="2">
+                                <AddressAutocomplete placeholder={addressState} onPlaceSelect={handlePlaceSelect}/> 
+                            </td>
+                            <td>
+                                <button on:click={handleNewAddress} class="btn btn-secondary">Update</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Password</th>
+                            <td>
+                                <input
+                                    type="password"
+                                    placeholder="password"
+                                    bind:value={changedPasswordState}
+                                    class="input input-bordered w-full max-w-md"
+                                />   
+                            </td>
+                            <td>
+                                <input
+                                    type="password"
+                                    placeholder="re-enter password"
+                                    bind:value={changedPasswordState2}
+                                    class="input input-bordered w-full max-w-md"
+                                />   
+                            </td>
+                            <td>
+                                <button on:click={handleNewPassword} class="btn btn-secondary max-w-md">Update</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+        
+        {#if isAdmin}
+            <div class="card min-w-screen bg-base-100 border-2 border-black-500 m-6 mt-3 shadow-md">
+                <div class="card-body overflow-x-auto">
+                    <div class="card-title">User List</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Address</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#each  userList as u}
+                                <tr class="hover">
+                                    <th>{u.user_id}</th>
+                                    <td>{u.username}</td>
+                                    <td>{u.address}</td>
+                                    <td>
+                                        {u.is_admin ? "Employee": "Customer"} &nbsp;
+                                        {#if u.user_id == loggedInUserID}
+                                            <button class="btn btn-xs	btn-disabled">You</button>
+                                        {:else if u.is_admin}
+                                            <button class="btn btn-xs	btn-primary" on:click={() => demote_user(u.user_id)}>Demote</button>
+                                        {:else}
+                                            <button class="btn btn-xs	btn-error" on:click={() => promote_user(u.user_id)}>Promote</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                            {/each}       
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {/if}
     </div>
 </html>
-
-<style>
-
-</style>
