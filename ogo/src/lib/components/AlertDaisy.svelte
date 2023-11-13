@@ -6,6 +6,30 @@
     export let alertType: string = "";
     export let toggleShow: any;
 
+    /* to use on other pgs u must have
+		// in script
+            // for declaring and importing values
+			import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+            let alertShow = false;
+            let alertMsg = "";
+            let alertType = "";
+            function toggleShow() {
+                alertShow = false;
+            }
+
+            // for everytime you call a alert (like diff alerts)
+                alertShow = true;
+                alertMsg = "[YOUR ALERT MSG]"";
+                alertType = "[error|success|warning]";
+		// in html/body
+			<AlertDaisy
+                {alertShow}
+                {alertMsg}
+                {alertType}
+                {toggleShow}
+            />
+	*/
+
     let timer: any;
     const closeAlert = () => {
         clearTimeout(timer);

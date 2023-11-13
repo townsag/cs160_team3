@@ -5,6 +5,13 @@
 	import { navigate } from 'svelte-routing';
 	import { onMount } from 'svelte';
 
+	/* to use on other pgs u must have
+		// in script
+			import Navbar from "../lib/components/Navbar.svelte";
+		// in html/body
+			<Navbar/>
+	*/
+
 	async function handleLogout() {
 		const result = await logout();
 
