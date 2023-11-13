@@ -126,11 +126,11 @@
             finishLoading = true;
         }
 
-        if (itemPrice < 0.01) {
-            itemPrice = 0.01;
+        if (itemPrice < 0) {
+            itemPrice = 0;
         }
-        if (itemWeight < 0.01) {
-            itemWeight = 0.01;
+        if (itemWeight < 0) {
+            itemWeight = 0;
         }
         if (itemQuantityInStock < 0) {
             itemQuantityInStock = 0;
@@ -178,7 +178,7 @@
 		}
 	}
     async function handleApplyChanges() {
-		const updateProductResponse = await fetch("/updateProduct", {
+        const updateProductResponse = await fetch("/updateProduct", {
             method: "POST",
             headers: {
             'Content-Type': "application/json"
@@ -262,6 +262,18 @@
                 toggleTagsListID.push(i + 1);
             }
         }
+        if (itemName.length == 0 || itemDescription.length == 0 || itemImgUrl.length == 0) {
+            alertShow = true;
+            alertMsg = "Item must have name, description, and image URL";
+            alertType = "warning";
+            return;
+        }
+        if (itemPrice <= 0 || itemWeight <= 0) {
+            alertShow = true;
+            alertMsg = "Weight and price must be greater than 0";
+            alertType = "warning";
+            return;
+        }
         createProduct();
     }
     function applyChanges() {
@@ -277,6 +289,18 @@
             if (toggleTagsList[i] == true) {
                 toggleTagsListID.push(i + 1);
             }
+        }
+        if (itemName.length == 0 || itemDescription.length == 0 || itemImgUrl.length == 0) {
+            alertShow = true;
+            alertMsg = "Item must have name, description, and image URL";
+            alertType = "warning";
+            return;
+        }
+        if (itemPrice <= 0 || itemWeight <= 0) {
+            alertShow = true;
+            alertMsg = "Weight and price must be greater than 0";
+            alertType = "warning";
+            return;
         }
         handleApplyChanges();
     }

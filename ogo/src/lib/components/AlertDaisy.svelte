@@ -18,9 +18,9 @@
             }
 
             // for everytime you call a alert (like diff alerts)
-                alertShow = true;
-                alertMsg = "[YOUR ALERT MSG]"";
-                alertType = "[error|success|warning]";
+            alertShow = true;
+            alertMsg = "[YOUR ALERT MSG]"";
+            alertType = "[error|success|warning]";
 		// in html/body
 			<AlertDaisy
                 {alertShow}
