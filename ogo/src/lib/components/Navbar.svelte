@@ -28,8 +28,9 @@
 	function handleOrders() {
 		if (userType == 2) {
 			navigate("/employeesmaps");
+		} else {
+			navigate("/customer-order-history");
 		}
-		console.log("go to customer order history");
 	}
 	function handleBrowse() {
 		navigate("/browse");

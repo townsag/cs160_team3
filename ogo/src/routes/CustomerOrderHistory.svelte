@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
     import OrderSummaryCustomer from "../lib/components/OrderSummaryCustomer.svelte";
+    import Navbar from "../lib/components/Navbar.svelte";
 
     let username: string;
     let orders_props: any = [];
@@ -42,17 +43,21 @@
     
 
 </script>
-<div class="bg-green-500 p-5 text-yellow-200 text-xl">Welcome user: {username}</div>
-<div class="p-2 bg-yellow-200">
-    <div class="text-lg p-3">Order History:</div>
-    {#if (orders_props.length > 0)}
-        {#each  orders_props as props}
-            <div class="p-2">
-                <OrderSummaryCustomer {...props} />
-            </div>
-        {/each}
-    {:else}
-            <div>waiting for get orders call</div>
-            <div>user may not be logged in</div>
-    {/if}
+
+<div>
+    <Navbar/>
+    <div class="bg-green-500 p-5 text-yellow-200 text-xl">Welcome user: {username}</div>
+    <div class="p-2 bg-yellow-200">
+        <div class="text-lg p-3">Order History:</div>
+        {#if (orders_props.length > 0)}
+            {#each  orders_props as props}
+                <div class="p-2">
+                    <OrderSummaryCustomer {...props} />
+                </div>
+            {/each}
+        {:else}
+                <div>waiting for get orders call</div>
+                <div>user may not be logged in</div>
+        {/if}
+    </div>
 </div>

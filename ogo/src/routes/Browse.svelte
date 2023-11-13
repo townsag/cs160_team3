@@ -120,6 +120,8 @@
     sequential_api_calls();
   });
 
+  let noClick: any;
+  let noScroll: any;
   $: {
     if (startSearch == true) {
       updateSearchBarFilter();
@@ -156,6 +158,15 @@
       tempNameList.push(filteredItems[i].name);
     }
     console.log("displayed list (names): " + tempNameList);
+
+
+    noClick = openFilter ? '' : 'pointer-events-none';
+    noScroll = openFilter ? 'overflow-show' : 'overflow-hidden';
+    if (!openFilter) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
   } 
 </script>
 
@@ -163,11 +174,23 @@
   .blur {
     filter: blur(5px); /* You can adjust the blur intensity as needed */
   }
+
+  .pointer-events-none {
+    pointer-events: none;
+  }
+
+  .overflow-show {
+    overflow: scroll;
+  }
+
+  .overflow-hidden {
+    overflow: hidden;
+  }
 </style>
 
 <Navbar/>
 <div class="container mx-auto p-4">
-  <div class="{openFilter ? '' : 'blur'}">
+  <div class="{openFilter ? '' : 'blur'} {noClick}">
     <SearchBar 
       {toggleFilterOpen}
       {searchQuery}
@@ -176,7 +199,7 @@
     />
   </div>
 
-  <div class="{openFilter ? '' : 'blur'}">
+  <div class="{openFilter ? '' : 'blur'} {noClick}">
     <ItemDisplay 
       {filteredItems}
       {isAdmin}
@@ -199,4 +222,3 @@
     </div>
   </div>
 </div>
-
