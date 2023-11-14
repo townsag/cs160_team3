@@ -78,10 +78,10 @@
         let failedCondition = "";
 
         switch (true) {
-            case !fullNameState || !/^[a-zA-Z]+$/.test(fullNameState):
+            case !fullNameState || !/^[a-zA-Z\s]+$/.test(fullNameState):
                 failedCondition = "Full Name";
                 break;
-            case !cardHolderNameState || !/^[a-zA-Z]+$/.test(cardHolderNameState):
+            case !cardHolderNameState || !/^[a-zA-Z\s]+$/.test(cardHolderNameState):
                 failedCondition = "Card Holder Name";
                 break;
             case !cardNumberState || !/^\d{16}$/.test(cardNumberState):
@@ -147,13 +147,15 @@
                             <span class="label-text">Address</span>
                         </label>
                         <input bind:value={addressLineOneState} type="text" class="input input-bordered w-full " placeholder={userAddress} readonly/>
-                        <a class="text-xs underline" href="/settings">User Settings</a>
+                        <div class="inline-block ml-1">
+                            <a class="text-xs underline mt-2" href="/settings">User Settings</a>
+                        </div>
                         <label class="label">
                             <span class="label-text">Card</span>
                         </label>
                         <input bind:value={cardHolderNameState} type="text" class="input input-bordered w-full " placeholder="Card Holder Name"/>
-                        <input bind:value={cardNumberState} type="text" class="input input-bordered w-full " placeholder="Card Number No Dashes"/>
-                        <div id="notfull" class="flex justify-between">
+                        <input bind:value={cardNumberState} type="text" class="input input-bordered w-full mt-2" placeholder="Card Number No Dashes"/>
+                        <div id="notfull" class="flex justify-between mt-2">
                             <div class="flex-1 ">
                                 <input bind:value={cardExpiryState} type="text" class="input input-bordered w-full " placeholder="Expiry Date"/>
                             </div>
@@ -169,10 +171,10 @@
             <!-- New card content goes here -->
             <div class="card-body pl-20 pr-20 pt-10">
                 <h1 class="card-title">Order Price</h1>
-                <h1 class="card-title">Cart:<p style="text-align: right;">{(price).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Tax:<p style="text-align: right;">{(price * 0.0724776501).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Shipping:<p style="text-align: right;">{shipping}</p> </h1>
-                <h1 class="card-title">Total:<p style="text-align: right;">{(shipping + (price * 0.0724776501) + price).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Cart:<p style="text-align: right;">${(price).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Tax:<p style="text-align: right;">${(price * 0.0724776501).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Shipping:<p style="text-align: right;">${shipping}</p> </h1>
+                <h1 class="card-title">Total:<p style="text-align: right;">${(shipping + (price * 0.0724776501) + price).toFixed(2)}</p> </h1>
                 <button on:click={handlePaymentSubmit} class="btn bg-secondary mt-6">Pay Now</button>
             </div>
         </div>
