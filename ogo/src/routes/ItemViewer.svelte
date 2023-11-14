@@ -141,8 +141,6 @@
 
         itemPrice = Number(itemPrice.toFixed(2));
         itemWeight = Number(itemWeight.toFixed(2));
-        itemQuantityInStock = Number(itemQuantityInStock.toFixed(0));
-        itemSelectedQuantity = Number(itemSelectedQuantity.toFixed(0));
 
         if (itemSelectedQuantity > itemQuantityInStock) {
             itemSelectedQuantity = itemQuantityInStock;
@@ -203,6 +201,7 @@
             alertShow = true;
             alertMsg = "Updated item: " + itemName;
             alertType = "success";
+            returnToBrowse();
 		} else {
             const message = await updateProductResponse.text();
 			console.error("Error updating product:", message);
@@ -245,14 +244,19 @@
     }
     
     function addToCart() {
-        if (itemSelectedQuantity > 0) {
-            addItemToCart();
-            returnToBrowse();
-        } else {
+        if (!Number.isInteger(itemSelectedQuantity)) {
+            alertShow = true;
+            alertMsg = "Quantity must be an integer";
+            alertType = "warning";
+            return;
+        }
+        if (itemSelectedQuantity <= 0) {
             alertShow = true;
             alertMsg = "Quantity must be greater than 0";
             alertType = "error";
+            return;
         }
+        addItemToCart();
     }
     function createItem() {
         toggleTagsListID.length = 0;
@@ -277,6 +281,12 @@
         if (itemPrice <= 0 || itemWeight <= 0) {
             alertShow = true;
             alertMsg = "Weight and price must be greater than 0";
+            alertType = "warning";
+            return;
+        }
+        if (!Number.isInteger(itemQuantityInStock)) {
+            alertShow = true;
+            alertMsg = "Quantity must be an integer";
             alertType = "warning";
             return;
         }
@@ -305,6 +315,12 @@
         if (itemPrice <= 0 || itemWeight <= 0) {
             alertShow = true;
             alertMsg = "Weight and price must be greater than 0";
+            alertType = "warning";
+            return;
+        }
+        if (!Number.isInteger(itemQuantityInStock)) {
+            alertShow = true;
+            alertMsg = "Quantity must be an integer";
             alertType = "warning";
             return;
         }

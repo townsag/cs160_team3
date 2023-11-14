@@ -2,7 +2,6 @@
 
 <script lang="ts">
 	import SearchBar from '../lib/components/SearchBar.svelte';
-  import FilterBar from '../lib/components/FilterBar.svelte';
   import ItemDisplay from '../lib/components/ItemDisplay.svelte';
   import Navbar from "../lib/components/Navbar.svelte";
 
@@ -31,7 +30,7 @@
   }
 
   //search bar stuff
-  let openFilter = true;
+  let openFilter = false;
   let searchQuery = '';
   let startSearch = false;
   function toggleFilterOpen() {
@@ -160,14 +159,32 @@
     console.log("displayed list (names): " + tempNameList);
 
 
-    noClick = openFilter ? '' : 'pointer-events-none';
-    noScroll = openFilter ? 'overflow-show' : 'overflow-hidden';
-    if (!openFilter) {
+    noClick = openFilter ? 'pointer-events-none' : '';
+    noScroll = openFilter ? 'overflow-hidden' : 'overflow-show';
+    if (openFilter) {
       document.body.classList.add('overflow-hidden');
     } else {
       document.body.classList.remove('overflow-hidden');
     }
   } 
+
+  function handleCategoryChange(event: any) {
+    // Retrieve the selected category value from the event
+    const selectedCategory = event.target.value;
+
+    // Call your function with the selected category value
+    toggleCategory(selectedCategory);
+  }
+
+  let toggleTagsList = new Array(allTagsList.length);
+  function toggleTag(tagName: string) {
+    for (let i = 0; i < allTagsList.length; i++) {
+      if (allTagsList[i].name == tagName) {
+        toggleTagsList[i] = !toggleTagsList[i];
+      }
+    } 
+    toggleTags(toggleTagsList);
+  }
 </script>
 
 <style>
@@ -186,11 +203,37 @@
   .overflow-hidden {
     overflow: hidden;
   }
+
+  .filter-content {
+    padding: 20px;
+    width: 350px;
+  }
+
+  .filter-item {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .filter-item label {
+    margin-right: 10px; /* Add margin between label and checkbox */
+  }
+
+  .filter-test {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0; /* Set bottom to 0 to make it touch the bottom */
+    width: 370px;
+    overflow-y: auto;
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.5);
+  }
 </style>
 
 <Navbar/>
 <div class="container mx-auto p-4">
-  <div class="{openFilter ? '' : 'blur'} {noClick}">
+  <div class="{openFilter ? 'blur' : ''} {noClick}">
     <SearchBar 
       {toggleFilterOpen}
       {searchQuery}
@@ -199,7 +242,7 @@
     />
   </div>
 
-  <div class="{openFilter ? '' : 'blur'} {noClick}">
+  <div class="{openFilter ? 'blur' : ''} {noClick}">
     <ItemDisplay 
       {filteredItems}
       {isAdmin}
@@ -207,18 +250,32 @@
     />
   </div>
 
-  <div class="flex">
-    <div class="w-4/4 pr-4">
-      <div>
-        <FilterBar
-          {openFilter}
-          {toggleFilterOpen}
-          {allCategoriesList}
-          {allTagsList}
-          {toggleCategory}
-          {toggleTags}
-        />
-      </div>
+  <div class="drawer">
+    <input id="my-drawer" type="checkbox" class="drawer-toggle" bind:checked={openFilter}/>
+    <div class="drawer-side">
+      <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+      <ul class="menu filter-test p-2 min-h-full bg-base-200 text-base-content">
+        <div class="filter-content">
+          <div class="filter-item">
+            <!-- svelte-ignore a11y-label-has-associated-control -->
+            <label class="text-lg font-normal">Category: </label>
+            <select class="select text-lg font-normal" on:change={handleCategoryChange}>
+              <option value="">All</option>
+              {#each allCategoriesList as category}
+                <option value={category.name}>{category.name}</option>
+              {/each}
+            </select>
+          </div>
+          {#each allTagsList as tag}
+              <div class="form-control">
+                <label class="label cursor-pointer text-lg font-normal" style="padding: 2px;">
+                  <span class="label-text text-lg font-normal">{tag.name}</span> 
+                  <input type="checkbox" class="checkbox checkbox-primary" on:change={() => toggleTag(tag.name)}/>
+                </label>
+              </div>
+          {/each}
+        </div>
+      </ul>
     </div>
   </div>
 </div>
