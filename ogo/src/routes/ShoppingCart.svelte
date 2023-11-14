@@ -6,6 +6,9 @@
     import { navigate } from "svelte-routing";
     import Navbar from "../lib/components/Navbar.svelte";
 
+    import { alert } from '../lib/stores/alertStore';
+    import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+
     // California sales tax rate
     const TAX_RATE = 0.0725;
 
@@ -103,12 +106,12 @@
 
 <html lang="en" data-theme="lemonade">
     <Navbar/>
-
+    <AlertDaisy {alert} />
     <div class="midContainer">
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:mr-4 shadow-md" >
+            <div class="card bg-base-100 border-2 border-black-500 m-8 mt-4 lg:mt-8 lg:mr-4 shadow-md" >
                 <div class="card-body">
-                    <h1 class="card-title mb-4">ORDER SUMMARY</h1>
+                    <h1 class="card-title mb-2">ORDER SUMMARY</h1>
                     {#if filteredItems && filteredItems.length > 0}
                         <ItemDisplay
                             {filteredItems}
@@ -122,9 +125,9 @@
             </div>
         </div>
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:ml-4 shadow-md">
+            <div class="card bg-base-100 border-2 border-black-500 m-8 mb-4 lg:mb-8 lg:ml-4 shadow-md">
                 <div class="card-body">
-                    <h1 class="card-title mb-8">ORDER PRICE</h1>
+                    <h1 class="card-title mb-4">ORDER PRICE</h1>
 
                     <div class="flex flex-row">
                         <div class="basis-1/2">
@@ -161,8 +164,8 @@
                         {/if}
                     </p>
 
-                    <div class="flex justify-center">
-                        <button on:click={() => navigate('/payment')} class="btn btn-secondary mt-16" disabled={paymentDisabledState}>
+                    <div class="flex justify-center w-full">
+                        <button on:click={() => navigate('/payment')} class="btn btn-secondary w-full mt-16" disabled={paymentDisabledState}>
                             {#if (paymentDisabledState)}
                                 Cart is Empty
                             {:else}
