@@ -102,7 +102,7 @@ def plan_path(orders: list[grouteInputOrder]) -> grouteResponse:
 def distance_check(destination_address: str) -> bool:
   url = f'https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={destination_address}&key={API_KEY}'
   data = requests.get(url).json()
-
+  print(data)
   try:
     meters = data['rows'][0]['elements'][0]['distance']['value']
   except KeyError: # There will be a KeyError if the address was not able to be parsed.

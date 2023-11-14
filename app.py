@@ -5,7 +5,7 @@ from functools import wraps
 import threading
 from flask import Flask, request, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, current_user
-
+import re
 import pdb
 import configparser
 
@@ -56,7 +56,7 @@ class User:
     except Exception as e:
       print('User.get() error:', e)
       return None
-    
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -85,12 +85,25 @@ def admin_required(f):
     return check_admin
 
 
+
 def get_item_in_cart(product_id : int):
   curr_cart = db.select_cart(current_user.user_id)
   for item in curr_cart['items']:
     if item['product_id'] == product_id:
       return item
   return None
+
+def is_valid_character_inputs(str_input : str):
+  matches = re.findall(pattern="(\W)", string=str_input)
+  if len(matches) != 0:
+    return False
+  return True
+
+  # for input_key in j.keys():
+  #   input_val = j[input_key]
+  #   if not is_valid_character_inputs():
+  #     return False, ("Invalid characters in " + input_key + " -> " + input_val, 400)
+
 
 
 def is_valid_product_id(product_id : int):
