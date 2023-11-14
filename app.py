@@ -266,7 +266,7 @@ def update_user():
   if 'address' in u: 
 
     # Hitting Errors with Distance Check
-    # if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
+    if not distance_check(u['address']): return 'Address invalid (bad format or too far).', 400
     
     db.update_user_address(current_user.user_id, u['address'])
 
