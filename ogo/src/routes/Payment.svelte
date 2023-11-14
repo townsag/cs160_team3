@@ -7,13 +7,7 @@
     let fullNameState = "";
     let cardHolderNameState = "";
     let cardNumberState = "";
-    let addressLineOneState = "";
-    let addressLineTwoState = "";
     let phoneNumberState = "";
-    let cityState = "";
-    let stateState = ""; // this is the State locations state
-    let zipCodeState = "";
-    let countryState = ""; 
     let cardExpiryState = "";
     let cardCvcState = "";
 
@@ -119,9 +113,9 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
-    <div class="flex">
+    <div class="md:flex">
         <div class="relative min-w-screen items-left px-4 sm:px-0">
-            <div class="card bg-base-100 border-2 border-black-500 mt-8" style="width: 50vw;">
+            <div class="card bg-base-100 border-2 border-black-500 mt-8" style="{window.innerWidth >= 768 ? 'width: 50vw;' : ''}">
                 <dialog bind:this={paymentErrorModal} class="modal">
                     <div class="modal-box bg-red-300">
                         <h3 class="font-bold text-lg">Payment Error!</h3>
@@ -182,7 +176,3 @@
     <div class="p-5">
     </div>
 </html>
-
-<style>
-  /* Add your styles here */
-</style>
