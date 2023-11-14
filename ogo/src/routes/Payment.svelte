@@ -120,9 +120,8 @@
 
 <html lang="en" data-theme="lemonade">
     <div class="flex">
-        <div class="relative min-w-screen h-screen items-left px-4 sm:px-0 pt-1">
-            <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
-            <div class="card w-full  md:w5/5 xl:w-100 bg-base-100 border-2 border-black-500 mt-8">
+        <div class="relative min-w-screen items-left px-4 sm:px-0">
+            <div class="card bg-base-100 border-2 border-black-500 mt-8" style="width: 50vw;">
                 <dialog bind:this={paymentErrorModal} class="modal">
                     <div class="modal-box bg-red-300">
                         <h3 class="font-bold text-lg">Payment Error!</h3>
@@ -146,7 +145,9 @@
                         <label class="label">
                             <span class="label-text">Address</span>
                         </label>
-                        <input bind:value={addressLineOneState} type="text" class="input input-bordered w-full " placeholder={userAddress} readonly/>
+                        <div class="inline-block ml-1">
+                            <p class="text-base">{userAddress}</p>
+                        </div>
                         <div class="inline-block ml-1">
                             <a class="text-xs underline mt-2" href="/settings">User Settings</a>
                         </div>
@@ -167,8 +168,7 @@
                 </div>
             </div>
         </div>
-        <div class="card w-full md:w-2/5 xl:w-2/5 bg-base-100 border-2 border-black-500 mt-8 ">
-            <!-- New card content goes here -->
+        <div class="card w-full bg-base-100 border-2 border-black-500 mt-8 ">
             <div class="card-body pl-20 pr-20 pt-10">
                 <h1 class="card-title">Order Price</h1>
                 <h1 class="card-title">Cart:<p style="text-align: right;">${(price).toFixed(2)}</p> </h1>
@@ -178,6 +178,8 @@
                 <button on:click={handlePaymentSubmit} class="btn bg-secondary mt-6">Pay Now</button>
             </div>
         </div>
+    </div>
+    <div class="p-5">
     </div>
 </html>
 
