@@ -135,12 +135,14 @@
         if (itemQuantityInStock < 0) {
             itemQuantityInStock = 0;
         }
-        if (itemSelectedQuantity < 1) {
-            itemSelectedQuantity = 1;
+        if (itemSelectedQuantity < 0) {
+            itemSelectedQuantity = 0;
         }
 
         itemPrice = Number(itemPrice.toFixed(2));
         itemWeight = Number(itemWeight.toFixed(2));
+        itemQuantityInStock = Number(itemQuantityInStock.toFixed(0));
+        itemSelectedQuantity = Number(itemSelectedQuantity.toFixed(0));
 
         if (itemSelectedQuantity > itemQuantityInStock) {
             itemSelectedQuantity = itemQuantityInStock;
@@ -245,8 +247,12 @@
     function addToCart() {
         if (itemSelectedQuantity > 0) {
             addItemToCart();
+            returnToBrowse();
+        } else {
+            alertShow = true;
+            alertMsg = "Quantity must be greater than 0";
+            alertType = "error";
         }
-        returnToBrowse();
     }
     function createItem() {
         toggleTagsListID.length = 0;
@@ -540,7 +546,11 @@
                         <td colspan="2">
                             <div style="align-items: center;">
                                 {#if productID != "0"}
-                                    <button style="width: 100%;" class="btn bg-primary text-white mt-3 rounded-xl text-2xl" on:click={addToCart}>Add to Cart</button>
+                                    {#if itemQuantityInStock == 0}
+                                        <button style="width: 100%;" disabled="disabled" class="btn bg-primary text-white mt-3 rounded-xl text-2xl" on:click={addToCart}>Add to Cart</button>
+                                    {:else}
+                                        <button style="width: 100%;" class="btn bg-primary text-white mt-3 rounded-xl text-2xl" on:click={addToCart}>Add to Cart</button>
+                                    {/if}
                                 {/if}
                             </div>
                         </td>
