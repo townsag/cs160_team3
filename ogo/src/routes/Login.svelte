@@ -27,7 +27,7 @@
 
         if (result.success) {
             console.log("Logged in successfully!");
-            alert.set({ show: true, message: 'Welcome back,' + storedUsername + '!', type: 'success'});
+            alert.set({ show: true, message: 'Welcome back, ' + storedUsername + '!', type: 'success'});
             navigate("/browse");
         } else {
             console.error("Login failed:", result.message);

@@ -58,7 +58,7 @@
 
     async function handleNewPassword() {
         if (changedPasswordState2 != changedPasswordState) {
-            alert.set({ show: true, message: 'Password must match', type: 'error'});
+            alert.set({ show: true, message: 'Passwords must match', type: 'error'});
             changedPasswordState2 = "";
             return;
         }

@@ -4,21 +4,24 @@
     import bg from "../assets/bg1.jpeg";
     import { signup } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
+    import { onMount } from 'svelte';
 
     let usernameState = "";
     let passwordState = "";
+    let passwordState2 = "";
     let toggleIsCheckedState = false;
 
     let storedUsername = "";
     let storedPassword = "";
 
-    let signupErrorState = false;
-    let signupErrorTextState = "";
-    let signupErrorModal: HTMLDialogElement;
+    //let signupErrorState = false;
+    //let signupErrorTextState = "";
+    //let signupErrorModal: HTMLDialogElement;
 
     import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
 
+    /*
     $: if (signupErrorState) {
         showSignupErrorModal();
     }
@@ -31,8 +34,21 @@
         signupErrorModal.close();
         signupErrorState = false;
     }
+    */
     
     async function handleSubmit() {
+        if (passwordState2 != passwordState) {
+            alert.set({ show: true, message: 'Passwords must match', type: 'warning'});
+            return;
+        }
+        if (passwordState2.length == 0) {
+            alert.set({ show: true, message: 'User must have password', type: 'warning'});
+            return;
+        }
+        if (usernameState.length == 0) {
+            alert.set({ show: true, message: 'User must have username', type: 'warning'});
+            return;
+        }
         storedUsername = usernameState;
         storedPassword = passwordState;
 
@@ -47,55 +63,32 @@
             navigate("/login");
         } else {
             console.error("Signup failed:", result.message);
-            signupErrorTextState = result.message;
-            signupErrorState = true;
+            //signupErrorTextState = result.message;
+            //signupErrorState = true;
             alert.set({ show: true, message: 'Signup failed: ' + result.message, type: 'error'});
         }
     }
 
-    //     if (storedUsername.length == 0 && storedPassword.length == 0) {
-    //         signupErrorTextState = "Cannot have a blank username or password.";
-    //         signupErrorState = true;
-    //     } else if (storedUsername.length <= 20 && storedPassword.length <= 20) {
-    //         const signupResponse = await fetch("/signup", {
-    //             method: "POST",
-    //             headers: {
-    //             'Content-Type': "application/json"
-    //             },
-    //             body: JSON.stringify({
-    //                 "username": storedUsername,
-    //                 "password": storedPassword,
-    //                 "address": ""
-    //             })
-    //         })
-
-    //         // signup success or fail
-    //         if (signupResponse.ok) {
-    //             const message = await signupResponse.text();
-    //             console.log(message);
-    //             navigate("/home");
-    //         } else {
-    //             console.error("Error signing up:", await signupResponse.text());
-    //         }
-            
-    //         // test getUser
-    //         const currentUser = await fetch("/getUser", {
-    //             method: "GET"
-    //         })
-    //         const currentUserJson = await currentUser.json();
-    //         const currentUserResult = JSON.stringify(currentUserJson);
-
-    //         console.log(currentUserResult);
-
-    //     } else {
-    //         signupErrorTextState = "Username and password must be less than 20 characters.";
-    //         signupErrorState = true;
-    //     }
-    // }
-
     async function handleToggle() {
         toggleIsCheckedState = !toggleIsCheckedState;
         // TODO: switch customer/employee
+    }
+
+    onMount(() => {
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    });
+
+    function handleKeyDown(event: any) {
+        if (event.key === 'Enter') {
+            // Check which input is focused and trigger the corresponding action
+            const activeElement = document.activeElement;
+            if (activeElement.tagName === 'INPUT') {
+                handleSubmit();
+            }
+        }
     }
 </script>
 
@@ -105,15 +98,6 @@
         <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
         <AlertDaisy {alert} />
         <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
-            <dialog bind:this={signupErrorModal} class="modal">
-                <div class="modal-box bg-red-300">
-                    <h3 class="font-bold text-lg">Error!</h3>
-                    <p class="py-4">{signupErrorTextState}</p>
-                </div>
-                <form method="dialog" class="modal-backdrop">
-                    <button on:click={closeSignupErrorModal}>close</button>
-                </form>
-            </dialog>
             <div class="card-body">
                 <div class="flex justify-between items-center">
                     <h1 class="card-title">SIGN UP</h1>
@@ -128,11 +112,16 @@
                         <span class="label-text">Username</span>
                     </label>
                     <input bind:value={usernameState} type="text" class="input input-bordered w-full max-w-xs" />
-                     <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Password</span>
                     </label>
                     <input bind:value={passwordState} type="password" class="input input-bordered w-full max-w-xs" />
+                    <!-- svelte-ignore a11y-label-has-associated-control -->
+                    <label class="label">
+                        <span class="label-text">Re-enter Password</span>
+                    </label>
+                    <input bind:value={passwordState2} type="password" class="input input-bordered w-full max-w-xs" />
                 </div>
                 <button on:click={handleSubmit} class="btn bg-secondary mt-6">Submit</button>
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
