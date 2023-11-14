@@ -3,6 +3,7 @@
     import { getCart } from "../lib/util/RequestController"
     import { cartItemQuantitySignal, cartItemRemovedSignal } from "../lib/stores/CartObserver";
     import ItemDisplay from "../lib/components/ItemDisplay.svelte";
+    import { navigate } from "svelte-routing";
     import Navbar from "../lib/components/Navbar.svelte";
 
     // California sales tax rate
@@ -167,7 +168,7 @@
                     </p>
 
                     <div class="flex justify-center">
-                        <button class="btn btn-secondary mt-16" disabled={paymentDisabledState}>
+                        <button on:click={() => navigate('/payment')} class="btn btn-secondary mt-16" disabled={paymentDisabledState}>
                             {#if (paymentDisabledState)}
                                 Cart is Empty
                             {:else}

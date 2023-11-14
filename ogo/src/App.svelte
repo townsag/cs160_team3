@@ -10,6 +10,7 @@
   import Footer from "./lib/components/Footer.svelte";
   import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
+  import Payment from "./routes/Payment.svelte";
   import CustomerOrderHistory from "./routes/CustomerOrderHistory.svelte";
   import ItemViewer from "./routes/ItemViewer.svelte";
   import EmployeeUserManagement from "./routes/EmployeeUserManagement.svelte"
@@ -26,6 +27,7 @@
     { path: "/employeesmaps", component: EmMaps},
     { path: "/customer-order-history", component: CustomerOrderHistory},
     { path: "/itemView/:productId", component: ItemViewer},
+    { path: "/payment", component: Payment},
     { path: "/employee-user-management", component: EmployeeUserManagement},
   ];
 
