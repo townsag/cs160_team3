@@ -259,7 +259,7 @@
                                     type="password"
                                     placeholder="password"
                                     bind:value={changedPasswordState}
-                                    class="input input-bordered w-full max-w-md"
+                                    class="input input-bordered w-full"
                                 />   
                             </td>
                             <td>
@@ -267,7 +267,7 @@
                                     type="password"
                                     placeholder="re-enter password"
                                     bind:value={changedPasswordState2}
-                                    class="input input-bordered w-full max-w-md"
+                                    class="input input-bordered w-full"
                                 />   
                             </td>
                             <td>
