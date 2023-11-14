@@ -1,6 +1,6 @@
 <script lang="ts">
     import { navigate } from "svelte-routing/src/history";
-    import { getCart, removeCartItem } from "../lib/util/RequestController"
+    import { getCart, getCurrentUser, removeCartItem } from "../lib/util/RequestController"
     import { onMount } from "svelte";
 
 
@@ -39,12 +39,20 @@
     }
 
     let cartData = {}
+    let shipping = 0
+    let userAddress = ""
     onMount(async ()=>{
         cartData = await getCart()
-        console.log("HERE", cartData) 
+        let userData = await getCurrentUser()
+        userAddress = userData.user.address
+        if(!userAddress) userAddress = "None Set Please See Settings Page"
         const totalCost = cartData.cart.items.reduce((acc, item) => {
             return acc + item.price * item.quantity;
         }, 0);
+        const totalWeight = cartData.cart.items.reduce((acc, item) => {
+            return acc + item.weight * item.quantity;
+        }, 0);
+        if(totalWeight > 20) shipping = 20
         price = totalCost
     });
     
@@ -68,25 +76,20 @@
 
     async function handlePaymentSubmit() {
         if (
-            !fullNameState ||
-            !cardHolderNameState ||
-            !cardNumberState ||
-            !addressLineOneState ||
-            !phoneNumberState ||
-            !cityState ||
-            !stateState ||
-            !zipCodeState ||
-            !countryState ||
-            !cardExpiryState ||
-            !cardCvcState
+            (!fullNameState || !/^[a-zA-Z]+$/.test(fullNameState)) ||
+            (!cardHolderNameState || !/^[a-zA-Z]+$/.test(cardHolderNameState)) ||
+            (!cardNumberState || !/^\d+$/.test(cardNumberState) || cardNumberState.length != 16) ||
+            (!phoneNumberState || !/^\d+$/.test(phoneNumberState)) ||
+            (!cardExpiryState || !/^\d+$/.test(cardExpiryState)) ||
+            (!cardCvcState || !/^\d+$/.test(cardCvcState))
         ) {
-            // Show an error message or handle it accordingly
-            paymentErrorTextState = "Please fill in all the required fields.";
+            paymentErrorTextState = "Please check all the required fields.";
             paymentErrorState = true;
             return;
         }
-        removeAllCartItems(cartData)
-        navigate("/browse")
+        removeAllCartItems(cartData.cart)
+        // navigate("/browse")
+        console.log(await getCart())
     }
 </script>
 
@@ -116,39 +119,10 @@
                         </label>
                         <input bind:value={phoneNumberState} type="text" class="input input-bordered w-full " placeholder="(999)-999-9999"/>
                         <label class="label">
-                            <span class="label-text">Address Line 1 </span>
+                            <span class="label-text">Address</span>
                         </label>
-                        <input bind:value={addressLineOneState} type="text" class="input input-bordered w-full " placeholder="1234 Kaggle Way"/>
-                        <label class="label">
-                            <span class="label-text">Address Line 2</span>
-                        </label>
-                        <input bind:value={addressLineTwoState} type="text" class="input input-bordered w-full " />
-                        <div id="notfull" class="flex justify-between">
-                            <div class="flex-1 mr-2">
-                                <label class="label">
-                                    <span class="label-text">City</span>
-                                </label>
-                                <input bind:value={cityState} type="text" class="input input-bordered w-full max-w-xs" />
-                            </div>
-                            <div class="flex-1 mr-2">
-                                <label class="label">
-                                    <span class="label-text">State</span>
-                                </label>
-                                <input bind:value={stateState} type="text" class="input input-bordered w-full max-w-xs" />
-                            </div>
-                            <div class="flex-1 mr-2">
-                                <label class="label">
-                                    <span class="label-text">Zip Code</span>
-                                </label>
-                                <input bind:value={zipCodeState} type="text" class="input input-bordered w-full max-w-xs" />
-                            </div>
-                            <div class="flex-1">
-                                <label class="label">
-                                    <span class="label-text">Country</span>
-                                </label>
-                                <input bind:value={countryState} type="text" class="input input-bordered w-full max-w-xs" />
-                            </div>
-                        </div>
+                        <input bind:value={addressLineOneState} type="text" class="input input-bordered w-full " placeholder={userAddress} readonly/>
+                        <a class="text-xs underline" href="/settings">User Settings</a>
                         <label class="label">
                             <span class="label-text">Card</span>
                         </label>
@@ -171,9 +145,9 @@
             <div class="card-body pl-20 pr-20 pt-10">
                 <h1 class="card-title">Order Price</h1>
                 <h1 class="card-title">Cart:<p style="text-align: right;">{(price).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Tax:<p style="text-align: right;">{(price * 0.05).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Shipping:<p style="text-align: right;">{(price * 0.1).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Total:<p style="text-align: right;">{((price * 0.05) + (price * 0.1) + price).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Tax:<p style="text-align: right;">{(price * 0.0724776501).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Shipping:<p style="text-align: right;">{shipping}</p> </h1>
+                <h1 class="card-title">Total:<p style="text-align: right;">{(shipping + (price * 0.0724776501) + price).toFixed(2)}</p> </h1>
                 <button on:click={handlePaymentSubmit} class="btn bg-secondary mt-6">Pay Now</button>
             </div>
         </div>
