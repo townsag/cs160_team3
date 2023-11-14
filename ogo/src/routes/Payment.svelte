@@ -1,6 +1,6 @@
 <script lang="ts">
     import { navigate } from "svelte-routing/src/history";
-    import { getCart, getCurrentUser, removeCartItem } from "../lib/util/RequestController"
+    import { getCart, getCurrentUser, removeCartItem, placeOrder } from "../lib/util/RequestController"
     import { onMount } from "svelte";
 
 
@@ -75,21 +75,46 @@
     }
 
     async function handlePaymentSubmit() {
-        if (
-            (!fullNameState || !/^[a-zA-Z]+$/.test(fullNameState)) ||
-            (!cardHolderNameState || !/^[a-zA-Z]+$/.test(cardHolderNameState)) ||
-            (!cardNumberState || !/^\d+$/.test(cardNumberState) || cardNumberState.length != 16) ||
-            (!phoneNumberState || !/^\d+$/.test(phoneNumberState)) ||
-            (!cardExpiryState || !/^\d+$/.test(cardExpiryState)) ||
-            (!cardCvcState || !/^\d+$/.test(cardCvcState))
-        ) {
-            paymentErrorTextState = "Please check all the required fields.";
+        let failedCondition = "";
+
+        switch (true) {
+            case !fullNameState || !/^[a-zA-Z]+$/.test(fullNameState):
+                failedCondition = "Full Name";
+                break;
+            case !cardHolderNameState || !/^[a-zA-Z]+$/.test(cardHolderNameState):
+                failedCondition = "Card Holder Name";
+                break;
+            case !cardNumberState || !/^\d{16}$/.test(cardNumberState):
+                failedCondition = "Card Number";
+                break;
+            case !phoneNumberState || !/^\(\d{3}\)-?\d{3}-?\d{4}$/.test(phoneNumberState):
+                failedCondition = "Phone Number";
+                break;
+            case !cardExpiryState || !/^\d{2}\/\d{2}$/.test(cardExpiryState):
+                failedCondition = "Card Expiry (MM/YY)";
+                break;
+            case !cardCvcState || !/^\d+$/.test(cardCvcState):
+                failedCondition = "Card CVC";
+                break;
+            case userAddress === "None Set Please See Settings Page":
+                failedCondition = "Check Address";
+                break;
+            default:
+                failedCondition = null;
+        }
+
+        if (failedCondition) {
+            paymentErrorTextState = `Invalid input for ${failedCondition}. Please check and try again.`;
             paymentErrorState = true;
             return;
         }
-        removeAllCartItems(cartData.cart)
-        // navigate("/browse")
-        console.log(await getCart())
+
+        removeAllCartItems(cartData.cart);
+        const res = await placeOrder(cartData.cart.items)
+        if(res.success == true) navigate("/browse");
+        else failedCondition = "Could not Place order";
+        paymentErrorState = true;
+        return;
     }
 </script>
 
@@ -127,7 +152,7 @@
                             <span class="label-text">Card</span>
                         </label>
                         <input bind:value={cardHolderNameState} type="text" class="input input-bordered w-full " placeholder="Card Holder Name"/>
-                        <input bind:value={cardNumberState} type="text" class="input input-bordered w-full " placeholder="Card Number"/>
+                        <input bind:value={cardNumberState} type="text" class="input input-bordered w-full " placeholder="Card Number No Dashes"/>
                         <div id="notfull" class="flex justify-between">
                             <div class="flex-1 ">
                                 <input bind:value={cardExpiryState} type="text" class="input input-bordered w-full " placeholder="Expiry Date"/>
