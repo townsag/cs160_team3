@@ -44,7 +44,7 @@
         }
 
         console.log(userData);
-
+        
         try {
             await updateUser(userData);
             await getUser();

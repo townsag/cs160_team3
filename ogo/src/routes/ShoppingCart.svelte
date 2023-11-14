@@ -85,9 +85,11 @@
     .midContainer {
         display: flex;
         flex-direction: column-reverse;
-        /* min-height: 80vh; 
+        min-height: 80vh; 
+        /*
         width: 80%;
         align-content: center;
+        style="height: "
         margin: auto; */
     }
 
@@ -102,33 +104,25 @@
 <html lang="en" data-theme="lemonade">
     <Navbar/>
 
-    <div class="midContainer bg-gray-200">
+    <div class="midContainer">
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:mr-4">
+            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:mr-4 shadow-md" >
                 <div class="card-body">
                     <h1 class="card-title mb-4">ORDER SUMMARY</h1>
-
-                    <div class="grid grid-rows-4 grid-flow-col gap-4">
-
-                        {#if filteredItems && filteredItems.length > 0}
-                            <ItemDisplay
-                                {filteredItems}
-                                isAdmin={false}
-                                isCartItem={true}
-                            />
-                        {:else}
-                            <span>There are no items in your cart.</span>
-                        {/if}
-
-                    </div>
+                    {#if filteredItems && filteredItems.length > 0}
+                        <ItemDisplay
+                            {filteredItems}
+                            isAdmin={false}
+                            isCartItem={true}
+                        />
+                    {:else}
+                        <span>There are no items in your cart.</span>
+                    {/if}
                 </div>
             </div>
         </div>
-
-        <div class="divider sm:divider-horizontal"></div>
-
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:ml-4">
+            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:ml-4 shadow-md">
                 <div class="card-body">
                     <h1 class="card-title mb-8">ORDER PRICE</h1>
 

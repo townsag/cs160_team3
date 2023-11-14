@@ -20,7 +20,7 @@
     $: {
         if ($alert.show) {
             clearTimeout(timer);
-            timer = setTimeout(closeAlert, 1500);
+            timer = setTimeout(closeAlert, 2000);
         }
     }
 </script>
