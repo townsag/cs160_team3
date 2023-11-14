@@ -177,6 +177,30 @@ export async function getCart() {
     }
 }
 
+// Remove Cart Item
+export async function removeCartItem(cartItemId: number) {
+    try {
+        const removeCartItemResponse = await fetch("/removeCartItem", {
+            method: "POST",
+            headers: { 'Content-Type': "application/json" },
+            body: JSON.stringify({
+                "cart_item_id": cartItemId
+            })
+        });
+
+        const responseText = await removeCartItemResponse.text();
+        if (removeCartItemResponse.ok && responseText === "Success") {
+            return { success: true, message: "Cart item removed successfully." };
+        } else {
+            console.error("Failed to remove cart item:", responseText);
+            return { success: false, message: responseText };
+        }
+    } catch (error) {
+        console.error("An error occurred removing the cart item:", error);
+        return { success: false, message: "An error occurred removing the cart item." };
+    }
+}
+
 // Update Cart Item
 export async function updateCartItem(cartItemId: number, productId: number, quantity: number) {
     try {
@@ -209,30 +233,33 @@ export async function updateCartItem(cartItemId: number, productId: number, quan
     }
 }
 
-// Remove Cart Item
-export async function removeCartItem(cartItemId: number) {
+// Place Order
+export async function placeOrder(orderItems) {
     try {
-        const removeCartItemResponse = await fetch("/removeCartItem", {
+        const response = await fetch("/placeOrder", {
             method: "POST",
-            headers: { 'Content-Type': "application/json" },
-            body: JSON.stringify({
-                "cart_item_id": cartItemId
-            })
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderItems),
         });
 
-        const responseText = await removeCartItemResponse.text();
-
-        if (removeCartItemResponse.ok && responseText === "Success") {
-            return { success: true, message: "Cart item removed successfully." };
-        } else {
-            console.error("Failed to remove cart item:", responseText);
-            return { success: false, message: responseText };
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            console.error("Order could not be placed. Error:", errorMessage);
+            return { success: false, message: "Order could not be placed." };
         }
+
+        const order = await response.json();
+        console.log("Placed Order:", order);
+        return { success: true, message: "Order placed successfully", order };
     } catch (error) {
-        console.error("An error occurred removing the cart item:", error);
-        return { success: false, message: "An error occurred removing the cart item." };
+        console.error("An error occurred posting order:", error);
+        return { success: false, message: "An error occurred posting order." };
     }
 }
+
+
 
 // Places API
 export async function fetchApiKey() {
