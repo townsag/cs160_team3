@@ -16,13 +16,8 @@
     let signupErrorTextState = "";
     let signupErrorModal: HTMLDialogElement;
 
+    import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
-    let alertShow = false;
-    let alertMsg = "";
-    let alertType = "";
-    function toggleShow() {
-        alertShow = false;
-    }
 
     $: if (signupErrorState) {
         showSignupErrorModal();
@@ -48,15 +43,13 @@
 
         if (result.success) {
             console.log("Signed up successfully!", JSON.stringify(result.user));
+            alert.set({ show: true, message: 'Welcome ' + storedUsername + '!', type: 'success'});
             navigate("/login");
         } else {
             console.error("Signup failed:", result.message);
             signupErrorTextState = result.message;
             signupErrorState = true;
-
-            alertShow = true;
-            alertMsg = "Signup failed:" + result.message;
-            alertType = "error";
+            alert.set({ show: true, message: 'Signup failed: ' + result.message, type: 'error'});
         }
     }
 
@@ -110,12 +103,7 @@
     <div class="relative min-w-screen h-screen flex-grow flex flex-col items-center justify-center px-4 sm:px-0"
      style="background-image: url({bg}); background-size: cover; background-repeat: no-repeat;">
         <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
-        <AlertDaisy
-            {alertShow}
-            {alertMsg}
-            {alertType}
-            {toggleShow}
-        />
+        <AlertDaisy {alert} />
         <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
             <dialog bind:this={signupErrorModal} class="modal">
                 <div class="modal-box bg-red-300">

@@ -5,6 +5,8 @@
     import { login, getCurrentUser } from "../lib/util/RequestController"
     import { navigate } from 'svelte-routing';
     import { onMount } from 'svelte';
+
+    import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
 
     let usernameState = "";
@@ -13,13 +15,6 @@
 
     let storedUsername = "";
     let storedPassword = "";
-
-    let alertShow = false;
-    let alertMsg = "";
-    let alertType = "";
-    function toggleShow() {
-        alertShow = false;
-    }
     
     async function handleSubmit() {
         storedUsername = usernameState;
@@ -32,13 +27,12 @@
 
         if (result.success) {
             console.log("Logged in successfully!");
+            alert.set({ show: true, message: 'Welcome back,' + storedUsername + '!', type: 'success'});
             navigate("/browse");
         } else {
             console.error("Login failed:", result.message);
             passwordState = '';
-            alertShow = true;
-            alertMsg = "Login failed: wrong password or username";
-            alertType = "error";
+            alert.set({ show: true, message: 'Login failed: wrong password or username', type: 'error'});
         }
 
         const userResult = await getCurrentUser();
@@ -82,12 +76,7 @@
     <div class="relative min-w-screen h-screen flex-grow flex flex-col items-center justify-center px-4 sm:px-0"
      style="background-image: url({bg}); background-size: cover; background-repeat: no-repeat;">
         <div class="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-md backdrop-contrast-125"></div>
-        <AlertDaisy
-            {alertShow}
-            {alertMsg}
-            {alertType}
-            {toggleShow}
-        />
+        <AlertDaisy {alert} />
         <div class="card w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-96 bg-base-100 border-2 border-black-500 mt-8">
             <div class="card-body">
                 <div class="flex justify-between items-center">

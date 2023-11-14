@@ -2,6 +2,8 @@
     import { onMount } from 'svelte';
     import { navigate } from 'svelte-routing';
     import Navbar from "../lib/components/Navbar.svelte";
+
+    import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
 
     let productID = window.location.href.match(/\/(\d+)$/)[1];
@@ -34,13 +36,6 @@
     let itemTags: any[] = [];
     let loadedTags = false;
     let loadedRealTags = false;
-
-    let alertShow = false;
-    let alertMsg = "";
-    let alertType = "";
-    function toggleShow() {
-        alertShow = false;
-    }
     
     function handleCategoryChange(event: any) {
         itemCategory = event.target.value;
@@ -171,10 +166,7 @@
 		} else {
             const message = await createProductResponse.text();
 			console.error("Error creating product:", message);
-            alertShow = true;
-            alertMsg = "Error creating product: " + message;
-            alertType = "error";
-            //alert("Cannot created item: " + itemName);
+            alert.set({ show: true, message: 'Error creating product: ' + message, type: 'error'});
 		}
 	}
     async function handleApplyChanges() {
@@ -198,16 +190,12 @@
 		if (updateProductResponse.ok) {
 			const message = await updateProductResponse.text();
 			console.log(message);
-            alertShow = true;
-            alertMsg = "Updated item: " + itemName;
-            alertType = "success";
+            alert.set({ show: true, message: 'Updated item: ' + itemName, type: 'success'});
             returnToBrowse();
 		} else {
             const message = await updateProductResponse.text();
 			console.error("Error updating product:", message);
-            alertShow = true;
-            alertMsg = "Error updating product: " + message;
-            alertType = "error";
+            alert.set({ show: true, message: 'Error updating product: ' + message, type: 'error'});
 		}
 	}
     async function addItemToCart() {
@@ -224,18 +212,12 @@
 		if (updateProductResponse.ok) {
 			const message = await updateProductResponse.text();
 			console.log(message);
-            //alert("Added " + itemSelectedQuantity + " " + itemName);
-            alertShow = true;
-            alertMsg = "Added " + itemSelectedQuantity + " " + itemName;
-            alertType = "success";
+            alert.set({ show: true, message: 'Added ' + itemSelectedQuantity + ' ' + itemName, type: 'success'});
             returnToBrowse();
 		} else {
             const message = await updateProductResponse.text();
 			console.error("Error adding to cart:", message);
-            alertShow = true;
-            alertMsg = "Error adding to cart: " + message;
-            alertType = "error";
-            //alert("Cannot add item: " + message);
+            alert.set({ show: true, message: 'Error adding to cart: ' + message, type: 'error'});
 		}
 	}
 
@@ -245,15 +227,11 @@
     
     function addToCart() {
         if (!Number.isInteger(itemSelectedQuantity)) {
-            alertShow = true;
-            alertMsg = "Quantity must be an integer";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Quantity must be an integer', type: 'warning'});
             return;
         }
         if (itemSelectedQuantity <= 0) {
-            alertShow = true;
-            alertMsg = "Quantity must be greater than 0";
-            alertType = "error";
+            alert.set({ show: true, message: 'Quantity must be greater than 0', type: 'warning'});
             return;
         }
         addItemToCart();
@@ -273,21 +251,15 @@
             }
         }
         if (itemName.length == 0 || itemDescription.length == 0 || itemImgUrl.length == 0) {
-            alertShow = true;
-            alertMsg = "Item must have name, description, and image URL";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Item must have name, description, and image URL', type: 'warning'});
             return;
         }
         if (itemPrice <= 0 || itemWeight <= 0) {
-            alertShow = true;
-            alertMsg = "Weight and price must be greater than 0";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Weight and price must be greater than 0', type: 'warning'});
             return;
         }
         if (!Number.isInteger(itemQuantityInStock)) {
-            alertShow = true;
-            alertMsg = "Quantity must be an integer";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Quantity must be an integer', type: 'warning'});
             return;
         }
         createProduct();
@@ -307,21 +279,15 @@
             }
         }
         if (itemName.length == 0 || itemDescription.length == 0 || itemImgUrl.length == 0) {
-            alertShow = true;
-            alertMsg = "Item must have name, description, and image URL";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Item must have name, description, and image URL', type: 'warning'});
             return;
         }
         if (itemPrice <= 0 || itemWeight <= 0) {
-            alertShow = true;
-            alertMsg = "Weight and price must be greater than 0";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Weight and price must be greater than 0', type: 'warning'});
             return;
         }
         if (!Number.isInteger(itemQuantityInStock)) {
-            alertShow = true;
-            alertMsg = "Quantity must be an integer";
-            alertType = "warning";
+            alert.set({ show: true, message: 'Quantity must be an integer', type: 'warning'});
             return;
         }
         handleApplyChanges();
@@ -387,12 +353,7 @@
 
 {#if finishLoading}
     <Navbar/>
-    <AlertDaisy
-        {alertShow}
-        {alertMsg}
-        {alertType}
-        {toggleShow}
-    />
+    <AlertDaisy {alert} />
     <div style="align-self: center; align-items: center;">   
         {#if isAdmin} 
             <div class="midContainer mx-auto p-2 mb-4">

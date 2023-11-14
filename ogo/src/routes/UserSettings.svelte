@@ -3,13 +3,9 @@
     import AddressAutocomplete from "../lib/components/AddressAutocomplete.svelte";
     import { getCurrentUser, updateUser } from "../lib/util/RequestController";
     import Navbar from "../lib/components/Navbar.svelte";
+
+    import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
-    let alertShow = false;
-    let alertMsg = "";
-    let alertType = "";
-    function toggleShow() {
-        alertShow = false;
-    }
     
     let user: any;
 
@@ -52,23 +48,17 @@
         try {
             await updateUser(userData);
             await getUser();
-            alertShow = true;
-            alertMsg = "Updated username";
-            alertType = "success";
+            alert.set({ show: true, message: 'Updated username', type: 'success'});
             changedUsernameState = "";
         } catch (error) {
             console.error("Error updating username:", error);
-            alertShow = true;
-            alertMsg = "Error updating username: " + error;
-            alertType = "error";
+            alert.set({ show: true, message: 'Error updating username: ' + error, type: 'error'});
         }
     }
 
     async function handleNewPassword() {
         if (changedPasswordState2 != changedPasswordState) {
-            alertShow = true;
-            alertMsg = "Password must match";
-            alertType = "error";
+            alert.set({ show: true, message: 'Password must match', type: 'error'});
             changedPasswordState2 = "";
             return;
         }
@@ -84,16 +74,12 @@
         try {
             await updateUser(userData);
             await getUser();
-            alertShow = true;
-            alertMsg = "Updated password";
-            alertType = "success";
+            alert.set({ show: true, message: 'Updated password', type: 'success'});
             changedPasswordState = "";
             changedPasswordState2 = "";
         } catch (error) {
             console.error("Error updating password:", error);
-            alertShow = true;
-            alertMsg = "Error updating password: " + error;
-            alertType = "error";
+            alert.set({ show: true, message: 'Error updating password: ' + error, type: 'error'});
         }
     }
 
@@ -109,15 +95,11 @@
         try {
             await updateUser(userData);
             await getUser();
-            alertShow = true;
-            alertMsg = "Updated address";
-            alertType = "success";
+            alert.set({ show: true, message: 'Updated address', type: 'success'});
             changedAddressState = "";
         } catch (error) {
             console.error("Error updating address:", error);
-            alertShow = true;
-            alertMsg = "Error updating address: " + error;
-            alertType = "error";
+            alert.set({ show: true, message: 'Error updating address: ' + error, type: 'error'});
         }
     }
 
@@ -217,12 +199,7 @@
 
 <html lang="en" data-theme="lemonade">
     <Navbar/>
-    <AlertDaisy
-        {alertShow}
-        {alertMsg}
-        {alertType}
-        {toggleShow}
-    />
+    <AlertDaisy {alert} />
     <div class="relative min-w-screen h-screen flex-grow flex flex-col px-4 sm:px-0">
         <div class="card min-w-screen bg-base-100 border-2 border-black-500 m-6 mb-3 shadow-md">
             <div class="card-body overflow-x-auto">

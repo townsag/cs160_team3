@@ -5,6 +5,9 @@
   import ItemDisplay from '../lib/components/ItemDisplay.svelte';
   import Navbar from "../lib/components/Navbar.svelte";
 
+  import { alert } from '../lib/stores/alertStore';
+  import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+
   let currentCategory = "";
   let filterTags: any[] = [];
 
@@ -232,6 +235,7 @@
 </style>
 
 <Navbar/>
+<AlertDaisy {alert} />
 <div class="container mx-auto p-4">
   <div class="{openFilter ? 'blur' : ''} {noClick}">
     <SearchBar 
