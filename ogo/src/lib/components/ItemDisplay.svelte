@@ -67,7 +67,7 @@
   async function handleQuantityChange(item: any, event: any) {
     const newQuantity = parseInt(event.target.value, 10);
 
-    if (!isNaN(newQuantity) && newQuantity <= 20) {
+    if (newQuantity <= 20) {
       try {
         const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
 
@@ -88,10 +88,21 @@
         quantityErrorTextState = "An error occurred.";
         quantityErrorState = true;
       }
+    } else if (!isNaN(newQuantity)) {
+      console.log("Inputted quantity is not a number.");
     } else {
       console.log("Inputted quantity is not a number less than 20.");
       quantityErrorTextState = "Inputted quantity must be more than 0 and less than 20.";
       quantityErrorState = true;
+    }
+  }
+
+  // filters non-numbers such as "e" and "."
+  function onlyNumbers(event: any) {
+    const charCode = event.which ? event.which : event.keyCode;
+
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
     }
   }
 </script>
@@ -149,7 +160,7 @@
     {#each filteredItems as item}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div on:click={() => handleItemClick(item)} class="border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
+      <div on:click={() => handleItemClick(item)} class="grid grid-rows-[auto,1fr] border p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300">
         <img src={item.image} alt={item.name} class="mb-2 w-full h-40 object-cover" />
   
         <div class="flex flex-col">
@@ -168,19 +179,37 @@
               {/each}
             </div>
           {/if}
-
-          {#if isCartItem}
-            <!-- svelte-ignore a11y-label-has-associated-control -->
-            <input
-              type="number" value={item.quantity}
-              on:input={(event) => handleQuantityChange(item, event)}
-              class="input input-bordered w-full max-w-xs"
-            />
-            
-            <button on:click={() => handleRemoveCartItem(item)} class="btn bg-red-500 text-white mt-2">Remove</button>
-          {/if}
-
         </div>
+
+        {#if isCartItem}
+          <div class="flex flex-col">
+            <!-- svelte-ignore a11y-label-has-associated-control -->
+            <div class="flex flex-row items-center justify-between">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-plus" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 7.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5z"/>
+                <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z"/>
+              </svg>
+              <p class="text-center">
+                Quantity:
+              </p>
+              <input
+                type="number" value={item.quantity}
+                on:input={(event) => handleQuantityChange(item, event)}
+                on:keypress={(event) => onlyNumbers(event)}
+                class="input input-bordered w-1/2 max-w-xs text-center"
+                inputmode="numeric"
+                pattern="[0-9]*"
+              />
+            </div>
+            
+            <button on:click={() => handleRemoveCartItem(item)} class="btn bg-red-500 text-white mt-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+              </svg>
+              Remove
+            </button>
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
