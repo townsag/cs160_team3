@@ -1,9 +1,10 @@
 <script lang="ts">
 	import ogo from "../../assets/ogo.png";
 	import logo from "../../assets/logo_icon.png";
-	import { logout } from "../util/RequestController"
+	import { logout, getCart } from "../util/RequestController"
+	import { cartItemQuantitySignal, cartItemRemovedSignal } from "../stores/CartObserver";
 	import { navigate } from 'svelte-routing';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	/* to use on other pgs u must have
 		// in script
@@ -11,6 +12,8 @@
 		// in html/body
 			<Navbar/>
 	*/
+
+	let numCartItemsState = 0;
 
 	async function handleLogout() {
 		const result = await logout();
@@ -23,6 +26,17 @@
 			console.error("Logout failed:", result.message);
 		}
 	}
+
+	// retrieve cart data
+	async function handleGetCart() {
+        const result = await getCart();
+
+        if (result.success) {
+			numCartItemsState = Object.values(result.cart.items).reduce((acc: number, item: any) => acc + (item.quantity), 0);
+        } else {
+            console.error("Failed to fetch cart data:", result.message);
+        }
+    }
 
 	function handleSettings() {
 		navigate("/settings");
@@ -65,8 +79,24 @@
 	}
 
 	onMount(async () => {
-        sequential_api_calls();       
-    }); 
+        sequential_api_calls();
+		await handleGetCart();
+    });
+
+	// signals for cart changes to make the page reactive
+	const quantitySignalUnsubscribe = cartItemQuantitySignal.subscribe(() => {
+        handleGetCart();
+    })
+
+    const removedSignalUnsubscribe = cartItemRemovedSignal.subscribe(() => {
+        handleGetCart();
+    })
+
+    // unsubscribe from signals to prevent memory leaks when component is not in use
+    onDestroy(() => {
+        quantitySignalUnsubscribe();
+        removedSignalUnsubscribe();
+    });
 </script>
 
 <style>
@@ -144,6 +174,7 @@
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
 						</svg>
+						<span class="badge badge-secondary badge-sm indicator-item">{numCartItemsState}</span>
 					</div>
 				</label>
 			{/if}
