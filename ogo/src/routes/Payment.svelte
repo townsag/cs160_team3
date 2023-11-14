@@ -171,10 +171,10 @@
             <!-- New card content goes here -->
             <div class="card-body pl-20 pr-20 pt-10">
                 <h1 class="card-title">Order Price</h1>
-                <h1 class="card-title">Cart:<p style="text-align: right;">{(price).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Tax:<p style="text-align: right;">{(price * 0.0724776501).toFixed(2)}</p> </h1>
-                <h1 class="card-title">Shipping:<p style="text-align: right;">{shipping}</p> </h1>
-                <h1 class="card-title">Total:<p style="text-align: right;">{(shipping + (price * 0.0724776501) + price).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Cart:<p style="text-align: right;">${(price).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Tax:<p style="text-align: right;">${(price * 0.0724776501).toFixed(2)}</p> </h1>
+                <h1 class="card-title">Shipping:<p style="text-align: right;">${shipping}</p> </h1>
+                <h1 class="card-title">Total:<p style="text-align: right;">${(shipping + (price * 0.0724776501) + price).toFixed(2)}</p> </h1>
                 <button on:click={handlePaymentSubmit} class="btn bg-secondary mt-6">Pay Now</button>
             </div>
         </div>
