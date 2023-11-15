@@ -28,14 +28,11 @@
         totalWeight = Object.values(filteredItems).reduce((acc, item) => acc + (item.weight * item.quantity), 0);
         itemsSubtotal = Object.values(filteredItems).reduce((acc, item) => acc + (item.price * item.quantity), 0);
         taxSubtotal = itemsSubtotal * TAX_RATE;
-
         console.log("Total weight:", totalWeight);
-        
         if (totalWeight > 20)
             shippingSubtotal = 20;
         else
             shippingSubtotal = 0;
-
         totalCost = itemsSubtotal + shippingSubtotal + taxSubtotal;
     }
 
@@ -44,11 +41,8 @@
         const result = await getCart();
 
         if (result.success) {
-            //console.log(JSON.stringify(result));
-
             filteredItems = result.cart.items
             console.log(filteredItems);
-
 
             // disable payment button if cart is empty
             if (filteredItems.length !== 0) {
@@ -56,7 +50,6 @@
             } else {
                 paymentDisabledState = true;
             }
-
             calculateTotalCost();
         } else {
             console.error("Failed to fetch cart data:", result.message);
@@ -89,15 +82,9 @@
         display: flex;
         flex-direction: column-reverse;
         min-height: 80vh; 
-        /*
-        width: 80%;
-        align-content: center;
-        style="height: "
-        margin: auto; */
     }
 
     @media (min-width: 1000px) {
-        /* Apply styles when the screen width is 768 pixels or more */
         .midContainer {
             flex-direction: row; /* Display items side by side */
         }
@@ -111,7 +98,7 @@
         <div class="basis-1/2">
             <div class="card bg-base-100 border-2 border-black-500 m-8 mt-4 lg:mt-8 lg:mr-4 shadow-md" >
                 <div class="card-body">
-                    <h1 class="card-title mb-2">ORDER SUMMARY</h1>
+                    <h1 class="card-title mb-4">ORDER SUMMARY</h1>
                     {#if filteredItems && filteredItems.length > 0}
                         <ItemDisplay
                             {filteredItems}

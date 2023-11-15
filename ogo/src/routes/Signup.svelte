@@ -14,27 +14,8 @@
     let storedUsername = "";
     let storedPassword = "";
 
-    //let signupErrorState = false;
-    //let signupErrorTextState = "";
-    //let signupErrorModal: HTMLDialogElement;
-
     import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
-
-    /*
-    $: if (signupErrorState) {
-        showSignupErrorModal();
-    }
-
-    function showSignupErrorModal() {
-        signupErrorModal.showModal();
-    }
-
-    function closeSignupErrorModal() {
-        signupErrorModal.close();
-        signupErrorState = false;
-    }
-    */
     
     async function handleSubmit() {
         if (passwordState2 != passwordState) {
@@ -63,8 +44,6 @@
             navigate("/login");
         } else {
             console.error("Signup failed:", result.message);
-            //signupErrorTextState = result.message;
-            //signupErrorState = true;
             alert.set({ show: true, message: 'Signup failed: ' + result.message, type: 'error'});
         }
     }
@@ -132,7 +111,3 @@
         </div>
     </div>
 </html>
-
-<style>
-
-</style>

@@ -55,25 +55,6 @@
         if(totalWeight > 20) shipping = 20
         price = totalCost
     });
-    
-
-    //let paymentErrorState = false;
-    //let paymentErrorTextState = "";
-    //let paymentErrorModal: HTMLDialogElement;
-    /*
-
-    $: if (paymentErrorState) {
-        showPaymentErrorModal();
-    }
-
-    function showPaymentErrorModal() {
-        paymentErrorModal.showModal();
-    }
-
-    function closePaymentErrorModal() {
-        paymentErrorModal.close();
-        paymentErrorState = false;
-    } */
 
     async function handlePaymentSubmit() {
         let failedCondition = "";
@@ -106,8 +87,6 @@
 
         if (failedCondition) {
             alert.set({ show: true, message: `Invalid input for ${failedCondition}`, type: 'warning'});
-            //paymentErrorTextState = `Invalid input for ${failedCondition}. Please check and try again.`;
-            //paymentErrorState = true;
             return;
         }
 
@@ -127,13 +106,8 @@
 <style>
     .midContainer {
         display: flex;
-        flex-direction: column-reverse;
+        flex-direction: column;
         min-height: 80vh; 
-        /*
-        width: 80%;
-        align-content: center;
-        style="height: "
-        margin: auto; */
     }
 
     @media (min-width: 1000px) {
@@ -148,7 +122,7 @@
     <AlertDaisy {alert} />
     <div class="midContainer">
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 mt-4 lg:mt-8 lg:mr-4 shadow-md" >
+            <div class="card bg-base-100 border-2 border-black-500 m-8 mb-4 lg:mb-8 lg:mr-4 shadow-md" >
                 <div class="card-body">
                     <h1 class="card-title mb-4">MAKE PAYMENT</h1>
                     <div class="form-control w-full">
@@ -191,7 +165,7 @@
             </div>
         </div>
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 mb-4 lg:mb-8 lg:ml-4 shadow-md">
+            <div class="card bg-base-100 border-2 border-black-500 m-8 mt-4 lg:mt-8 lg:ml-4 shadow-md">
                 <div class="card-body">
                     <h1 class="card-title mb-4">ORDER PRICE</h1>
 
