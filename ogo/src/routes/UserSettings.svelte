@@ -8,6 +8,10 @@
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
     
     let user: any;
+    let loggedInUserID: number;
+    let isAdmin = false;
+
+    let userList: any[] = [];
 
     let usernameState = "";
     let addressState = "";
@@ -26,6 +30,8 @@
             const result = await getCurrentUser();
 
             user = result.user;
+            loggedInUserID = result.user.user_id;
+            isAdmin = result.user.is_admin;
 
             usernameState = result.user.username;
             addressState = result.user.address;
@@ -48,7 +54,7 @@
         try {
             await updateUser(userData);
             await getUser();
-            alert.set({ show: true, message: 'Updated username', type: 'success'});
+            alert.set({ show: true, message: `Updated username to ${user.username}`, type: 'success'});
             changedUsernameState = "";
         } catch (error) {
             console.error("Error updating username:", error);
@@ -65,7 +71,6 @@
 
         storedChangedPassword = changedPasswordState;
         const userData = {
-            "username": user.username,
             "password": storedChangedPassword
         }
 
@@ -107,28 +112,16 @@
         changedAddressState = place;
     }
 
-    let userList: any[] = [];
-    let loggedInUserID: number;
-
-    async function fetch_users(){
-        try{
+    async function fetch_users() {
+        try {
             const request = await fetch("/getAllUsers");
             userList = await request.json();
-        } catch (error){
+        } catch (error) {
             console.log("error: ", error);
         }
     }
 
-    async function fetch_user_id(){
-        try{
-            const request = await fetch("/getUser");
-            loggedInUserID = (await request.json()).user_id;
-        } catch (error){
-            console.log("error: ", error);
-        }
-    }
-
-    function demote_user(user_id: number){
+    function demote_user(user_id: number) {
       console.log("Demoting user: " + user_id);
       fetch('/demoteUser', {
         method: 'POST',
@@ -152,7 +145,7 @@
 
     }
 
-    function promote_user(user_id: number){
+    function promote_user(user_id: number) {
       console.log("promoting user: " + user_id);
       fetch('/promoteUser', {
         method: 'POST',
@@ -175,25 +168,13 @@
       });
 
     }
-    let currentUser;
-    let isAdmin = false;
-    async function sequential_api_calls(){
-        try{                                  //getUser
-            const response = await fetch("/getUser", { method: "GET" });
-            const data = await response.json();
-            currentUser = data;
-            isAdmin = currentUser.is_admin;
-        } catch (error) {
-            console.log("error: ", error);
-        }
-    }
-
     // get user immediately upon component mount
     onMount(async() => {
         await getUser();
-        await fetch_user_id();
-        await fetch_users();
-        sequential_api_calls();
+
+        if (isAdmin) {
+            await fetch_users();
+        }
     });
 </script>
 
@@ -213,7 +194,7 @@
                                     type="text"
                                     placeholder={usernameState}
                                     bind:value={changedUsernameState}
-                                    class="input input-bordered w-full "
+                                    class="input input-bordered w-full"
                                 />
                             </td>
                             <td>
@@ -278,11 +259,11 @@
                                     <td>
                                         {u.is_admin ? "Employee": "Customer"} &nbsp;
                                         {#if u.user_id == loggedInUserID}
-                                            <button class="btn btn-xs	btn-disabled">You</button>
+                                            <button class="btn btn-xs btn-disabled">You</button>
                                         {:else if u.is_admin}
-                                            <button class="btn btn-xs	btn-primary" on:click={() => demote_user(u.user_id)}>Demote</button>
+                                            <button class="btn btn-xs btn-primary" on:click={() => demote_user(u.user_id)}>Demote</button>
                                         {:else}
-                                            <button class="btn btn-xs	btn-error" on:click={() => promote_user(u.user_id)}>Promote</button>
+                                            <button class="btn btn-xs btn-error" on:click={() => promote_user(u.user_id)}>Promote</button>
                                         {/if}
                                     </td>
                                 </tr>

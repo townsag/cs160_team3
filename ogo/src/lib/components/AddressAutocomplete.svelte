@@ -6,7 +6,7 @@
     export let placeholder: string;
     export let onPlaceSelect: ((place: any) => void) | undefined;
 
-    const loadGoogleMaps = async () => {
+    async function loadGoogleMaps() {
         try {
             const result = await fetchApiKey();
         
@@ -62,7 +62,9 @@
         });
     };
 
-    onMount(loadGoogleMaps);
+    onMount(async() => {
+        await loadGoogleMaps();
+    });
 </script>
 
 <html lang="en" data-theme="lemonade">
