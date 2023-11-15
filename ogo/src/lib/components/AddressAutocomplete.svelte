@@ -45,7 +45,7 @@
             const place = autocomplete.getPlace();
 
             // check if the selected place has geometry and is within the specified bounds
-            if (place.geometry && place.geometry.location) {
+            if (place.address_components && place.geometry && place.geometry.location) {
                 const placeLatLng = place.geometry.location;
 
                 if (sanJoseBounds.contains(placeLatLng)) {
@@ -55,12 +55,12 @@
                     }
                 } else {
                     console.log("Selected place outside bounds. Ignoring.");
-                    alert.set({ show: true, message: 'Error updating address: ' + "Selected address is outside of bounds", type: 'error'});
+                    alert.set({ show: true, message: 'Error updating address: ' + "Address is outside of bounds", type: 'error'});
                     input.value = ""; // reset the input field
                 }
             } else {
                 console.log("Selected place has no valid geometry. Ignoring.");
-                alert.set({ show: true, message: 'Error updating address: ' + "Selected address has no valid geometry", type: 'error'});
+                alert.set({ show: true, message: 'Error updating address: ' + "Address has no valid geometry", type: 'error'});
                 input.value = ""; // reset the input field
             }
         });

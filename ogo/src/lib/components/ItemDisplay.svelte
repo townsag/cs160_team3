@@ -50,15 +50,13 @@
   async function handleQuantityChange(item: any, event: any) {
     const newQuantity = parseInt(event.target.value, 10);
 
-    if (newQuantity) {
+    if (newQuantity === 0) {
+      handleRemoveCartItem(item);
+    } else if (newQuantity !== 0) {
       try {
         const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
 
         if (result.success) {
-          if (newQuantity === 0) {
-            handleRemoveCartItem(item);
-          }
-
           console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
           cartItemQuantitySignal.set(!$cartItemQuantitySignal);
           alert.set({ show: true, message: 'Quantity changed successfully', type: 'success'});
@@ -173,6 +171,7 @@
                 class="input input-bordered w-1/2 max-w-xs text-center"
                 inputmode="numeric"
                 pattern="[0-9]*"
+                min="0"
               />
             </div>
             
