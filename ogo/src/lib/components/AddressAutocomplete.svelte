@@ -48,24 +48,19 @@
             if (place.address_components && place.geometry && place.geometry.location) {
                 const placeLatLng = place.geometry.location;
 
-                // check if the selected place has "San Jose" and "CA" in its address components
-                var isSanJoseCA = place.address_components.some(function(component) {
-                    return component.long_name === 'San Jose' && component.short_name === 'CA';
-                });
-
-                if (isSanJoseCA && sanJoseBounds.contains(placeLatLng)) {
+                if (sanJoseBounds.contains(placeLatLng)) {
                     console.log("Selected place:", place.formatted_address);
                     if (onPlaceSelect) {
                         onPlaceSelect(place.formatted_address);
                     }
                 } else {
                     console.log("Selected place outside bounds. Ignoring.");
-                    alert.set({ show: true, message: 'Error updating address: ' + "Selected address is outside of bounds", type: 'error'});
+                    alert.set({ show: true, message: 'Error updating address: ' + "Address is outside of bounds", type: 'error'});
                     input.value = ""; // reset the input field
                 }
             } else {
                 console.log("Selected place has no valid geometry. Ignoring.");
-                alert.set({ show: true, message: 'Error updating address: ' + "Selected address has no valid geometry", type: 'error'});
+                alert.set({ show: true, message: 'Error updating address: ' + "Address has no valid geometry", type: 'error'});
                 input.value = ""; // reset the input field
             }
         });
