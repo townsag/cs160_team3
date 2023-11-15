@@ -46,7 +46,7 @@
             <div>
                 {order_date.getMonth()}/{order_date.getDay()}/{order_date.getFullYear()}
             </div>
-            <div>{total_price.toFixed(2)}$</div>
+            <div>${total_price.toFixed(2)}</div>
         </div>
         <div class="flex flex-row place-content-around mt-2">
             <progress

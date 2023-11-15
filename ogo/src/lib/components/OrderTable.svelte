@@ -41,7 +41,7 @@
       <tbody>
         {#each products_list as p}
           <tr class="hover">
-            <td>
+            <td class="p-0">
               <div class="flex items-center gap-3 m-0">
                 <div class="avatar">
                   <div class="mask w-12 h-12">
@@ -54,7 +54,7 @@
               <a class="font-bold" href="/itemView/{p.product_id}">{p.name}</a>
             </td>
             <td>{p.quantity}</td>
-            <td>{p.price * p.quantity}$</td>
+            <td>${(p.price * p.quantity).toFixed(2)}</td>
           </tr>
         {/each}
       </tbody>
