@@ -65,14 +65,37 @@
         }
     }
 
+
     export function add_markers(marker_data: {[key: string]: any}[]){
         console.log("adding markers");
         remove_markers();
+
+        markers.push(new google.maps.Marker({
+            position: { lat: 37.330120, lng: -121.877430 },
+            map,
+            label: "S"
+        }));
+
         marker_data.forEach(marker => {
-            markers.push(new google.maps.Marker({
+            const marker_obj = new google.maps.Marker({
                 position: {lat: marker.lat, lng: marker.lon}, 
                 map, 
-                label:String(marker.sequence)}));
+                label:String(marker.sequence + 1)
+            });
+
+            const infowindow = new google.maps.InfoWindow({
+                content: `<p>Username: ${marker.username}</p><p>Order Number: ${marker.order_id}</p>`,
+                ariaLabel: "infoWindow",
+            });
+
+            marker_obj.addListener("click", () => {
+                infowindow.open({
+                anchor: marker_obj,
+                map,
+                });
+            });
+
+            markers.push(marker_obj);
         });
     }
 
@@ -83,52 +106,6 @@
         }
         markers = [];
     }
-
-    // onMount(async ()=>{
-    //     await init_map();}
-    //     );
-
-    // import { Loader } from "@googlemaps/js-api-loader"
-
-    // export let API_KEY: string;
-    // export let map_data: any;
-
-    // let map: google.maps.Map;
-    // let container: HTMLElement;
-    
-    // const loader = new Loader({
-    //     apiKey: API_KEY,
-    //     version: "weekly",
-    //     libraries: ["geometry"]
-    // });
-
-    // loader.load().then(async () => {
-    //     const { Map } = await google.maps.importLibrary("maps") as google.maps.MapsLibrary;
-    //     map = new Map(container, {
-    //         center: { lat: 37.7749, lng: -122.4194 },
-    //         zoom: 9,
-    //     });
-
-    //     var encodedPolyline = map_data["polyline"];
-    //     var decodedPath = google.maps.geometry.encoding.decodePath(encodedPolyline);
-    //     var polyline = new google.maps.Polyline({
-    //         path: decodedPath,
-    //         geodesic: true,
-    //         strokeColor: '#0000FF',
-    //         strokeOpacity: 1.0,
-    //         strokeWeight: 3
-    //     });
-    //     polyline.setMap(map);
-
-    //     for(const leg of map_data.legs){
-    //         new google.maps.Marker({
-    //             position: {lat: leg.lat, lng: leg.lon},
-    //             map,
-    //             label: String(leg.sequence)
-    //         });
-    //     }
-    // });
-
 </script>
 
 
