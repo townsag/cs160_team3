@@ -50,7 +50,7 @@
   async function handleQuantityChange(item: any, event: any) {
     const newQuantity = parseInt(event.target.value, 10);
 
-    if (newQuantity <= 20) {
+    if (newQuantity) {
       try {
         const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
 
@@ -70,12 +70,12 @@
         console.log("An error occurred:", error)
         alert.set({ show: true, message: 'An error occurred: ' + error, type: 'error'});
       }
-    } else if (!isNaN(newQuantity)) {
+    } else if (isNaN(newQuantity)) {
       console.log("Inputted quantity is not a number.");
       alert.set({ show: true, message: 'Quantity must be a number', type: 'error'});
     } else {
-      console.log("Inputted quantity is not a number less than 20.");
-      alert.set({ show: true, message: 'Quantity must be greater than 0', type: 'error'});
+      console.log("Inputted quantity is out of stock or over the weight limit.");
+      alert.set({ show: true, message: 'Quantity is out of stock or over the weight limit', type: 'error'});
     }
   }
 
