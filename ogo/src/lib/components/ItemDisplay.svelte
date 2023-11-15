@@ -145,9 +145,11 @@
   
           <!-- Tags (only display if tags exist) -->
           {#if item.tags && item.tags.length > 0}
-            <div class="flex flex-wrap">
+            <div class="flex flex-grow flex-wrap items-start overflow-y-auto">
               {#each item.tags as tag (tag)}
-                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm mr-2 mb-2">{tag.name}</span>
+                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-xs mr-1 mb-2">
+                  {tag.name}
+                </span>
               {/each}
             </div>
           {/if}
