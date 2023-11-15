@@ -114,7 +114,7 @@
 <style>
     .full-screen {
     width: 100vw;
-    height: 40vh;
+    height: 50vh;
     }
 </style>
     
