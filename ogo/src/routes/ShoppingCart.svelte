@@ -56,6 +56,14 @@
         }
     }
 
+    $: {
+        if (totalWeight > 200 || filteredItems.length == 0) {
+            paymentDisabledState = true;
+        } else {
+            paymentDisabledState = false;
+        }
+    }
+
     // get cart onMount
     onMount(async () => {
         await handleGetCart();
@@ -154,7 +162,11 @@
                     <div class="flex justify-center w-full">
                         <button on:click={() => navigate('/payment')} class="btn btn-secondary w-full mt-16" disabled={paymentDisabledState}>
                             {#if (paymentDisabledState)}
-                                Cart is Empty
+                                {#if filteredItems.length == 0}
+                                    Cart is Empty
+                                {:else}
+                                    Order is over 200lbs
+                                {/if}
                             {:else}
                                 Proceed to Payment
                             {/if}
