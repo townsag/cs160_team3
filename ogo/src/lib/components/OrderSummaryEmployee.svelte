@@ -11,14 +11,14 @@
 
     let extend_flag: Boolean = false;
     let button_text: string = "see more";
-    function onClick() {
-        extend_flag = !extend_flag
-        if (extend_flag){
-            button_text = "see less";
-        } else {
-            button_text = "see more";
-        }
-    }
+    // function onClick() {
+    //     extend_flag = !extend_flag
+    //     if (extend_flag){
+    //         button_text = "see less";
+    //     } else {
+    //         button_text = "see more";
+    //     }
+    // }
 
     function epochToDate(epoch: number) {
         return new Date(epoch * 1000); // Multiply by 1000 to convert seconds to milliseconds
@@ -54,37 +54,69 @@
 
 </script>
 
-<div class="bg-green-500 h-1/6 w-full rounded-xl border-black border-2">
-    <div class="flex flex-row place-content-around">
-        <div class="text-md text-yellow-200 p-2">Order Number: {order_id}</div>
-        <div class="text-sm text-yellow-200 p-2">Placed on: {order_date.getMonth()}/{order_date.getDay()}/{order_date.getFullYear()}</div>
-        <div class="text-md text-yellow-200 p-2">Username: {user.username}</div>
-        <button class="bg-yellow-200 rounded-lg w-1/6 p-1 m-2" on:click={onClick}>{button_text}</button>
-    </div>
-    <div class="flex justify-center p-2">
-        <!-- <progress class="progress progress-secondary w-56" value={value} max="100"></progress> -->
-        <progress class="progress w-5/6" value={100*(status+1)/3} max="100"></progress>
-    </div>
-    {#if extend_flag}
-        <div class="flex flex-row justify-evenly">
-            <div class="text-md text-yellow-200 p-2">order price: {total_price}</div>
-            <div class="text-md text-yellow-200 p-2">order weight: {total_weight}</div>
-            {#if eta_epoch != null}
-                <div class="text-md text-yellow-200 p-2">ETA: {eta_date.getMonth()}/{eta_date.getDay()}/{eta_date.getFullYear()}</div>
-            {:else}
-                <div class="text-md text-yellow-200 p-2">ETA: pending</div>
-            {/if}
-        </div>
-        {#if (order_product_info.length > 0)}
-            <div class="flex flex-col justify-evenly p-2">
-                {#each order_product_info as product}
-                    <div class="flex flex-row justify-evenly bg-yellow-200 rounded-xl m-2">
-                        <div class="text-md p-2">Product Name: {product.name}</div>
-                        <div class="text-md p-2">Product quantity: {product.quantity}</div>
-                    </div>
-                {/each}
-            </div>
-        {/if}
-    {/if}
 
-</div>
+<details class="collapse collapse-arrow border shadow-md">
+    <summary class="collapse-title">
+        <div class="flex flex-row place-content-around">
+            <div class="text-xl font-medium p-2">Order #{order_id}</div>
+            <div class="text-md p-2">
+                Placed on: {order_date.getMonth()}/{order_date.getDay()}/{order_date.getFullYear()}
+            </div>
+            <div class="text-md p-2">Username: {user.username}</div>
+            <!-- <div>${total_price.toFixed(2)}</div> -->
+        </div>
+        <div class="flex flex-row place-content-around mt-2">
+            <progress
+                class="progress w-5/6"
+                value={(100 * (status + 1)) / 3}
+                max="100"
+            />
+        </div>
+    </summary>
+    <div class="collapse-content">
+        <div class="flex flex-row justify-evenly m-2">
+            <div class="text-md p-2">Price: {total_price}</div>
+            <div class="text-md p-2">Weight: {total_weight}</div>
+            {#if eta_epoch != null}
+                <div class="p-2">
+                    ETA: {eta_date.getMonth()}/{eta_date.getDay()}/{eta_date.getFullYear()}
+                </div>
+            {:else}
+                <div class="p-2">ETA: pending</div>
+            {/if}
+
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th />
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each order_product_info as p}
+                  <tr class="hover">
+                    <td class="p-0">
+                      <div class="flex items-center gap-3 m-0">
+                        <div class="avatar">
+                          <div class="mask w-12 h-12">
+                            <img src={p.image} alt="Product in order" />
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <a class="font-bold" href="/itemView/{p.product_id}">{p.name}</a>
+                    </td>
+                    <td>{p.quantity}</td>
+                    <td>${(p.price * p.quantity).toFixed(2)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+    </div>
+</details>

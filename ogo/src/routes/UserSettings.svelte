@@ -44,6 +44,9 @@
 
     async function handleNewUsername() {
         storedChangedUsername = changedUsernameState;
+        if (storedChangedUsername.length == 0) {
+           return;
+        }
 
         const userData = {
             "username": storedChangedUsername,
@@ -67,6 +70,9 @@
             alert.set({ show: true, message: 'Passwords must match', type: 'error'});
             changedPasswordState2 = "";
             return;
+        }
+        if (changedPasswordState2.length == 0) {
+           return;
         }
 
         storedChangedPassword = changedPasswordState;

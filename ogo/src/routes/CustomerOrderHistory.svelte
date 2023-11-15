@@ -42,7 +42,15 @@
     });
 </script>
 
-<div>
+<style>
+    .midContainer {
+        display: flex;
+        flex-direction: column;
+        min-height: 80vh;
+    }
+</style>
+
+<div class="midContainer">
     <Navbar />
     <div class="p-2">
         <div class="text-xl font-medium ml-3 mt-3">Order History:</div>

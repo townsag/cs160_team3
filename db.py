@@ -568,6 +568,36 @@ def select_route_from_routeid(route_id: int):
   }
 
 
+def select_route_from_routeid_with_username(route_id: int):
+  cur = con.cursor()
+  cur.execute("SELECT * FROM ROUTES WHERE RouteID=?", (route_id,))
+  r = cur.fetchone()
+  polyline = r[1]
+  creation_epcoh = r[2]
+
+  cur.execute("""
+        SELECT RO.RouteOrderID, RO.RouteID, RO.OrderID, RO.Sequence, RO.Lat, RO.Lon, 
+               O.UserID, U.Username
+        FROM ROUTE_ORDERS RO
+        JOIN ORDERS O ON RO.OrderID = O.OrderID
+        JOIN USERS U ON O.UserID = U.UserID
+        WHERE RO.RouteID=?""", (route_id,))
+  legs = [{
+    'order_id': l[2],
+    'sequence': l[3],
+    'lat': l[4],
+    'lon': l[5],
+    "username": l[7]
+  } for l in cur.fetchall()]
+
+  return {
+    'route_id': route_id,
+    'polyline': polyline,
+    'creation_epcoh': creation_epcoh,
+    'legs': legs
+  }
+
+
 def select_route_from_orderid(order_id: int):
   cur = con.cursor()
   cur.execute("SELECT RouteID FROM ROUTE_ORDERS WHERE OrderID=?", (order_id,))

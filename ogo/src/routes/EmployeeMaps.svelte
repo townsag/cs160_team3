@@ -4,6 +4,7 @@
     import Map from "../lib/components/Map.svelte";
     import OrderSummaryEmployee from "../lib/components/OrderSummaryEmployee.svelte";
     import Navbar from "../lib/components/Navbar.svelte";
+    import derp_bot from "../../public/derp-bot.png";
 
     let route_data: any = {};
     let orders_props: any = [];
@@ -80,7 +81,7 @@
         try{
             // const route_id = 1;
             console.log("inside get route info with id: ", route_id);
-            const map_response = await fetch(`/getRoute?route_id=${route_id}`);
+            const map_response = await fetch(`/getRouteWithUsername?route_id=${route_id}`);
             if (map_response.ok){
                 route_data = await map_response.json();
                 returned_route_info = true;
@@ -146,40 +147,44 @@
     get_api_key();
     get_all_routes();
     get_all_order_info();
-    
+
 </script>
 
 <!-- svelte-ignore a11y-missing-attribute -->
 <Navbar/>
-<div class="bg-green-500 flex flex-row justify-around items-center">
-    <div class="p-5 text-yellow-200 text-xl">Welcome to employee home: {username}</div>
+
+
+<div class="flex flex-row justify-around items-center">
+    <div class="p-5 text-xl">Welcome to employee home: {username}</div>
     {#if returned_routes_flag}
-        <div class="bg-green-500">
-            <select on:change={handleSelect} class="bg-yellow-200 text-md rounded-lg p-2 m-2">
+        <div class="">
+            <select on:change={handleSelect} class="border-2 border-slate-500 text-md rounded-lg p-2 m-2">
                 {#each routes_list as option}
                     <option value={option}>Route_id: {String(option)}</option>
                 {/each}
             </select>
         </div>
-    {:else}
-        <!-- TODO: Add a more descriptive error message, have 
-            no routes been made yet or was there a network error -->
-        <p>dropdown not rendering because no routes</p>
     {/if}
 </div>
+{#if !returned_routes_flag}
+    <div class="flex flex-col items-center">
+        <img alt="delivery robot" src={derp_bot} class="max-h-80 object-scale-down"/>
+        <div class="text-md">OgO bot is ready to deliver orders, routes will display when products are ordered"</div>
+    </div>
+{/if}
 <div>
     {#if returned_routes_flag && returned_route_info && API_KEY !== "none"}
         <!-- <p>route id: {route_data.route_id}</p>
         <p>route legs: {route_data.legs}</p> -->
         <Map bind:this={map_obj} API_KEY={API_KEY}/>
-    {:else}
+    <!-- {:else}
         <p>map component not rendered because missing props</p>
         <p>{route_data}</p>
-        <p>{API_KEY}</p>
+        <p>{API_KEY}</p> -->
     {/if}
 </div>
 
-<div class="p-2 bg-yellow-200">
+<div class="p-2">
     {#if orders_props.length > 0}
         {#each orders_props as props (props.order_id)}
             <div class="p-2">
