@@ -558,6 +558,19 @@ def get_route():
   return "Bad Query String", 400
 
 
+# modifying /getRoute to retunr the user_id with each leg
+@app.route('/getRouteWithUserID', methods=['GET'])  # ?route_id=<route_id>
+@admin_required
+def get_route_with_user_id():
+  print("debug in get route")
+  print("is admin: ", current_user.is_admin)
+  if 'route_id' in request.args:
+    print("DEBUG: ", request.args["route_id"])
+    return db.select_route_from_routeid_with_user_id(request.args['route_id'])
+
+  return "Bad Query String", 400
+
+
 @app.route('/getMapConstants', methods=['GET'])
 @admin_required
 def get_map_constants():
