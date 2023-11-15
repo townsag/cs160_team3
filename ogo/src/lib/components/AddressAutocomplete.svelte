@@ -42,9 +42,22 @@
         autocomplete.addListener("place_changed", () => {
             const place = autocomplete.getPlace();
 
-            console.log("Selected place:", place.formatted_address);
-            if (onPlaceSelect) {
-                onPlaceSelect(place.formatted_address);
+            // check if the selected place has geometry and is within the specified bounds
+            if (place.geometry && place.geometry.location) {
+                const placeLatLng = place.geometry.location;
+
+                if (sanJoseBounds.contains(placeLatLng)) {
+                    console.log("Selected place:", place.formatted_address);
+                    if (onPlaceSelect) {
+                        onPlaceSelect(place.formatted_address);
+                    }
+                } else {
+                    console.log("Selected place outside bounds. Ignoring.");
+                    input.value = ""; // reset the input field
+                }
+            } else {
+                console.log("Selected place has no valid geometry. Ignoring.");
+                input.value = ""; // reset the input field
             }
         });
     };
