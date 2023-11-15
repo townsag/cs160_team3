@@ -2,6 +2,8 @@
     import { onMount } from "svelte";
     import { Loader } from "@googlemaps/js-api-loader";
     import { fetchApiKey } from "../util/RequestController";
+    import { alert } from '../stores/alertStore';
+    import AlertDaisy from "./AlertDaisy.svelte";
 
     export let placeholder: string;
     export let onPlaceSelect: ((place: any) => void) | undefined;
@@ -53,10 +55,12 @@
                     }
                 } else {
                     console.log("Selected place outside bounds. Ignoring.");
+                    alert.set({ show: true, message: 'Error updating address: ' + "Selected address is outside of bounds", type: 'error'});
                     input.value = ""; // reset the input field
                 }
             } else {
                 console.log("Selected place has no valid geometry. Ignoring.");
+                alert.set({ show: true, message: 'Error updating address: ' + "Selected address has no valid geometry", type: 'error'});
                 input.value = ""; // reset the input field
             }
         });
@@ -68,6 +72,8 @@
 </script>
 
 <html lang="en" data-theme="lemonade">
+    <AlertDaisy {alert} />
+
     <input
         type="text"
         id="autocomplete"
