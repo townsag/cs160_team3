@@ -59,10 +59,11 @@
         if (result.success) {
           console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
           cartItemQuantitySignal.set(!$cartItemQuantitySignal);
-          alert.set({ show: true, message: 'Quantity changed successfully', type: 'success'});
+          //alert.set({ show: true, message: 'Quantity changed successfully', type: 'success'});
         } else {
           console.error("Failed to update cart item:", result.message);
           alert.set({ show: true, message: 'Failed to update cart item: ' + result.message, type: 'error'});
+          location.reload();
         }
       } catch (error) {
         console.log("An error occurred:", error)
