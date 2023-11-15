@@ -4,7 +4,7 @@
     import { navigate } from 'svelte-routing';
 
 	onMount(async () => {
-        navigate("/");    
+        navigate("/login");    
     });
 </script>
 
