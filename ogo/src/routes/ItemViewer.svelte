@@ -16,7 +16,7 @@
     let itemDescription = "";
     let itemImgUrl = "";
     let itemQuantityInStock = 0;
-    let itemSelectedQuantity = 0;
+    let itemSelectedQuantity = 1;
     let itemPrice = 0.0;
     let itemWeight = 0.0;
 
@@ -87,6 +87,7 @@
             itemPrice = item.price;
             itemWeight = item.weight;
             itemCategory = item.category.name;
+            itemSelectedQuantity = 1;
 
             for (let i = 0; i < item.tags.length; i++) {
                 itemTags[i] = item.tags[i].name;
