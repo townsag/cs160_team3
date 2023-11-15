@@ -6,6 +6,9 @@
     import { navigate } from "svelte-routing";
     import Navbar from "../lib/components/Navbar.svelte";
 
+    import { alert } from '../lib/stores/alertStore';
+    import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+
     // California sales tax rate
     const TAX_RATE = 0.0725;
 
@@ -25,14 +28,11 @@
         totalWeight = Object.values(filteredItems).reduce((acc, item) => acc + (item.weight * item.quantity), 0);
         itemsSubtotal = Object.values(filteredItems).reduce((acc, item) => acc + (item.price * item.quantity), 0);
         taxSubtotal = itemsSubtotal * TAX_RATE;
-
         console.log("Total weight:", totalWeight);
-        
         if (totalWeight > 20)
             shippingSubtotal = 20;
         else
             shippingSubtotal = 0;
-
         totalCost = itemsSubtotal + shippingSubtotal + taxSubtotal;
     }
 
@@ -41,11 +41,8 @@
         const result = await getCart();
 
         if (result.success) {
-            //console.log(JSON.stringify(result));
-
             filteredItems = result.cart.items
             console.log(filteredItems);
-
 
             // disable payment button if cart is empty
             if (filteredItems.length !== 0) {
@@ -53,10 +50,17 @@
             } else {
                 paymentDisabledState = true;
             }
-
             calculateTotalCost();
         } else {
             console.error("Failed to fetch cart data:", result.message);
+        }
+    }
+
+    $: {
+        if (totalWeight > 200 || filteredItems.length == 0) {
+            paymentDisabledState = true;
+        } else {
+            paymentDisabledState = false;
         }
     }
 
@@ -86,15 +90,9 @@
         display: flex;
         flex-direction: column-reverse;
         min-height: 80vh; 
-        /*
-        width: 80%;
-        align-content: center;
-        style="height: "
-        margin: auto; */
     }
 
     @media (min-width: 1000px) {
-        /* Apply styles when the screen width is 768 pixels or more */
         .midContainer {
             flex-direction: row; /* Display items side by side */
         }
@@ -103,10 +101,10 @@
 
 <html lang="en" data-theme="lemonade">
     <Navbar/>
-
+    <AlertDaisy {alert} />
     <div class="midContainer">
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:mr-4 shadow-md" >
+            <div class="card bg-base-100 border-2 border-black-500 m-8 mt-4 lg:mt-8 lg:mr-4 shadow-md" >
                 <div class="card-body">
                     <h1 class="card-title mb-4">ORDER SUMMARY</h1>
                     {#if filteredItems && filteredItems.length > 0}
@@ -122,9 +120,9 @@
             </div>
         </div>
         <div class="basis-1/2">
-            <div class="card bg-base-100 border-2 border-black-500 m-8 lg:ml-4 shadow-md">
+            <div class="card bg-base-100 border-2 border-black-500 m-8 mb-4 lg:mb-8 lg:ml-4 shadow-md">
                 <div class="card-body">
-                    <h1 class="card-title mb-8">ORDER PRICE</h1>
+                    <h1 class="card-title mb-4">ORDER PRICE</h1>
 
                     <div class="flex flex-row">
                         <div class="basis-1/2">
@@ -161,10 +159,14 @@
                         {/if}
                     </p>
 
-                    <div class="flex justify-center">
-                        <button on:click={() => navigate('/payment')} class="btn btn-secondary mt-16" disabled={paymentDisabledState}>
+                    <div class="flex justify-center w-full">
+                        <button on:click={() => navigate('/payment')} class="btn btn-secondary w-full mt-16" disabled={paymentDisabledState}>
                             {#if (paymentDisabledState)}
-                                Cart is Empty
+                                {#if filteredItems.length == 0}
+                                    Cart is Empty
+                                {:else}
+                                    Order is over 200lbs
+                                {/if}
                             {:else}
                                 Proceed to Payment
                             {/if}

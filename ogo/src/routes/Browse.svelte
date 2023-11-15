@@ -232,12 +232,18 @@
     overflow-y: auto;
     box-shadow: 5px 0 10px rgba(0, 0, 0, 0.5);
   }
+
+  .midContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 80vh; 
+  }
 </style>
 
 <Navbar/>
 <AlertDaisy {alert} />
 <div class="container mx-auto p-4">
-  <div class="{openFilter ? 'blur' : ''} {noClick}">
+  <div class=" mt-1{openFilter ? 'blur' : ''} {noClick}">
     <SearchBar 
       {toggleFilterOpen}
       {searchQuery}
@@ -246,7 +252,7 @@
     />
   </div>
 
-  <div class="{openFilter ? 'blur' : ''} {noClick}">
+  <div class="midContainer mt-3 {openFilter ? 'blur' : ''} {noClick}">
     <ItemDisplay 
       {filteredItems}
       {isAdmin}

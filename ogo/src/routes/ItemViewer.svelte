@@ -16,7 +16,7 @@
     let itemDescription = "";
     let itemImgUrl = "";
     let itemQuantityInStock = 0;
-    let itemSelectedQuantity = 0;
+    let itemSelectedQuantity = 1;
     let itemPrice = 0.0;
     let itemWeight = 0.0;
 
@@ -87,6 +87,7 @@
             itemPrice = item.price;
             itemWeight = item.weight;
             itemCategory = item.category.name;
+            itemSelectedQuantity = 1;
 
             for (let i = 0; i < item.tags.length; i++) {
                 itemTags[i] = item.tags[i].name;
@@ -162,6 +163,7 @@
 		if (createProductResponse.ok) {
 			const message = await createProductResponse.text();
 			console.log(message);
+            alert.set({ show: true, message: 'Created item: ' + itemName, type: 'success'});
             returnToBrowse();
 		} else {
             const message = await createProductResponse.text();
@@ -455,7 +457,7 @@
                             {#if productID != "0"}
                                 <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={applyChanges}>Apply</button>
                             {:else}
-                                <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={createItem}>Create Item</button>
+                                <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={createItem}>Create</button>
                             {/if}
                         </td>
                         <td style="padding-top: 40px; text-align: right;">

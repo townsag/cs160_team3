@@ -14,27 +14,8 @@
     let storedUsername = "";
     let storedPassword = "";
 
-    //let signupErrorState = false;
-    //let signupErrorTextState = "";
-    //let signupErrorModal: HTMLDialogElement;
-
     import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
-
-    /*
-    $: if (signupErrorState) {
-        showSignupErrorModal();
-    }
-
-    function showSignupErrorModal() {
-        signupErrorModal.showModal();
-    }
-
-    function closeSignupErrorModal() {
-        signupErrorModal.close();
-        signupErrorState = false;
-    }
-    */
     
     async function handleSubmit() {
         if (passwordState2 != passwordState) {
@@ -63,8 +44,6 @@
             navigate("/login");
         } else {
             console.error("Signup failed:", result.message);
-            //signupErrorTextState = result.message;
-            //signupErrorState = true;
             alert.set({ show: true, message: 'Signup failed: ' + result.message, type: 'error'});
         }
     }
@@ -106,22 +85,22 @@
                         <input on:click={handleToggle} type="checkbox" class="toggle toggle-primary" />
                     </div>
                 </div>
-                <div class="form-control w-full max-w-xs">
+                <div class="form-control w-full">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Username</span>
                     </label>
-                    <input bind:value={usernameState} type="text" class="input input-bordered w-full max-w-xs" />
+                    <input bind:value={usernameState} type="text" class="input input-bordered w-full" />
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Password</span>
                     </label>
-                    <input bind:value={passwordState} type="password" class="input input-bordered w-full max-w-xs" />
+                    <input bind:value={passwordState} type="password" class="input input-bordered w-full" />
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Re-enter Password</span>
                     </label>
-                    <input bind:value={passwordState2} type="password" class="input input-bordered w-full max-w-xs" />
+                    <input bind:value={passwordState2} type="password" class="input input-bordered w-full" />
                 </div>
                 <button on:click={handleSubmit} class="btn bg-secondary mt-6">Submit</button>
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -132,7 +111,3 @@
         </div>
     </div>
 </html>
-
-<style>
-
-</style>

@@ -4,26 +4,12 @@
   import { removeCartItem, updateCartItem } from "../util/RequestController"
   import { cartItemQuantitySignal, cartItemRemovedSignal } from "../stores/CartObserver";
 
+  import { alert } from '../stores/alertStore';
+  import AlertDaisy from "./AlertDaisy.svelte";
+
   export let filteredItems: any[];
   export let isAdmin: Boolean;
   export let isCartItem: Boolean;
-
-  let quantityErrorState = false;
-  let quantityErrorTextState = "";
-  let quantityErrorModal: HTMLDialogElement;
-
-  $: if (quantityErrorState) {
-      showQuantityErrorModal();
-  }
-
-  function showQuantityErrorModal() {
-    quantityErrorModal.showModal();
-  }
-
-  function closeQuantityErrorModal() {
-    quantityErrorModal.close();
-    quantityErrorState = false;
-  }
 
   function handleItemClick(item: any) {
     if (!isCartItem) {
@@ -42,11 +28,6 @@
     }
   }
 
-  //let displayedItem = [];
-  //displayedItem = filteredItems;
-  //console.log("displayed list (in itemdisplay): " + displayedItem);
-  //console.log("displayed list (in itemdisplay): " + filteredItems);
-
   //
   // BELOW USED IF ITEM DISPLAY IS FOR CART ITEM
   //
@@ -57,9 +38,11 @@
 
     if (result.success) {
         console.log("Cart item removed successfully.");
+        alert.set({ show: true, message: 'Cart item removed successfully', type: 'success'});
         cartItemRemovedSignal.set(!$cartItemRemovedSignal);
     } else {
         console.error("Failed to remove cart item:", result.message);
+        alert.set({ show: true, message: 'Failed to remove cart item: ' + result.message, type: 'error'});
     }
   }
 
@@ -67,33 +50,30 @@
   async function handleQuantityChange(item: any, event: any) {
     const newQuantity = parseInt(event.target.value, 10);
 
-    if (newQuantity <= 20) {
+    if (newQuantity === 0) {
+      handleRemoveCartItem(item);
+    } else if (newQuantity !== 0) {
       try {
         const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
 
         if (result.success) {
-          if (newQuantity === 0) {
-            handleRemoveCartItem(item);
-          }
-
           console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
           cartItemQuantitySignal.set(!$cartItemQuantitySignal);
+          alert.set({ show: true, message: 'Quantity changed successfully', type: 'success'});
         } else {
           console.error("Failed to update cart item:", result.message);
-          quantityErrorTextState = result.message;
-          quantityErrorState = true;
+          alert.set({ show: true, message: 'Failed to update cart item: ' + result.message, type: 'error'});
         }
       } catch (error) {
         console.log("An error occurred:", error)
-        quantityErrorTextState = "An error occurred.";
-        quantityErrorState = true;
+        alert.set({ show: true, message: 'An error occurred: ' + error, type: 'error'});
       }
-    } else if (!isNaN(newQuantity)) {
+    } else if (isNaN(newQuantity)) {
       console.log("Inputted quantity is not a number.");
+      alert.set({ show: true, message: 'Quantity must be a number', type: 'error'});
     } else {
-      console.log("Inputted quantity is not a number less than 20.");
-      quantityErrorTextState = "Inputted quantity must be more than 0 and less than 20.";
-      quantityErrorState = true;
+      console.log("Inputted quantity is out of stock or over the weight limit.");
+      alert.set({ show: true, message: 'Quantity is out of stock or over the weight limit', type: 'error'});
     }
   }
 
@@ -123,7 +103,6 @@
   }
 
   body {
-    min-height: 80vh;
     margin: 0;
     padding: 10px;
     display: flex;
@@ -133,17 +112,8 @@
 </style>
 
 <body>
-  <dialog bind:this={quantityErrorModal} class="modal">
-    <div class="modal-box bg-red-300">
-        <h3 class="font-bold text-lg">Error!</h3>
-        <p class="py-4">{quantityErrorTextState}</p>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-        <button on:click={closeQuantityErrorModal}>close</button>
-    </form>
-  </dialog>
-
-  <div class="grid-container mt-4">
+  <AlertDaisy {alert} />
+  <div class="grid-container">
     {#if isAdmin && !isCartItem}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -173,9 +143,11 @@
   
           <!-- Tags (only display if tags exist) -->
           {#if item.tags && item.tags.length > 0}
-            <div class="flex flex-wrap">
+            <div class="flex flex-grow flex-wrap items-start overflow-y-auto">
               {#each item.tags as tag (tag)}
-                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm mr-2 mb-2">{tag.name}</span>
+                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-xs mr-1 mb-2">
+                  {tag.name}
+                </span>
               {/each}
             </div>
           {/if}
@@ -199,6 +171,7 @@
                 class="input input-bordered w-1/2 max-w-xs text-center"
                 inputmode="numeric"
                 pattern="[0-9]*"
+                min="0"
               />
             </div>
             

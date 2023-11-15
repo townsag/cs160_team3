@@ -59,7 +59,6 @@ def init():
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
       Quantity INTEGER
       CHECK (Quantity >= 0)
-      CHECK (Quantity <= 20)
   );
 
   CREATE TABLE IF NOT EXISTS ORDERS (
@@ -79,6 +78,7 @@ def init():
       OrderID INTEGER REFERENCES ORDERS(OrderID),
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
       Quantity INTEGER
+
       CHECK (Quantity >= 0)
   );
 

@@ -6,7 +6,7 @@
   import UserSettings from "./routes/UserSettings.svelte";
   import EmployeeProduct from "./routes/EmployeeProduct.svelte";
   import ShoppingCart from "./routes/ShoppingCart.svelte";
-  //import Navbar from "./lib/components/Navbar.svelte";
+  import Navbar from "./lib/components/Navbar.svelte";
   import Footer from "./lib/components/Footer.svelte";
   import EmMaps from "./routes/EmployeeMaps.svelte";
   import Browse from "./routes/Browse.svelte";
@@ -30,14 +30,13 @@
     { path: "/payment", component: Payment},
     { path: "/employee-user-management", component: EmployeeUserManagement},
   ];
-
   export let url = "";
+  let currentUrl = window.location.pathname;
 </script>
 
 <html lang="en" data-theme="lemonade">
   <main>
     <Router {url}>
-      
       <div>
         {#each routes as route}
           <Route path={route.path} component={route.component} />
