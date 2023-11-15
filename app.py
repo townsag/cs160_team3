@@ -444,12 +444,13 @@ def update_cart_item():
   if ci["quantity"] > item_in_inventory['quantity']:
     return "Not enough stock of item, \"" + item_in_inventory["name"] + "\". (Currently "+ str(item_in_inventory['quantity']) + " in stock)", 400 
 
-  curr_cart_items = db.select_cart(current_user.user_id)['items']
-  for index in range(len(curr_cart_items)):
-    if curr_cart_items[index]['product_id'] == ci['product_id']:
-      curr_cart_items[index]['quantity'] = ci['quantity']
-  if calculate_total_cart_weights(curr_cart_items) > 200:
-    return "Order is too heavy to purchase. Each individual order must be less than 200lbs.", 400
+  # curr_cart_items = db.select_cart(current_user.user_id)['items']
+  # for index in range(len(curr_cart_items)):
+  #   if curr_cart_items[index]['product_id'] == ci['product_id']:
+  #     curr_cart_items[index]['quantity'] = ci['quantity']
+  # if calculate_total_cart_weights(curr_cart_items) > 200:
+  #   return "Order is too heavy to purchase. Each individual order must be less than 200lbs.", 400
+
   # if ci['quantity'] > 20:
   #   return "Cart item quantity is too large, must be 20 or less", 400
   return db.update_cart_item(current_user.user_id, ci['cart_item_id'], ci['product_id'], ci['quantity'])
