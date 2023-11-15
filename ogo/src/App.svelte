@@ -55,7 +55,7 @@
                     Login{' '}
                   </h2>
                   <p class={`m-0 max-w-[100ch] text-sm opacity-50 sm:text-center text-center`}>
-                    Login to access the forum page and chat with others!
+                    Login to access the future!
                   </p>
                 </a>
         
