@@ -45,10 +45,15 @@
             const place = autocomplete.getPlace();
 
             // check if the selected place has geometry and is within the specified bounds
-            if (place.geometry && place.geometry.location) {
+            if (place.address_components && place.geometry && place.geometry.location) {
                 const placeLatLng = place.geometry.location;
 
-                if (sanJoseBounds.contains(placeLatLng)) {
+                // check if the selected place has "San Jose" and "CA" in its address components
+                var isSanJoseCA = place.address_components.some(function(component) {
+                    return component.long_name === 'San Jose' && component.short_name === 'CA';
+                });
+
+                if (isSanJoseCA && sanJoseBounds.contains(placeLatLng)) {
                     console.log("Selected place:", place.formatted_address);
                     if (onPlaceSelect) {
                         onPlaceSelect(place.formatted_address);

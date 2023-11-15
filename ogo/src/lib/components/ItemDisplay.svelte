@@ -173,6 +173,7 @@
                 class="input input-bordered w-1/2 max-w-xs text-center"
                 inputmode="numeric"
                 pattern="[0-9]*"
+                min="0"
               />
             </div>
             
