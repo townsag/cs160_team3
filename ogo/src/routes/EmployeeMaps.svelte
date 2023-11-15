@@ -154,11 +154,11 @@
 <Navbar/>
 
 
-<div class="bg-green-500 flex flex-row justify-around items-center">
-    <div class="p-5 text-yellow-200 text-xl">Welcome to employee home: {username}</div>
+<div class="flex flex-row justify-around items-center">
+    <div class="p-5 text-xl">Welcome to employee home: {username}</div>
     {#if returned_routes_flag}
-        <div class="bg-green-500">
-            <select on:change={handleSelect} class="bg-yellow-200 text-md rounded-lg p-2 m-2">
+        <div class="">
+            <select on:change={handleSelect} class="border-2 border-slate-500 text-md rounded-lg p-2 m-2">
                 {#each routes_list as option}
                     <option value={option}>Route_id: {String(option)}</option>
                 {/each}
@@ -167,7 +167,7 @@
     {/if}
 </div>
 {#if !returned_routes_flag}
-    <div class="flex flex-col items-center bg-green-500">
+    <div class="flex flex-col items-center">
         <img alt="delivery robot" src={derp_bot} class="max-h-80 object-scale-down"/>
         <div class="text-md">OgO bot is ready to deliver orders, routes will display when products are ordered"</div>
     </div>
@@ -184,7 +184,7 @@
     {/if}
 </div>
 
-<div class="p-2 bg-yellow-200">
+<div class="p-2">
     {#if orders_props.length > 0}
         {#each orders_props as props (props.order_id)}
             <div class="p-2">
