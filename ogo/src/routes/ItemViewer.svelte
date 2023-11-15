@@ -163,6 +163,7 @@
 		if (createProductResponse.ok) {
 			const message = await createProductResponse.text();
 			console.log(message);
+            alert.set({ show: true, message: 'Created item: ' + itemName, type: 'success'});
             returnToBrowse();
 		} else {
             const message = await createProductResponse.text();
@@ -456,7 +457,7 @@
                             {#if productID != "0"}
                                 <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={applyChanges}>Apply</button>
                             {:else}
-                                <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={createItem}>Create Item</button>
+                                <button style="width: 90%;" class="btn bg-primary text-white rounded-xl text-xl" on:click={createItem}>Create</button>
                             {/if}
                         </td>
                         <td style="padding-top: 40px; text-align: right;">

@@ -85,22 +85,22 @@
                         <input on:click={handleToggle} type="checkbox" class="toggle toggle-primary" />
                     </div>
                 </div>
-                <div class="form-control w-full max-w-xs">
+                <div class="form-control w-full">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Username</span>
                     </label>
-                    <input bind:value={usernameState} type="text" class="input input-bordered w-full max-w-xs" />
+                    <input bind:value={usernameState} type="text" class="input input-bordered w-full" />
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Password</span>
                     </label>
-                    <input bind:value={passwordState} type="password" class="input input-bordered w-full max-w-xs" />
+                    <input bind:value={passwordState} type="password" class="input input-bordered w-full" />
                     <!-- svelte-ignore a11y-label-has-associated-control -->
                     <label class="label">
                         <span class="label-text">Re-enter Password</span>
                     </label>
-                    <input bind:value={passwordState2} type="password" class="input input-bordered w-full max-w-xs" />
+                    <input bind:value={passwordState2} type="password" class="input input-bordered w-full" />
                 </div>
                 <button on:click={handleSubmit} class="btn bg-secondary mt-6">Submit</button>
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
