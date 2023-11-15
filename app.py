@@ -120,8 +120,9 @@ def is_valid_cart_item_params(ci : json):
   cart_item = get_item_in_cart(ci["product_id"])
   if cart_item != None:
     ci['quantity'] = ci['quantity'] + cart_item['quantity']
-  # if ci['quantity'] > 20:
-  #   return False, ("requested product quantity is too high", 400)
+  item_in_inventory = db.select_product(ci['product_id']) 
+  if ci["quantity"] > item_in_inventory['quantity']:
+    return False, ("Not enough stock of item, \"" + item_in_inventory["name"] + "\" to hold requested quantity in cart. (Currently "+ str(item_in_inventory['quantity']) + " in stock, with " + str(ci['quantity']) + " requested)", 400)
   return True
 
 def calculate_total_cart_weights(order_items : json):
