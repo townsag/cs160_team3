@@ -168,7 +168,7 @@
                                 {#if filteredItems.length == 0}
                                     Cart is Empty
                                 {:else}
-                                    Order is over 200lbs
+                                    Order is Over 200 lb.
                                 {/if}
                             {:else}
                                 Proceed to Payment
