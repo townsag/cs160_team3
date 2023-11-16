@@ -77,7 +77,7 @@
       }
       
       // if cart item quantity is between 0 and product stock quantity
-      if (newCartItemQuantity > 0 || newCartItemQuantity <= product.quantity) {
+      if (newCartItemQuantity > 0 && newCartItemQuantity <= product.quantity) {
         try {
           const result = await updateCartItem(item.cart_item_id, item.product_id, newCartItemQuantity);
 
