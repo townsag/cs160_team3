@@ -628,6 +628,22 @@ def get_path_planning_batch():
     return batch
   else:
     return None
+  
+
+def get_forced_route():
+  cur = con.cursor()
+  cur.execute("SELECT O.OrderID, U.Address "
+              "FROM ORDERS AS O "
+              "JOIN USERS AS U ON U.UserID = O.UserID "
+              "WHERE O.Status=? LIMIT 10", (0,))
+
+  batch = [{"order_id": r[0], "address": r[1]} for r in cur.fetchall()]
+
+  if len(batch) == 0: 
+    return None
+  
+  return batch
+
 
 def delete_all_tables():
   # List all tables in the database

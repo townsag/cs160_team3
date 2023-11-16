@@ -176,6 +176,18 @@ def route_if_ready():
   print("inserted route!")
 
 
+def route_force():
+  batch = db.get_forced_route()
+  if batch == None: # There is no queued routes in the db
+    return False
+
+  gresp: grouteResponse = plan_path([grouteInputOrder(o['order_id'], o['address']) for o in batch])
+  legs = [{"order_id": l.order_id, "sequence": l.index, "eta": l.eta, "lat": l.lat, "lon": l.lon} for l in gresp.legs]
+  db.insert_route(gresp.polyline, legs)
+
+  return True
+
+
 # #
 # # Serve Static Files
 # #
@@ -569,6 +581,15 @@ def get_route():
     return db.select_route_from_orderid(request.args['order_id'])
 
   return "Bad Query String", 400
+
+
+@app.route('/forceRouteCreation', methods=['GET'])
+@admin_required
+def force_route_creation():
+  if route_force():
+    return 'Success', 200
+
+  return "No queued orders avalible to route.", 400
 
 
 # modifying /getRoute to retunr the user_id with each leg
