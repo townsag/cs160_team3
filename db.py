@@ -418,6 +418,8 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # # Orders
 # #
 def select_all_orders() -> list[dict]:
+  complete_orders()
+
   cur = con.cursor()
   cur.execute("SELECT * FROM ORDERS")
   return [{
@@ -432,6 +434,8 @@ def select_all_orders() -> list[dict]:
 
 
 def select_orders(user_id: int) -> list[dict]:
+  complete_orders()
+
   cur = con.cursor()
   cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
 
@@ -506,6 +510,13 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
   con.commit()
 
   return {'order_id': order_id, 'total_price': total_price, 'total_weight': total_weight, 'status': status, 'placed_epoch': placed_epoch}
+
+
+def complete_orders():
+    cur = con.cursor()
+    current_epoch = int(time.time())
+    print(current_epoch)
+    cur.execute("UPDATE ORDERS SET Status=2 WHERE Status=1 AND ETAEpoch <= ?", (current_epoch,))
 
 
 # #
