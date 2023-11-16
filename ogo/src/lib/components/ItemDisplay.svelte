@@ -54,30 +54,30 @@
       
       let newCartItemQuantity = parseInt(event.target.value, 10);
 
-      // not-a-number check
+      // quantity = not-a-number check
       if (isNaN(newCartItemQuantity)) {
         console.log("Inputted quantity is not a number.");
         //alert.set({ show: true, message: 'Quantity must be a number', type: 'error'});
         return;
       }
 
-      // quantity > stock check
-      if (newCartItemQuantity > productStock) {
-        event.target.value = productStock;
-        console.log("Inputted quantity is over the stock in inventory.");
-        alert.set({ show: true, message: `There is only ${productStock} of this item left in stock`, type: 'error'});
-        return;
-      }
-
-      // zero quantity check
+      // quantity <= zero quantity check
       if (newCartItemQuantity <= 0) {
         event.target.value = 1;
         console.log("Inputted quantity cannot be zero.");
         return;
       }
-      
-      // if cart item quantity is between 0 and product stock quantity
-      if (newCartItemQuantity > 0 && newCartItemQuantity <= product.quantity) {
+
+      // quantity > stock check, if over then reset to max stock and proceed
+      if (newCartItemQuantity > productStock) {
+        event.target.value = productStock;
+        newCartItemQuantity = productStock;
+        console.log("Inputted quantity is over the stock in inventory.");
+        alert.set({ show: true, message: `There is only ${productStock} of this item left in stock`, type: 'error'});
+      }
+
+      // if cart item quantity is greater than 0
+      if (newCartItemQuantity > 0) {
         try {
           const result = await updateCartItem(item.cart_item_id, item.product_id, newCartItemQuantity);
 
