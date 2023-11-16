@@ -11,11 +11,20 @@
     export let total_weight: number;
 
     function epochToDate(epoch: number) {
-        return new Date(epoch * 1000); // Multiply by 1000 to convert seconds to milliseconds
+        let d = new Date(epoch * 1000); // Multiply by 1000 to convert seconds to milliseconds
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDay()} ${
+            d.getHours() % 12 || 12
+        }:${d.getMinutes().toString().padStart(2, "0")} ${
+            d.getHours() >= 12 ? "PM" : "AM"
+        }`;
     }
 
-    let order_date: Date = epochToDate(placed_epoch);
-    let eta_date: Date = epochToDate(eta_epoch);
+    let order_date: string = epochToDate(placed_epoch);
+    let eta_date: string = "pending...";
+    if (eta_epoch != null) {
+        eta_date = epochToDate(eta_epoch);
+    }
+
     let order_product_info: any[] = [];
 
     async function get_order_products() {
@@ -44,7 +53,7 @@
         <div class="flex flex-row place-content-around">
             <div class="text-xl font-medium">Order #{order_id}</div>
             <div>
-                {order_date.getMonth()}/{order_date.getDay()}/{order_date.getFullYear()}
+                {order_date}
             </div>
             <div>${total_price.toFixed(2)}</div>
         </div>
@@ -57,13 +66,9 @@
         </div>
     </summary>
     <div class="collapse-content">
-        {#if eta_epoch != null}
-            <div class="p-2">
-                ETA: {eta_date.getMonth()}/{eta_date.getDay()}/{eta_date.getFullYear()}
-            </div>
-        {:else}
-            <div class="p-2">ETA: pending</div>
-        {/if}
+        <div class="p-2">
+            ETA: {eta_date}
+        </div>
         <OrderTable {order_id} />
     </div>
 </details>

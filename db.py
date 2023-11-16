@@ -421,7 +421,7 @@ def select_all_orders() -> list[dict]:
   complete_orders()
 
   cur = con.cursor()
-  cur.execute("SELECT * FROM ORDERS")
+  cur.execute("SELECT * FROM ORDERS ORDER BY OrderID DESC")
   return [{
     'order_id': o[0],
     'user': select_user(o[1]),
@@ -437,7 +437,7 @@ def select_orders(user_id: int) -> list[dict]:
   complete_orders()
 
   cur = con.cursor()
-  cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
+  cur.execute("SELECT * FROM ORDERS WHERE UserID=? ORDER BY OrderID DESC", (user_id,))
 
   return [{
     'order_id': o[0],
@@ -639,6 +639,22 @@ def get_path_planning_batch():
     return batch
   else:
     return None
+  
+
+def get_forced_route():
+  cur = con.cursor()
+  cur.execute("SELECT O.OrderID, U.Address "
+              "FROM ORDERS AS O "
+              "JOIN USERS AS U ON U.UserID = O.UserID "
+              "WHERE O.Status=? LIMIT 10", (0,))
+
+  batch = [{"order_id": r[0], "address": r[1]} for r in cur.fetchall()]
+
+  if len(batch) == 0: 
+    return None
+  
+  return batch
+
 
 def delete_all_tables():
   # List all tables in the database
