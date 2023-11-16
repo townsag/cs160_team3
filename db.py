@@ -433,7 +433,7 @@ def select_all_orders() -> list[dict]:
 
 def select_orders(user_id: int) -> list[dict]:
   cur = con.cursor()
-  cur.execute("SELECT * FROM ORDERS WHERE UserID=?", (user_id,))
+  cur.execute("SELECT * FROM ORDERS WHERE UserID=? ORDER BY OrderID DESC", (user_id,))
 
   return [{
     'order_id': o[0],
