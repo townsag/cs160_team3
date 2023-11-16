@@ -48,11 +48,13 @@
 
   // Cart Item Quantity Change
   async function handleQuantityChange(item: any, event: any) {
-    const newQuantity = parseInt(event.target.value, 10);
+    let newQuantity = parseInt(event.target.value, 10);
 
     if (newQuantity === 0) {
-      handleRemoveCartItem(item);
-    } else if (newQuantity !== 0) {
+      newQuantity = 1;
+    }
+    
+    if (newQuantity > 0) {
       try {
         const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
 
@@ -82,7 +84,7 @@
   function onlyNumbers(event: any) {
     const charCode = event.which ? event.which : event.keyCode;
 
-    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+    if (charCode > 31 && (charCode < 49 || charCode > 57)) {
       event.preventDefault();
     }
   }
@@ -171,7 +173,7 @@
                 on:keypress={(event) => onlyNumbers(event)}
                 class="input input-bordered w-1/2 max-w-xs text-center"
                 inputmode="numeric"
-                pattern="[0-9]*"
+                pattern="[1-9]*"
                 min="1"
               />
             </div>
