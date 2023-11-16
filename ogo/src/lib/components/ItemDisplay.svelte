@@ -56,7 +56,7 @@
 
       // quantity = not-a-number check
       if (isNaN(newCartItemQuantity)) {
-        console.log("Inputted quantity is not a number.");
+        console.log("Inputted quantity is not a number, possibly whitespace.");
         //alert.set({ show: true, message: 'Quantity must be a number', type: 'error'});
         return;
       }
@@ -65,6 +65,7 @@
       if (newCartItemQuantity <= 0) {
         event.target.value = 1;
         console.log("Inputted quantity cannot be zero.");
+        alert.set({ show: true, message: 'Unexpected zero quantity count', type: 'error'});
         return;
       }
 
