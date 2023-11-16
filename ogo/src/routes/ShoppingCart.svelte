@@ -11,6 +11,9 @@
 
     // California sales tax rate
     const TAX_RATE = 0.0725;
+    const SHIPPING_COST = 10;
+    const MAX_SHIPPING_COST_WEIGHT = 20;
+    const MAX_CART_WEIGHT = 200;
 
     let filteredItems: any[] = [];
 
@@ -29,8 +32,8 @@
         itemsSubtotal = Object.values(filteredItems).reduce((acc, item) => acc + (item.price * item.quantity), 0);
         taxSubtotal = itemsSubtotal * TAX_RATE;
         console.log("Total weight:", totalWeight);
-        if (totalWeight > 20)
-            shippingSubtotal = 20;
+        if (totalWeight > MAX_SHIPPING_COST_WEIGHT)
+            shippingSubtotal = SHIPPING_COST;
         else
             shippingSubtotal = 0;
         totalCost = itemsSubtotal + shippingSubtotal + taxSubtotal;
@@ -57,7 +60,7 @@
     }
 
     $: {
-        if (totalWeight > 200 || filteredItems.length == 0) {
+        if (totalWeight > MAX_CART_WEIGHT || filteredItems.length == 0) {
             paymentDisabledState = true;
         } else {
             paymentDisabledState = false;
