@@ -26,9 +26,10 @@ class grouteOutputOrder:
 
 
 class grouteResponse:
-  def __init__(self, polyline: str, legs: list[grouteOutputOrder]) -> None:
+  def __init__(self, polyline: str, legs: list[grouteOutputOrder], total_epoch) -> None:
     self.polyline = polyline
     self.legs = legs
+    self.total_epoch = total_epoch
 
 
 def _get_time_str() -> str:
@@ -72,6 +73,7 @@ def plan_path(orders: list[grouteInputOrder]) -> grouteResponse:
 
   encoded_polyline = resp_json['routes'][0]['polyline']['encodedPolyline']
   waypoint_order = resp_json['routes'][0]['optimizedIntermediateWaypointIndex']
+  total_epoch = int(resp_json['routes'][0]['legs'][-1]['duration'][:-1])
 
   output_orders = []
   eta_sum = 0
@@ -81,9 +83,9 @@ def plan_path(orders: list[grouteInputOrder]) -> grouteResponse:
     o_lat = io["endLocation"]["latLng"]["latitude"]
     o_lon = io["endLocation"]["latLng"]["longitude"]
     eta_sum += int(io["duration"][:-1])
-    output_orders.append(grouteOutputOrder(o_id, o_index, o_lat, o_lon, eta_sum))
+    output_orders.append(grouteOutputOrder(o_id, o_index, o_lat, o_lon, int(io["duration"][:-1])))
 
-  return grouteResponse(encoded_polyline, output_orders)
+  return grouteResponse(encoded_polyline, output_orders, eta_sum + total_epoch)
 
 
 # input_orders = [
