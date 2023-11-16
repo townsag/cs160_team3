@@ -1,7 +1,7 @@
 <script lang='ts'>
   //array size not updating
   import { navigate } from "svelte-routing";
-  import { removeCartItem, updateCartItem } from "../util/RequestController"
+  import { removeCartItem, updateCartItem, getProductById } from "../util/RequestController"
   import { cartItemQuantitySignal, cartItemRemovedSignal } from "../stores/CartObserver";
 
   import { alert } from '../stores/alertStore';
@@ -48,33 +48,59 @@
 
   // Cart Item Quantity Change
   async function handleQuantityChange(item: any, event: any) {
-    const newQuantity = parseInt(event.target.value, 10);
+    try {
+      const product = await getProductById(item.product_id);
+      const productStock = product.quantity;
+      
+      let newCartItemQuantity = parseInt(event.target.value, 10);
 
-    if (newQuantity === 0) {
-      handleRemoveCartItem(item);
-    } else if (newQuantity !== 0) {
-      try {
-        const result = await updateCartItem(item.cart_item_id, item.product_id, newQuantity);
-
-        if (result.success) {
-          console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
-          cartItemQuantitySignal.set(!$cartItemQuantitySignal);
-          //alert.set({ show: true, message: 'Quantity changed successfully', type: 'success'});
-        } else {
-          console.error("Failed to update cart item:", result.message);
-          alert.set({ show: true, message: 'Failed to update cart item: ' + result.message, type: 'error'});
-          location.reload();
-        }
-      } catch (error) {
-        console.log("An error occurred:", error)
-        alert.set({ show: true, message: 'An error occurred: ' + error, type: 'error'});
+      // not-a-number check
+      if (isNaN(newCartItemQuantity)) {
+        console.log("Inputted quantity is not a number.");
+        //alert.set({ show: true, message: 'Quantity must be a number', type: 'error'});
+        return;
       }
-    } else if (isNaN(newQuantity)) {
-      console.log("Inputted quantity is not a number.");
-      alert.set({ show: true, message: 'Quantity must be a number', type: 'error'});
-    } else {
-      console.log("Inputted quantity is out of stock or over the weight limit.");
-      alert.set({ show: true, message: 'Quantity is out of stock or over the weight limit', type: 'error'});
+
+      // quantity > stock check
+      if (newCartItemQuantity > productStock) {
+        event.target.value = productStock;
+        console.log("Inputted quantity is over the stock in inventory.");
+        alert.set({ show: true, message: `There is only ${productStock} of this item left in stock`, type: 'error'});
+        return;
+      }
+
+      // zero quantity check
+      if (newCartItemQuantity <= 0) {
+        event.target.value = 1;
+        console.log("Inputted quantity cannot be zero.");
+        return;
+      }
+      
+      // if cart item quantity is between 0 and product stock quantity
+      if (newCartItemQuantity > 0 || newCartItemQuantity <= product.quantity) {
+        try {
+          const result = await updateCartItem(item.cart_item_id, item.product_id, newCartItemQuantity);
+
+          if (result.success) {
+            console.log(item.cart_item_id, item.category.name, "Cart item updated successfully: Quantity changed.");
+            cartItemQuantitySignal.set(!$cartItemQuantitySignal);
+            //alert.set({ show: true, message: 'Quantity changed successfully', type: 'success'});
+          } else {
+            console.error("Failed to update cart item:", result.message);
+            alert.set({ show: true, message: 'Failed to update cart item: ' + result.message, type: 'error'});
+            location.reload();
+          }
+        } catch (error) {
+          console.log("An error occurred:", error)
+          alert.set({ show: true, message: 'An error occurred: ' + error, type: 'error'});
+        }
+      } else {
+        console.log("Inputted quantity would make the cart over the weight limit.");
+        alert.set({ show: true, message: 'Total weight is over the weight limit', type: 'error'});
+      }
+    } catch (error) {
+      console.log("An error occurred:", error);
+      alert.set({ show: true, message: 'An error occurred: ' + error, type: 'error'});
     }
   }
 
@@ -109,7 +135,13 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-}
+  }
+
+  .disable-spin-buttons::-webkit-inner-spin-button,
+  .disable-spin-buttons::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 </style>
 
 <body>
@@ -169,10 +201,10 @@
                 type="number" value={item.quantity}
                 on:input={(event) => handleQuantityChange(item, event)}
                 on:keypress={(event) => onlyNumbers(event)}
-                class="input input-bordered w-1/2 max-w-xs text-center"
+                class="input input-bordered w-1/2 max-w-xs text-center disable-spin-buttons"
                 inputmode="numeric"
                 pattern="[0-9]*"
-                min="0"
+                min="1"
               />
             </div>
             
