@@ -419,7 +419,7 @@ def delete_cart_item(user_id: int, cart_item_id: int) -> None:
 # #
 def select_all_orders() -> list[dict]:
   cur = con.cursor()
-  cur.execute("SELECT * FROM ORDERS")
+  cur.execute("SELECT * FROM ORDERS ORDER BY OrderID DESC")
   return [{
     'order_id': o[0],
     'user': select_user(o[1]),
