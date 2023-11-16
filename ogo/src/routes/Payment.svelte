@@ -52,7 +52,7 @@
         const totalWeight = cartData.cart.items.reduce((acc: any, item: any) => {
             return acc + item.weight * item.quantity;
         }, 0);
-        if(totalWeight > 20) shipping = 20
+        if(totalWeight > 20) shipping = 10
         price = totalCost
     });
 

@@ -259,7 +259,16 @@ export async function placeOrder(orderItems) {
     }
 }
 
-
+// Get Product by Product ID
+export async function getProductById(productId: number) {
+    try {
+        const response = await fetch(`/getProduct?productID=${productId}`) 
+        const item = await response.json();
+        return item;
+    } catch (error) {
+        console.error("Error fetching by productId:", error);
+    }
+}
 
 // Places API
 export async function fetchApiKey() {
