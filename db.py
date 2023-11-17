@@ -518,6 +518,10 @@ def complete_orders():
     print(current_epoch)
     cur.execute("UPDATE ORDERS SET Status=2 WHERE Status=1 AND ETAEpoch <= ?", (current_epoch,))
 
+    # ToDo: ask backend team about this -Andrew
+    # not familiar with the db stuff, tentatively adding this here
+    con.commit()
+
 
 # #
 # # Routes
