@@ -104,25 +104,6 @@
         }
     }
 
-    /*
-    =====Depricated=====
-    async function get_order_info(){
-        try{
-            const orders_response = await fetch("/getOrders");
-            console.log("this is orders responce: ", orders_response.ok);
-            console.log("this is the response", orders_response);
-            // console.log(orders_response.json());
-            if (orders_response.ok){
-                orders_props = await orders_response.json();
-            } else {
-                console.error('Failed to fetch data');
-            }
-            console.log("this is length of response: ", orders_props.length);
-        } catch (error){
-            console.log("error: ", error);
-        }
-    }*/
-
     async function get_all_order_info() {
         try {
             const all_orders_response = await fetch("/getAllOrders");
@@ -130,6 +111,7 @@
             console.log("this is the response", all_orders_response);
             if (all_orders_response.ok) {
                 orders_props = await all_orders_response.json();
+                console.log("This is all orders: ", orders_props);
             } else {
                 console.error("Failed to fetch data");
             }
@@ -169,6 +151,8 @@
             message: "Orders routed successfully.",
             type: "success",
         });
+        get_all_routes();
+        get_all_order_info();
     }
 
     get_username();
