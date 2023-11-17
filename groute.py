@@ -83,7 +83,8 @@ def plan_path(orders: list[grouteInputOrder]) -> grouteResponse:
     o_lat = io["endLocation"]["latLng"]["latitude"]
     o_lon = io["endLocation"]["latLng"]["longitude"]
     eta_sum += int(io["duration"][:-1])
-    output_orders.append(grouteOutputOrder(o_id, o_index, o_lat, o_lon, int(io["duration"][:-1])))
+
+    output_orders.append(grouteOutputOrder(o_id, o_index, o_lat, o_lon, eta_sum))
 
   return grouteResponse(encoded_polyline, output_orders, eta_sum + total_epoch)
 
