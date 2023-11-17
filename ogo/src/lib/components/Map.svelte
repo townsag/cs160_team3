@@ -125,7 +125,7 @@
                 routeSeconds
         );
 
-        if (remainingSeconds <= 0) return decodedPath.length - 1;
+        if (remainingSeconds <= 0) return decodedPath.length;
         return polylineIndex;
     }
 
@@ -135,6 +135,9 @@
         if (pi < decodedPath.length && pi >= 0) {
             move_marker.setPosition(decodedPath[pi]);
             moveTimer = setTimeout(moveMarker, 1000);
+        } else {
+            move_marker.setMap(null);
+            move_marker = null;
         }
     }
 
