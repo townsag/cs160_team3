@@ -12,12 +12,12 @@ base_url = "http://127.0.0.1:5000"
 
 admin_1 = {'username': 'Andrew1', 'password': 'asdfqwer', 
            'address': '1148 La Terrace Cir. San Jose, CA 95123', "is_admin":1}
-admin_2 = {'username': 'Sabrina1', 'password': 'asdfqwer', 
-           'address': '461 Blossom Hill rd. San Jose, CA 95123', "is_admin":1}
-admin_3 = {'username': 'Dustin1', 'password': 'asdfqwer', 
-           'address': '19501 Stevens Creek Blvd. Cupertino, CA 95014', "is_admin":1}
-admin_4 = {'username': 'Klyde1', 'password': 'asdfqwer', 
-           'address': '2056 Fairway Glen Dr. Santa Clara, CA 95054', "is_admin":1}
+user_2 = {'username': 'Sabrina1', 'password': 'asdfqwer', 
+           'address': '461 Blossom Hill rd. San Jose, CA 95123', "is_admin":0}
+user_3 = {'username': 'Dustin1', 'password': 'asdfqwer', 
+           'address': '19501 Stevens Creek Blvd. Cupertino, CA 95014', "is_admin":0}
+user_4 = {'username': 'Klyde1', 'password': 'asdfqwer', 
+           'address': '2056 Fairway Glen Dr. Santa Clara, CA 95054', "is_admin":0}
 
 
 # add a new admin user to the database
@@ -29,7 +29,7 @@ request1 = session.get(url="http://127.0.0.1:5000/logout")
 
 
 # add the rest of the admin users
-for user_data in [admin_2, admin_3, admin_4]:
+for user_data in [user_2, user_3, user_4]:
     request2 = session.post(url="http://127.0.0.1:5000/signup", json=user_data)
     print(request2.text)
     temp = {}
@@ -215,7 +215,6 @@ print(request4.text)
 
 # populate the carts of the users
 users_credentials = [
-    {"username":"Andrew1", "password":"asdfqwer"},
     {"username":"Dustin1", "password":"asdfqwer"},
     {"username":"Klyde1", "password":"asdfqwer"},
     {'username': 'Sabrina1', 'password': 'asdfqwer'}
@@ -232,45 +231,40 @@ for user in users_credentials:
     
 
 # place the orders of the first two users
-for user in users_credentials[0:2]:
+for user in users_credentials:
     request6 = session.post(url="http://127.0.0.1:5000/login", json=user)
     cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
     request6 = session.post(url="http://127.0.0.1:5000/placeOrder", json=cart_list)
     print(request6.text, "\n")
+    cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
+    for cart_item in cart_list:
+        request8 = session.post(url="http://127.0.0.1:5000/removeCartItem", json={"cart_item_id": cart_item["cart_item_id"]})
     request6 = session.get(url="http://127.0.0.1:5000/logout")
     import time
-    time.sleep(1)
+    time.sleep(1.5)
 
 
-# place the orders of the second two users
-# should trigger route if ready with valid batch
-for user in users_credentials[2:]:
-    request6 = session.post(url="http://127.0.0.1:5000/login", json=user)
+for user in users_credentials:
+    request7 = session.post(url="http://127.0.0.1:5000/login", json=user)
+    request7 = session.post(url="http://127.0.0.1:5000/addCartItem", json={"product_id":4, "quantity":2})
+    request7 = session.post(url="http://127.0.0.1:5000/addCartItem", json={"product_id":7, "quantity":3})
+    request7 = session.post(url="http://127.0.0.1:5000/addCartItem", json={"product_id":5, "quantity":4})
     cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
-    request6 = session.post(url="http://127.0.0.1:5000/placeOrder", json=cart_list)
-    print(request6.text, "\n")
-    request6 = session.get(url="http://127.0.0.1:5000/logout")
-    time.sleep(1)
+    request7 = session.post(url="http://127.0.0.1:5000/placeOrder", json=cart_list)
+    for cart_item in cart_list:
+        request8 = session.post(url="http://127.0.0.1:5000/removeCartItem", json={"cart_item_id": cart_item["cart_item_id"]})
+    request7 = session.get(url="http://127.0.0.1:5000/logout")
+    time.sleep(1.5)
 
 
-# place one more order to trigger route when ready with second valid batch
-reques7 = session.post(url="http://127.0.0.1:5000/login", json={"username":"Andrew1", "password":"asdfqwer"})
-cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
-request7 = session.post(url="http://127.0.0.1:5000/placeOrder", json=cart_list)
-print(request7.text, "\n")
-request7 = session.get(url="http://127.0.0.1:5000/logout")
-time.sleep(1)
 
+# # place one more order so that each user doesnt have the same cart, this makes debugging easier
+# request8 = session.post(url="http://127.0.0.1:5000/login", json={"username":"Andrew1", "password":"asdfqwer"})
 
-# place one more order so that each user doesnt have the same cart, this makes debugging easier
-request8 = session.post(url="http://127.0.0.1:5000/login", json={"username":"Andrew1", "password":"asdfqwer"})
-cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
-for cart_item in cart_list:
-    request8 = session.post(url="http://127.0.0.1:5000/removeCartItem", json={"cart_item_id": cart_item["cart_item_id"]})
-request8 = session.post(url="http://127.0.0.1:5000/addCartItem", json={"product_id":4, "quantity":2})
-cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
-print(cart_list)
-time.sleep(1)
-request8 = session.post(url="http://127.0.0.1:5000/placeOrder", json=cart_list)
-request8 = session.get(url="http://127.0.0.1:5000/logout")
+# request8 = session.post(url="http://127.0.0.1:5000/addCartItem", json={"product_id":4, "quantity":2})
+# cart_list = session.get(url="http://127.0.0.1:5000/getCart").json()["items"]
+# print(cart_list)
+# time.sleep(1)
+# request8 = session.post(url="http://127.0.0.1:5000/placeOrder", json=cart_list)
+# request8 = session.get(url="http://127.0.0.1:5000/logout")
 
