@@ -172,7 +172,7 @@ def route_if_ready():
   gresp: grouteResponse = plan_path([grouteInputOrder(o['order_id'], o['address']) for o in batch])
 
   legs = [{"order_id": l.order_id, "sequence": l.index, "eta": l.eta, "lat": l.lat, "lon": l.lon} for l in gresp.legs]
-  db.insert_route(gresp.polyline, legs)
+  db.insert_route(gresp.polyline, legs, gresp.total_epoch)  
   print("inserted route!")
 
 
@@ -183,7 +183,7 @@ def route_force():
 
   gresp: grouteResponse = plan_path([grouteInputOrder(o['order_id'], o['address']) for o in batch])
   legs = [{"order_id": l.order_id, "sequence": l.index, "eta": l.eta, "lat": l.lat, "lon": l.lon} for l in gresp.legs]
-  db.insert_route(gresp.polyline, legs)
+  db.insert_route(gresp.polyline, legs, gresp.total_epoch)
 
   return True
 

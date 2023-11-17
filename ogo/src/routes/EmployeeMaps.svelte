@@ -66,6 +66,11 @@
                     await map_obj.add_markers(route_data.legs);
                     console.log("LEGS!");
                     console.log(route_data.legs);
+
+                    map_obj.startMovingMarker(
+                        route_data.creation_epcoh,
+                        route_data.end_epoch
+                    );
                 }
             }
         } catch (error) {
@@ -152,6 +157,10 @@
         if (map_init_flag) {
             map_obj.add_polyline(route_data.polyline);
             map_obj.add_markers(route_data.legs);
+            map_obj.startMovingMarker(
+                route_data.creation_epcoh,
+                route_data.end_epoch
+            );
         }
     }
     //hardcoded values rn:
