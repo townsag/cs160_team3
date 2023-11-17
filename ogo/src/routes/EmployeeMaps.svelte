@@ -7,11 +7,24 @@
     import { alert } from "../lib/stores/alertStore";
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
 
+    interface Order {
+        order_id: number;
+        status: number;
+        placed_epoch: number;
+        eta_epoch: number | null;
+        total_price: number;
+        total_weight: number;
+        user: { [key: string]: string | number | boolean };
+    }
+
     let route_data: any = {};
-    let orders_props: any = [];
+    let orders_props: Order[] = [];
     let routes_list: any = [];
     let username: string = "none";
     let API_KEY: string = "none";
+
+    let routed_orders: any = [];
+    let unrouted_orders: any = [];
 
     let returned_routes_flag = false;
     let returned_route_info = false;
@@ -109,25 +122,6 @@
         }
     }
 
-    /*
-    =====Depricated=====
-    async function get_order_info(){
-        try{
-            const orders_response = await fetch("/getOrders");
-            console.log("this is orders responce: ", orders_response.ok);
-            console.log("this is the response", orders_response);
-            // console.log(orders_response.json());
-            if (orders_response.ok){
-                orders_props = await orders_response.json();
-            } else {
-                console.error('Failed to fetch data');
-            }
-            console.log("this is length of response: ", orders_props.length);
-        } catch (error){
-            console.log("error: ", error);
-        }
-    }*/
-
     async function get_all_order_info() {
         try {
             const all_orders_response = await fetch("/getAllOrders");
@@ -135,6 +129,18 @@
             console.log("this is the response", all_orders_response);
             if (all_orders_response.ok) {
                 orders_props = await all_orders_response.json();
+                console.log("This is all orders: ", orders_props);
+
+                routed_orders = [];
+                unrouted_orders = [];
+
+                orders_props.forEach(order => {
+                    if (order.status > 0){
+                        routed_orders.push(order);
+                    } else {
+                        unrouted_orders.push(order);
+                    }
+                });
             } else {
                 console.error("Failed to fetch data");
             }
@@ -178,6 +184,8 @@
             message: "Orders routed successfully.",
             type: "success",
         });
+        get_all_routes();
+        get_all_order_info();
     }
 
     get_username();
@@ -239,13 +247,28 @@
 
 <div class="p-2">
     {#if orders_props.length > 0}
-        {#each orders_props as props (props.order_id)}
-            <div class="p-2">
-                <OrderSummaryEmployee {...props} />
-            </div>
-        {/each}
+        <div class="flex flex-col">
+            {#if unrouted_orders.length > 0}
+                <div class="text-2xl ml-2">Unrouted Orders:</div>
+            {/if}
+            {#each unrouted_orders as props (props.order_id)}
+                <div class="p-2">
+                    <OrderSummaryEmployee {...props} />
+                </div>
+            {/each}
+            {#if routed_orders.length > 0}
+                <div class="text-2xl ml-2">Routed Orders:</div>
+            {/if}
+            {#each routed_orders as props (props.order_id)}
+                <div class="p-2">
+                    <OrderSummaryEmployee {...props} />
+                </div>
+            {/each}
+        </div>
     {:else}
         <p>This user may not have placed orders yet</p>
         <p>Or this user may not be authenticated as an admin</p>
     {/if}
 </div>
+
+

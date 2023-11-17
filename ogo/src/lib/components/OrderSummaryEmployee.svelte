@@ -54,6 +54,14 @@
     console.log("in on mount for order summary employee id: ", order_id);
     await get_order_products();
   });
+
+  // update the eta date string every time the eta epoch prop changes
+  // this makes it so the display accurately reflects changes to an orders eta after the force route
+  // button is pressed without having to refresh the page
+  $:{if (eta_epoch != null) {
+    console.log("in reactive statement");
+    eta_date = epochToDate(eta_epoch);
+  }}
 </script>
 
 <details class="collapse collapse-arrow border shadow-md">
