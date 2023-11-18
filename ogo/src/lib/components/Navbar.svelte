@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ogo from "../../assets/ogo.png";
+	import ogo from "../../assets/OGO.png";
 	import logo from "../../assets/logo_icon.png";
 	import { logout, getCart } from "../util/RequestController"
 	import { cartItemQuantitySignal, cartItemRemovedSignal } from "../stores/CartObserver";
