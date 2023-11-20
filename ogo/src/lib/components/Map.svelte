@@ -1,6 +1,8 @@
 <script lang="ts">
-    import { Loader } from "@googlemaps/js-api-loader";
+    // import { Loader } from "@googlemaps/js-api-loader";
     import { onMount } from "svelte";
+    // import singleton_loader_promise from '../util/Loader'
+    import { loadGoogleMaps } from '../util/Loader';
 
     export let API_KEY: string;
 
@@ -14,21 +16,19 @@
     // let GeometryLibrary: google.maps.GeometryLibrary;
     // let Polyline: typeof google.maps.Polyline;
 
+
     let move_marker: any = null;
     let decodedPath: any;
     let endEpoch: any;
     let startEpoch: any;
     let moveTimer: any = null;
 
-    const loader = new Loader({
-        apiKey: API_KEY,
-        version: "weekly",
-        libraries: ["geometry"],
-    });
 
     export async function init_map() {
         console.log("entering init map");
-        await loader.load();
+        // const loader = await singleton_loader_promise;
+        await loadGoogleMaps();
+        // await loader.load();
         const MapsLibrary = (await google.maps.importLibrary(
             "maps"
         )) as google.maps.MapsLibrary;
@@ -47,7 +47,9 @@
 
     export async function add_polyline(encodedPolyline: string) {
         console.log("inside add polyline");
-        await loader.load();
+        // const loader = await singleton_loader_promise;
+        // await loader.load();
+        await loadGoogleMaps();
         remove_polyline();
         // console.log("this is the polyline: ", encodedPolyline);
         console.log(google.maps);
