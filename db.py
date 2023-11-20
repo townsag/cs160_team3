@@ -85,7 +85,8 @@ def init():
   CREATE TABLE IF NOT EXISTS ROUTES (
       RouteID INTEGER PRIMARY KEY,
       Polyline TEXT,
-      CreationEpoch INTEGER
+      CreationEpoch INTEGER,
+      EndEpoch INTEGER
   );
 
   CREATE TABLE IF NOT EXISTS ROUTE_ORDERS (
@@ -537,10 +538,10 @@ def complete_orders():
 #     'eta': 1696845362
 #   }
 # ]
-def insert_route(polyline: str, legs: list[dict]):
+def insert_route(polyline: str, legs: list[dict], total_epoch: int):
   cur = con.cursor()
-  cur.execute("INSERT INTO ROUTES (Polyline, CreationEpoch) VALUES (?, ?)",
-              (polyline, int(time.time())))
+  cur.execute("INSERT INTO ROUTES (Polyline, CreationEpoch, EndEpoch) VALUES (?, ?, ?)",
+              (polyline, int(time.time()), total_epoch + int(time.time())))
 
   route_id = cur.lastrowid
 
@@ -566,6 +567,7 @@ def select_route_from_routeid(route_id: int):
   r = cur.fetchone()
   polyline = r[1]
   creation_epcoh = r[2]
+  end_epoch = r[3]
 
   cur.execute("SELECT * FROM ROUTE_ORDERS WHERE RouteID=?", (route_id,))
   legs = [{
@@ -579,7 +581,8 @@ def select_route_from_routeid(route_id: int):
     'route_id': route_id,
     'polyline': polyline,
     'creation_epcoh': creation_epcoh,
-    'legs': legs
+    'legs': legs,
+    'end_epoch': end_epoch
   }
 
 
@@ -589,6 +592,7 @@ def select_route_from_routeid_with_username(route_id: int):
   r = cur.fetchone()
   polyline = r[1]
   creation_epcoh = r[2]
+  end_epoch = r[3]
 
   cur.execute("""
         SELECT RO.RouteOrderID, RO.RouteID, RO.OrderID, RO.Sequence, RO.Lat, RO.Lon, 
@@ -609,7 +613,8 @@ def select_route_from_routeid_with_username(route_id: int):
     'route_id': route_id,
     'polyline': polyline,
     'creation_epcoh': creation_epcoh,
-    'legs': legs
+    'legs': legs,
+    'end_epoch': end_epoch
   }
 
 

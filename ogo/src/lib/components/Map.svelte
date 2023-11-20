@@ -16,11 +16,13 @@
     // let GeometryLibrary: google.maps.GeometryLibrary;
     // let Polyline: typeof google.maps.Polyline;
 
-    // const loader = new Loader({
-    //     apiKey: API_KEY,
-    //     version: "weekly",
-    //     libraries: ["geometry"],
-    // });
+
+    let move_marker: any = null;
+    let decodedPath: any;
+    let endEpoch: any;
+    let startEpoch: any;
+    let moveTimer: any = null;
+
 
     export async function init_map() {
         console.log("entering init map");
@@ -52,8 +54,7 @@
         // console.log("this is the polyline: ", encodedPolyline);
         console.log(google.maps);
         // var decodedPath = google.maps.geometry.encoding.decodePath(encodedPolyline);
-        var decodedPath =
-            google.maps.geometry.encoding.decodePath(encodedPolyline);
+        decodedPath = google.maps.geometry.encoding.decodePath(encodedPolyline);
         // console.log("this is the decoded path: ", decodedPath);
         polyline = new google.maps.Polyline({
             path: decodedPath,
@@ -79,7 +80,7 @@
 
         markers.push(
             new google.maps.Marker({
-                position: { lat: 37.33012, lng: -121.87743 },
+                position: decodedPath[0],
                 map,
                 label: "S",
             })
@@ -114,6 +115,50 @@
             markers[i].setMap(null);
         }
         markers = [];
+    }
+
+    function getPolylineIndex() {
+        let currentEpoch = Math.floor(new Date().getTime() / 1000);
+        let routeSeconds = endEpoch - startEpoch;
+
+        let remainingSeconds = endEpoch - currentEpoch;
+        let polylineIndex = Math.floor(
+            (decodedPath.length * (routeSeconds - remainingSeconds)) /
+                routeSeconds
+        );
+
+        if (remainingSeconds <= 0) return decodedPath.length;
+        return polylineIndex;
+    }
+
+    function moveMarker() {
+        console.log("moveMarker called!");
+        let pi = getPolylineIndex();
+        if (pi < decodedPath.length && pi >= 0) {
+            move_marker.setPosition(decodedPath[pi]);
+            moveTimer = setTimeout(moveMarker, 1000);
+        } else {
+            move_marker.setMap(null);
+            move_marker = null;
+        }
+    }
+
+    export function startMovingMarker(startEpochh: number, endEpochh: number) {
+        endEpoch = endEpochh;
+        startEpoch = startEpochh;
+
+        if (move_marker == null) {
+            move_marker = new google.maps.Marker({
+                position: decodedPath[getPolylineIndex()],
+                map: map,
+                title: "Delivery Robot",
+                label: "R",
+            });
+        } else {
+            move_marker.setPosition(decodedPath[getPolylineIndex()]);
+            clearTimeout(moveTimer);
+        }
+        moveMarker();
     }
 </script>
 
