@@ -26,7 +26,7 @@ docker build . -t ogo
 ```
 docker run -p 3000:3000 ogo
 ```
-6. go to localhost:3000 or your IP address and port 3000 to access on local network
+6. go to localhost:3000 or your IP address and port 3000 to access on local network.
 steps are the same for both Windows Powershell(bat) and Linux/Mac (bash/zsh)
 
 8. Google Drive link to view video description
