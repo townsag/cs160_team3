@@ -1,30 +1,31 @@
 <script  lang="ts">
     import { onMount } from "svelte";
-    import { Loader } from "@googlemaps/js-api-loader";
-    import { fetchApiKey } from "../util/RequestController";
+    // import { Loader } from "@googlemaps/js-api-loader";
+    // import { fetchApiKey } from "../util/RequestController";
+    import { loadGoogleMaps } from '../util/Loader';
     import { alert } from '../stores/alertStore';
     import AlertDaisy from "./AlertDaisy.svelte";
 
     export let placeholder: string;
     export let onPlaceSelect: ((place: any) => void) | undefined;
 
-    async function loadGoogleMaps() {
-        try {
-            const result = await fetchApiKey();
+    // async function loadGoogleMaps() {
+    //     try {
+    //         const result = await fetchApiKey();
         
-            const loader = new Loader({
-                apiKey: result.API_KEY,
-                version: "weekly",
-                libraries: ["places"],
-                region: "US"
-            });
+    //         const loader = new Loader({
+    //             apiKey: result.API_KEY,
+    //             version: "weekly",
+    //             libraries: ["places"],
+    //             region: "US"
+    //         });
 
-            await loader.importLibrary("places");
-            initAutocomplete();
-        } catch (error) {
-            console.error("Error loading Google Maps API:", error);
-        }
-    };
+    //         await loader.importLibrary("places");
+    //         initAutocomplete();
+    //     } catch (error) {
+    //         console.error("Error loading Google Maps API:", error);
+    //     }
+    // };
 
     const initAutocomplete = () => {
         const input = document.getElementById("autocomplete") as HTMLInputElement;
@@ -67,7 +68,8 @@
     };
 
     onMount(async() => {
-        await loadGoogleMaps();
+        await loadGoogleMaps()
+        initAutocomplete();;
     });
 </script>
 
