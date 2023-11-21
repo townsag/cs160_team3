@@ -487,11 +487,15 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="" style="word-wrap: break-word;">
-                            <span class="bg-primary text-white px-2 py-1 rounded-full text-base mr-2 mb-2">{itemCategory}</span>
-                            {#each allTagsList as tag}
-                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-base mr-2 mb-2">{tag.name}</span>
-                            {/each}
+                        <td>
+                            <div class="flex flex-col">
+                                <div class="flex flex-grow flex-wrap items-start overflow-y-auto">
+                                    <span class="bg-primary text-white px-2 py-1 rounded-full text-base mr-2 mb-2">{itemCategory}</span>
+                                {#each itemTags as tag}
+                                    <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-base mr-2 mb-2">{tag}</span>
+                                {/each}
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 </table>
