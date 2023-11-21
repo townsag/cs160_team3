@@ -31,4 +31,4 @@ Steps are  the same on both windows powershell(bat) and linux/mac (bash/zsh)
 
 7. Google Drive Link to View Video Description
 
-`https://drive.google.com/file/d/1M_YosK72QE9pKzKjL-qJtcgV2PADwkhq/view`
+[`[https://drive.google.com/file/d/1M_YosK72QE9pKzKjL-qJtcgV2PADwkhq/view](https://drive.google.com/file/d/1v6AWZsNofzVQYB1ZKNt5k8n1TzoMMGpR/view)`](https://drive.google.com/file/d/1v6AWZsNofzVQYB1ZKNt5k8n1TzoMMGpR/view)https://drive.google.com/file/d/1v6AWZsNofzVQYB1ZKNt5k8n1TzoMMGpR/view
