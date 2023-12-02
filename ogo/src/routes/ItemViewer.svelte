@@ -20,6 +20,10 @@
     let itemPrice = 0.0;
     let itemWeight = 0.0;
 
+    let oldItemPrice = itemPrice;
+    let oldItemWeight = itemWeight;
+
+
     /**
      * @type {{ name: any; description: any; image: any; quantity: number; price: number; weight: number; category: any; tags: any;}}
      */
@@ -89,6 +93,9 @@
             itemCategory = item.category.name;
             itemSelectedQuantity = 1;
 
+            oldItemPrice = itemPrice;
+            oldItemWeight = itemWeight;
+
             for (let i = 0; i < item.tags.length; i++) {
                 itemTags[i] = item.tags[i].name;
             }
@@ -131,8 +138,28 @@
         if (itemQuantityInStock < 0) {
             itemQuantityInStock = 0;
         }
+        // Bug Fix
+        if (itemQuantityInStock > 9999) {
+            itemQuantityInStock = 9999;
+        }
+
         if (itemSelectedQuantity < 0) {
             itemSelectedQuantity = 0;
+        }
+        if (itemWeight > 200) {
+            itemWeight = 200;
+        }
+        if (itemPrice > 1000000) {
+            itemPrice = 1000000;
+        }
+
+        // Bug Fix
+        if ((itemPrice += 0.0) == 0) {
+            itemPrice = oldItemPrice;
+        }
+        // Bug Fix
+        if ((itemWeight += 0.0) == 0) {
+            itemWeight = oldItemWeight;
         }
 
         itemPrice = Number(itemPrice.toFixed(2));
@@ -264,6 +291,10 @@
             alert.set({ show: true, message: 'Quantity must be an integer', type: 'warning'});
             return;
         }
+        if (!isUrlValid) {
+            alert.set({ show: true, message: 'URL must be valid', type: 'warning' });
+            return;
+        }
         createProduct();
     }
     function applyChanges() {
@@ -287,12 +318,57 @@
         if (itemPrice <= 0 || itemWeight <= 0) {
             alert.set({ show: true, message: 'Weight and price must be greater than 0', type: 'warning'});
             return;
-        }
+        } 
         if (!Number.isInteger(itemQuantityInStock)) {
             alert.set({ show: true, message: 'Quantity must be an integer', type: 'warning'});
             return;
         }
+        if (!isUrlValid) {
+            alert.set({ show: true, message: 'URL must be valid', type: 'warning' });
+            return;
+        }
+
         handleApplyChanges();
+    }
+
+    let isUrlValid = true;
+    async function handleInputURL(event) {
+        const inputUrl = event.target.value;
+        try {
+        await checkImageUrl(inputUrl);
+            itemImgUrl = inputUrl;
+            isUrlValid = true;
+        } catch (error) {
+            isUrlValid = false;
+        }
+    }
+    async function checkImageUrl(url: any) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Image not found');
+        }
+    }
+
+    function handleInputName(event: any) {
+        const maxLength = 100; 
+        let inputValue = event.target.value;
+
+        if (inputValue.length > maxLength) {
+        // Truncate the input to the maximum length
+        inputValue = inputValue.slice(0, maxLength);
+        }
+        itemName = inputValue;
+    }
+
+    function handleInputDescription(event: any) {
+        const maxLength = 1000; 
+        let inputValue = event.target.value;
+
+        if (inputValue.length > maxLength) {
+        // Truncate the input to the maximum length
+        inputValue = inputValue.slice(0, maxLength);
+        }
+        itemDescription = inputValue;
     }
 </script>
 
@@ -372,7 +448,7 @@
                             <label for="nameInput" class="text-3xl font-semibold">Name: </label>
                         </td>
                        <td>
-                            <input id="nameInput" bind:value={itemName} type="text" class="input input-bordered text-3xl font-semibold" style="width: 100%;"/>
+                            <input id="nameInput" bind:value={itemName} on:input={handleInputName} type="text" class="input input-bordered text-3xl font-semibold" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -380,7 +456,7 @@
                             <label for="descInput" class="text-xl font-normal">Description: </label>
                         </td>
                         <td>
-                            <input id="descInput" bind:value={itemDescription} type="text" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                            <input id="descInput" bind:value={itemDescription} on:input={handleInputDescription} type="text" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                     <tr>
@@ -388,7 +464,7 @@
                             <label for="urlInput" class="text-xl font-normal">URL: </label>
                         </td>
                         <td>
-                            <input id="urlInput" bind:value={itemImgUrl} type="text" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
+                            <input id="urlInput" bind:value={itemImgUrl} on:input={handleInputURL} type="text" class="input input-bordered heightSmall text-xl font-normal" style="width: 100%;"/>
                         </td>
                     </tr>
                 </table>
