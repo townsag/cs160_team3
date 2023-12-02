@@ -55,10 +55,15 @@
         console.log(userData);
         
         try {
-            await updateUser(userData);
-            await getUser();
-            alert.set({ show: true, message: `Updated username to ${user.username}`, type: 'success'});
-            changedUsernameState = "";
+            let update = await updateUser(userData);
+            if (update.success){
+                await getUser();
+                alert.set({ show: true, message: `Updated username to ${user.username}`, type: 'success'});
+                changedUsernameState = "";
+            }else{
+                alert.set({ show: true, message: "Error: " + update.message, type: 'error'});
+                changedUsernameState = "";
+            }
         } catch (error) {
             console.error("Error updating username:", error);
             alert.set({ show: true, message: 'Error updating username: ' + error, type: 'error'});
