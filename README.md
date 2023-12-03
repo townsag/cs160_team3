@@ -26,8 +26,11 @@ docker build . -t ogo
 ```
 docker run -p 3000:3000 ogo
 ```
+
 6. go to localhost:3000 or your IP address and port 3000 to access on local network.
 steps are the same for both Windows Powershell(bat) and Linux/Mac (bash/zsh)
+
+7. If no admin users are inserted into db before initialization, the default admin account is `{username: "AdminAndy", password: "123123"}`
 
 8. Google Drive link to view video description
 
