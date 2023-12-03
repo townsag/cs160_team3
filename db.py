@@ -98,8 +98,9 @@ def init():
       Lon REAL
   );
 ''')
-  # TODO: Add more contraints (such as NOT NULL) to above tables.
   con.commit()
+
+  create_default_admin_if_not_exists()
 
 
 # #
@@ -269,6 +270,15 @@ def update_category(category_id: int, name: str) -> dict:
 # #
 # # Users
 # #
+
+
+def create_default_admin_if_not_exists():
+  cur = con.cursor()
+  cur.execute("SELECT * FROM USERS WHERE IsAdmin=1")
+
+  if len(cur.fetchall()) == 0:
+    insert_user("AdminAndy", "123123", True)
+
 
 def select_user(user_id: int) -> dict:
   cur = con.cursor()
