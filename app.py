@@ -218,9 +218,7 @@ def signup():
     l = load_user(j['user_id'])
     login_user(l)
     return 'Login Success'
-  
-  if 'is_admin' not in u: u['is_admin'] = False
-  
+    
   user_char_ct = len(u['username'])
   pass_char_ct = len(u['password'])
   if user_char_ct > 20 or user_char_ct < 1:
@@ -229,7 +227,7 @@ def signup():
     return 'Invalid password character count', 400
   if db.select_user_from_un(u['username']) != None:
     return 'Invalid username: already taken', 400
-  u = db.insert_user(u['username'], u['password'], u['is_admin'])
+  u = db.insert_user(u['username'], u['password'], False)
   login_user(load_user(u['user_id']))  # Log the user in after they add their account to the db
   return 'Signup Success'
   # TODO: handle errors such as no key.
