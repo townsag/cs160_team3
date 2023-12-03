@@ -77,7 +77,10 @@ def init():
       OrderItemID INTEGER PRIMARY KEY,
       OrderID INTEGER REFERENCES ORDERS(OrderID),
       ProductID INTEGER REFERENCES PRODUCTS(ProductID),
-      Quantity INTEGER
+      Quantity INTEGER,
+      Name TEXT,
+      Image TEXT,
+      Price REAL
 
       CHECK (Quantity >= 0)
   );
@@ -96,7 +99,7 @@ def init():
       Sequence INTEGER,
       Lat REAL,
       Lon REAL
-  );
+  );          
 ''')
   con.commit()
 
@@ -465,7 +468,7 @@ def select_order_items(user_id: int, order_id: int) -> list[dict]:
   # TODO: ensure that the user owns the order
 
   cur = con.cursor()
-  cur.execute("SELECT P.ProductID, P.Name, P.Description, P.Image, P.Price, P.Weight, OI.OrderItemID, OI.Quantity "
+  cur.execute("SELECT P.ProductID, OI.Name, P.Description, OI.Image, OI.Price, P.Weight, OI.OrderItemID, OI.Quantity "
               "FROM ORDER_ITEMS AS OI "
               "JOIN PRODUCTS AS P ON OI.ProductID = P.ProductID "
               "WHERE OI.OrderID=?", (order_id,))
@@ -515,9 +518,10 @@ def insert_order(user_id: int, order_items: list[dict]) -> dict:
 
   order_id = cur.lastrowid
   for o in order_items:
-    cur.execute("INSERT INTO ORDER_ITEMS (OrderID, ProductID, Quantity) VALUES (?, ?, ?)",
-                (order_id, o['product_id'], o['quantity']))
-
+    p = select_product(o['product_id'])
+    cur.execute("INSERT INTO ORDER_ITEMS (OrderID, ProductID, Quantity, Name, Image, Price) VALUES (?, ?, ?, ?, ?, ?)",
+                (order_id, o['product_id'], o['quantity'], p['name'], p['image'], p['price']))
+    
   con.commit()
 
   return {'order_id': order_id, 'total_price': total_price, 'total_weight': total_weight, 'status': status, 'placed_epoch': placed_epoch}

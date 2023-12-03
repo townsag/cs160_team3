@@ -22,7 +22,7 @@ user_4 = {'username': 'Klyde1', 'password': 'asdfqwer',
 
 # add a new admin user to the database
 request1 = session.post(url="http://127.0.0.1:5000/signup", json=admin_1)
-request1 = session.post(url="http://127.0.0.1:5000/updateUser", json={"address": '1148 La Terrace Cir. San Jose, CA 95123'})
+request1 = session.post(url="http://127.0.0.1:5000/updateUser", json={"address": '1148 La Terrace Cir. San Jose, CA 95123', "is_admin": True})
 request1 = session.get(url="http://127.0.0.1:5000/getUser")
 print(request1.text)
 request1 = session.get(url="http://127.0.0.1:5000/logout")
