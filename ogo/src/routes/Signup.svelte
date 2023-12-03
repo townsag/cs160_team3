@@ -80,10 +80,10 @@
             <div class="card-body">
                 <div class="flex justify-between items-center">
                     <h1 class="card-title">SIGN UP</h1>
-                    <div class="flex">
+                    <!-- <div class="flex">
                         <h2 class="mr-2">{toggleIsCheckedState ? "Employee" : "Customer"}</h2>
                         <input on:click={handleToggle} type="checkbox" class="toggle toggle-primary" />
-                    </div>
+                    </div> -->
                 </div>
                 <div class="form-control w-full">
                     <!-- svelte-ignore a11y-label-has-associated-control -->
