@@ -9,6 +9,8 @@
 
     // 0.0724776501?
     const TAX_RATE = 0.0725;
+    const MIN_NAME_LENGTH = 1;
+    const MAX_NAME_LENGTH = 30;
 
     const today = new Date();
     const month = today.getMonth() + 1; // getMonth has January as 0
@@ -69,23 +71,23 @@
         let failedCondition = "";
 
         switch (true) {
-            case !fullNameState || !/^[a-zA-Z\s]+$/.test(fullNameState):
-                failedCondition = "Full Name";
+            case !fullNameState || !/^[a-zA-Z\s]+$/.test(fullNameState) || !(fullNameState.length >= MIN_NAME_LENGTH && fullNameState.length <= MAX_NAME_LENGTH):
+                failedCondition = "Full Name must be 1-30 letters";
                 break;
-            case !cardHolderNameState || !/^[a-zA-Z\s]+$/.test(cardHolderNameState):
-                failedCondition = "Card Holder Name";
+            case !cardHolderNameState || !/^[a-zA-Z\s]+$/.test(cardHolderNameState) || !(cardHolderNameState.length >= MIN_NAME_LENGTH && cardHolderNameState.length <= MAX_NAME_LENGTH):
+                failedCondition = "Card Holder Name must be 1-30 letters";
                 break;
             case !cardNumberState || !/^\d{16}$/.test(cardNumberState):
-                failedCondition = "Card Number";
+                failedCondition = "Card Number must be 16 digits";
                 break;
             case !phoneNumberState || !/^\(\d{3}\)-\d{3}-\d{4}$/.test(phoneNumberState):
-                failedCondition = "Phone Number";
+                failedCondition = "Phone Number (XXX)-XXX-XXXX";
                 break;
             case !cardExpiryState || !isValidExpiryDate(cardExpiryState, month, year):
-                failedCondition = "Card Expiry (MM/YYYY)";
+                failedCondition = "Card Expiry MM/YYYY";
                 break;
             case !cardCvcState || !/^\d{3,4}$/.test(cardCvcState):
-                failedCondition = "Card CVC";
+                failedCondition = "Card CVC must be 3-4 digits";
                 break;
             case userAddress === "None Set Please See Settings Page":
                 failedCondition = "Check Address";
