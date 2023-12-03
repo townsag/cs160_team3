@@ -157,6 +157,8 @@
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					{#if userType == 1}
 						<li><a on:click={handleOrders}>Orders</a></li>
+					{:else}
+						<li><a on:click={handleOrders}>My Orders</a></li>
 					{/if}
 					<!-- svelte-ignore a11y-missing-attribute -->
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
