@@ -6,6 +6,9 @@
 
     import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+
+    const MIN_PASSWORD_LENGTH = 1;
+    const MAX_PASSWORD_LENGTH = 20;
     
     let user: any;
     let loggedInUserID: number;
@@ -76,8 +79,13 @@
             changedPasswordState2 = "";
             return;
         }
-        if (changedPasswordState2.length == 0) {
+        if (changedPasswordState.length === 0 || changedPasswordState2.length === 0) {
            return;
+        }
+        if (changedPasswordState.length > MAX_PASSWORD_LENGTH || changedPasswordState2.length > MAX_PASSWORD_LENGTH) {
+            alert.set({ show: true, message: 'Password must be 1-20 characters', type: 'error'});
+            changedPasswordState2 = "";
+            return;
         }
 
         storedChangedPassword = changedPasswordState;
