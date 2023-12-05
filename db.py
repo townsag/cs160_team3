@@ -30,7 +30,6 @@ def init():
       Weight REAL,
       CategoryID INTEGER REFERENCES CATEGORIES(CategoryID),
       CHECK (Quantity >= 0)
-      CHECK (Quantity <= 9999)
       CHECK (Price >= 0.0)
       CHECK (Weight >= 0.0)
       CHECK (CategoryID >= 1)

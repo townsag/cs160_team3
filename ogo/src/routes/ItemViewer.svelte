@@ -139,8 +139,8 @@
             itemQuantityInStock = 0;
         }
         // Bug Fix
-        if (itemQuantityInStock > 9999) {
-            itemQuantityInStock = 9999;
+        if (itemQuantityInStock > 1000000) {
+            itemQuantityInStock = 1000000;
         }
 
         if (itemSelectedQuantity < 0) {
