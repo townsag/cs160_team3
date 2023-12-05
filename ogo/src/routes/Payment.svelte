@@ -10,6 +10,10 @@
     // 0.0724776501?
     const TAX_RATE = 0.0725;
 
+    const today = new Date();
+    const month = today.getMonth() + 1; // getMonth has January as 0
+    const year = today.getFullYear();
+
     let fullNameState = "";
     let cardHolderNameState = "";
     let cardNumberState = "";
@@ -43,6 +47,11 @@
     let userAddress = ""
     onMount(async ()=>{
         cartData = await getCart()
+
+        if (cartData.cart.items.length === 0) {
+            navigate("/browse")
+        }
+
         let userData = await getCurrentUser()
         userAddress = userData.user.address
         if(!userAddress) userAddress = "None Set Please See Settings Page"
@@ -69,23 +78,23 @@
             case !cardNumberState || !/^\d{16}$/.test(cardNumberState):
                 failedCondition = "Card Number";
                 break;
-            case !phoneNumberState || !/^\(\d{3}\)-?\d{3}-?\d{4}$/.test(phoneNumberState):
+            case !phoneNumberState || !/^\(\d{3}\)-\d{3}-\d{4}$/.test(phoneNumberState):
                 failedCondition = "Phone Number";
                 break;
-            case !cardExpiryState || !/^\d{2}\/\d{2}$/.test(cardExpiryState):
-                failedCondition = "Card Expiry (MM/YY)";
+            case !cardExpiryState || !isValidExpiryDate(cardExpiryState, month, year):
+                failedCondition = "Card Expiry (MM/YYYY)";
                 break;
-            case !cardCvcState || !/^\d+$/.test(cardCvcState):
+            case !cardCvcState || !/^\d{3,4}$/.test(cardCvcState):
                 failedCondition = "Card CVC";
                 break;
             case userAddress === "None Set Please See Settings Page":
                 failedCondition = "Check Address";
                 break;
             default:
-                failedCondition = null;
+                failedCondition = "";
         }
 
-        if (failedCondition) {
+        if (failedCondition.length > 0) {
             alert.set({ show: true, message: `Invalid input for ${failedCondition}`, type: 'warning'});
             return;
         }
@@ -100,6 +109,14 @@
             alert.set({ show: true, message: failedCondition, type: 'error'});
         }
         return;
+    }
+
+    function isValidExpiryDate(expiryInput: string, currentMonth: number, currentYear: number): boolean {
+        if (/^(0[1-9]|1[0-2])\/\d{4}$/.test(expiryInput)) {
+            const [m, y]: number[] = expiryInput.split('/').map(Number);
+            return y > currentYear || (y === currentYear && m > currentMonth);
+        }
+        return false;
     }
 </script>
 
@@ -154,7 +171,7 @@
                         <input bind:value={cardNumberState} type="text" class="input input-bordered w-full mt-2" placeholder="Card Number No Dashes"/>
                         <div id="notfull" class="flex justify-between mt-2">
                             <div class="flex-1 mr-1">
-                                <input bind:value={cardExpiryState} type="text" class="input input-bordered w-full " placeholder="Expiry Date"/>
+                                <input bind:value={cardExpiryState} type="text" class="input input-bordered w-full " placeholder="Expiry Date MM/YYYY"/>
                             </div>
                             <div class="flex-1 ml-1" >
                                 <input bind:value={cardCvcState} type="text" class="input input-bordered w-full " placeholder="CVC Code"/>

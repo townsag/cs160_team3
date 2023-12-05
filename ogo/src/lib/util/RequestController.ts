@@ -105,6 +105,12 @@ export async function updateUser(data: any) {
             body: JSON.stringify(data)
         });
 
+        if (updateUserResponse.status === 400) {
+            const errorMessage = await updateUserResponse.text();
+            console.error("Failed to update user:", errorMessage);
+            return { success: false, message: errorMessage };
+        }
+
         if (!updateUserResponse.ok) {
             const errorMessage = await updateUserResponse.text();
             console.error("Failed to update user:", errorMessage);

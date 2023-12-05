@@ -6,6 +6,9 @@
 
     import { alert } from '../lib/stores/alertStore';
     import AlertDaisy from "../lib/components/AlertDaisy.svelte";
+
+    const MIN_PASSWORD_LENGTH = 1;
+    const MAX_PASSWORD_LENGTH = 20;
     
     let user: any;
     let loggedInUserID: number;
@@ -56,11 +59,11 @@
         
         try {
             let update = await updateUser(userData);
-            if (update.success){
+            if (update.success) {
                 await getUser();
                 alert.set({ show: true, message: `Updated username to ${user.username}`, type: 'success'});
                 changedUsernameState = "";
-            }else{
+            } else {
                 alert.set({ show: true, message: "Error: " + update.message, type: 'error'});
                 changedUsernameState = "";
             }
@@ -76,8 +79,13 @@
             changedPasswordState2 = "";
             return;
         }
-        if (changedPasswordState2.length == 0) {
+        if (changedPasswordState2.length == 0 || changedPasswordState2.length === 0) {
            return;
+        }
+        if (changedPasswordState.length > MAX_PASSWORD_LENGTH || changedPasswordState2.length > MAX_PASSWORD_LENGTH) {
+            alert.set({ show: true, message: 'Password must be 1-20 characters', type: 'error'});
+            changedPasswordState2 = "";
+            return;
         }
 
         storedChangedPassword = changedPasswordState;
@@ -88,9 +96,11 @@
         console.log(userData);
 
         try {
-            await updateUser(userData);
-            await getUser();
-            alert.set({ show: true, message: 'Updated password', type: 'success'});
+            let update = await updateUser(userData);
+            if (update.success) {
+                await getUser();
+                alert.set({ show: true, message: 'Updated password', type: 'success'});
+            }
             changedPasswordState = "";
             changedPasswordState2 = "";
         } catch (error) {
@@ -109,9 +119,11 @@
         console.log(userData);
 
         try {
-            await updateUser(userData);
-            await getUser();
-            alert.set({ show: true, message: 'Updated address', type: 'success'});
+            let update = await updateUser(userData);
+            if (update.success) {
+                await getUser();
+                alert.set({ show: true, message: 'Updated address', type: 'success'});
+            }
             changedAddressState = "";
         } catch (error) {
             console.error("Error updating address:", error);
